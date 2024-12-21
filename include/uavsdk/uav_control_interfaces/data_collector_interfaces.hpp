@@ -24,6 +24,7 @@ namespace uav_ci /// uav_control_interfaces
         {
         public:
             virtual UniversalDataFormat get_data() = 0;
+            virtual Msg get_msg() = 0;
         };
 
 
@@ -36,8 +37,15 @@ namespace uav_ci /// uav_control_interfaces
 
         public:
 
+            DataObject& operator=(DataObject<Msg, UniversalDataFormat> other)
+            {
+                this->msg = other.msg;
+                this->data = other.data;
+                return *this;
+            }
+
             virtual UniversalDataFormat get_data() override { return data; }
-            Msg get_msg() { return msg; };
+            Msg get_msg() override { return msg; };
         };
 
 
@@ -49,6 +57,14 @@ namespace uav_ci /// uav_control_interfaces
 
             public: 
             DataObjectJson(std::string name) { set_name(name); }
+
+            // DataObjectJson& operator=(DataObjectJson other) 
+            // { 
+            //     this->msg = other.msg;
+            //     this->data = other.data;
+            //     this->name = other.name; 
+            //     return *this; 
+            // }
             
             void set_name(std::string name) { this->name = name; }
             
@@ -73,6 +89,16 @@ namespace uav_ci /// uav_control_interfaces
             { 
                 this->type = type; 
             }
+
+            // TypedDataObject& operator=(TypedDataObject other) 
+            // {
+            //     this->msg = other.msg;
+            //     this->data = other.data;
+            //     this->name = other.name; 
+            //     this->type = other.type;
+            //     return *this; 
+            // }
+
             void set_type(std::string type) { this->type = type; }
             std::string get_type() { return this->type; }
 
@@ -183,6 +209,7 @@ namespace uav_ci /// uav_control_interfaces
              * @brief метод, который будет вызван, когда DataCollectorInterface<DataType> изменит свое состояние
              */
             virtual void notify(std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> input_data) = 0;
+            virtual std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> get_data() = 0;
         };
 
 
@@ -214,13 +241,11 @@ namespace uav_ci /// uav_control_interfaces
         public:
             void attach_observer(std::shared_ptr<DataObserverInterface<Msg, UniversalDataFormat>> observer) override 
             {
-                std::cout << "attach_observer\n";
                 this->observer = observer;
             }
 
             void update_data(std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> data) override 
             {
-                std::cout << "update_data\n";
                 this->data = data;
                 this->notify_observers();
             }
@@ -228,10 +253,8 @@ namespace uav_ci /// uav_control_interfaces
 
             void notify_observers() override 
             {
-                std::cout << "notify_observers\n";
                 if (this->observer != nullptr)
                 {
-                    std::cout << "notify_observers -- observer != nullptr\n";
                     this->observer->notify(this->data);
                 }
             }
@@ -254,16 +277,28 @@ namespace uav_ci /// uav_control_interfaces
             /**
              * @brief Конструктор объекта DataSubscriber.
              */
-            DataSubscriber(std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> data) : data(data) {}
+            DataSubscriber(std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> input_data) { this->data = input_data; }
+            // DataSubscriber() { this->data = std::make_shared<DataInterface<Msg, UniversalDataFormat>>(); }
 
             /**
              * @brief Обновляет данные по указателю this->data.
              */
             void notify(std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> input_data) override
             {
-                std::cout << "DataSubscriber::notify\n";
-                *this->data = *input_data;
+                // std::cout << "\nBefore:  " << input_data->get_data() << std::endl;
+                this->data = input_data;
+                // std::cout << "After:  " << this->data->get_data() << std::endl;
             }
+
+
+            std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> get_data() override { return this->data; }
+
+
+            // std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> get_data() 
+            // { 
+            //     return this->data;
+            //     // return std::make_shared<DataInterface<Msg, UniversalDataFormat>>();
+            // }
 
 
         protected:

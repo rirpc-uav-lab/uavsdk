@@ -76,5 +76,17 @@ namespace utils
                 return "Unknown";
             }
         }
+
+        std::string convert_fix_type_to_str(mavsdk::Telemetry::FixType& fix_type)
+        {
+            if (fix_type == mavsdk::Telemetry::FixType::Fix2D) return "Fix2D";
+            else if (fix_type == mavsdk::Telemetry::FixType::Fix3D) return "Fix3D";
+            else if (fix_type == mavsdk::Telemetry::FixType::FixDgps) return "FixDgps";
+            else if (fix_type == mavsdk::Telemetry::FixType::NoFix) return "NoFix";
+            else if (fix_type == mavsdk::Telemetry::FixType::NoGps) return "NoGps";
+            else if (fix_type == mavsdk::Telemetry::FixType::RtkFixed) return "RtkFixed";
+            else if (fix_type == mavsdk::Telemetry::FixType::RtkFloat) return "RtkFloat";
+            else { return "Unknown"; }
+        }
     };
 };
