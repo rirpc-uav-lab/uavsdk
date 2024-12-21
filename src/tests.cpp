@@ -18,6 +18,7 @@ int main()
     auto system = mavsdk.first_autopilot(15.0);
     std::shared_ptr<Telemetry> telemetry = std::make_shared<Telemetry>(system.value());
 
+
     TelemetryData telem_data;
     // auto observer_p = std::make_shared<AttitudeEulerObserver>(std::make_shared<AttitudeEulerData>(mavsdk::Telemetry::EulerAngle(), "attitude_euler"));
     std::shared_ptr<AttitudeEulerCollector> attitude_euler_collector = std::make_shared<AttitudeEulerCollector>(telemetry, telem_data.get_attitude_euler_observer_pointer());
@@ -25,14 +26,8 @@ int main()
 
     while (true)
     {
-        if (telem_data.get_attitude_euler_observer_pointer())
-        {
-            std::cout << "attitude_euler: " << telem_data.get_attitude_euler_data()->get_data() << "\n\n\n";
-        }
-        if (telem_data.get_uav_position_observer_pointer())
-        {
-            std::cout << "uav_position: " << telem_data.get_uav_position_data()->get_data() << "\n\n\n";
-        }
+        std::cout << "attitude_euler: " << telem_data.get_attitude_euler_data()->get_data() << "\n\n\n";
+        std::cout << "uav_position: " << telem_data.get_uav_position_data()->get_data() << "\n\n\n";
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
