@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <mutex>
+
 #include <nlohmann/json.hpp>
 
 
@@ -285,13 +287,18 @@ namespace uav_ci /// uav_control_interfaces
              */
             void notify(std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> input_data) override
             {
+                std::lock_guard<std::mutex> lock(data_mx);
                 // std::cout << "\nBefore:  " << input_data->get_data() << std::endl;
                 this->data = input_data;
                 // std::cout << "After:  " << this->data->get_data() << std::endl;
             }
 
 
-            std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> get_data() override { return this->data; }
+            std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> get_data() override 
+            { 
+                std::lock_guard<std::mutex> lock(data_mx);
+                return this->data; 
+            }
 
 
             // std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> get_data() 
@@ -303,6 +310,7 @@ namespace uav_ci /// uav_control_interfaces
 
         protected:
             std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> data; ///< Указатель на объект, который будет обновляться при изменении состояния субъекта DataCollectorInterface.
+            std::mutex data_mx;
         };
     };
 };
