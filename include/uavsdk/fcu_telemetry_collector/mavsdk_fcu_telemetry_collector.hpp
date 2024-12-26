@@ -216,8 +216,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
+            std::cout << "subscribe_distance_sensor" << std::endl;
             handle = telemetry->subscribe_distance_sensor([this](mavsdk::Telemetry::DistanceSensor data)
             {
+                std::cout << "subscribe_distance_sensor" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<DistanceSensorData>(data, "distance_sensor"));
@@ -245,8 +247,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
+            std::cout << "subscribe_flight_mode" << std::endl;
             handle = telemetry->subscribe_flight_mode([this](mavsdk::Telemetry::FlightMode data)
             {
+                std::cout << "subscribe_flight_mode" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<FlightModeData>(data, "flight_mode"));
@@ -272,8 +276,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         {
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
+            std::cout << "subscribe_attitude_euler" << std::endl;
             handle = telemetry->subscribe_attitude_euler([this](mavsdk::Telemetry::EulerAngle data)
             {
+                std::cout << "subscribe_attitude_euler" << std::endl;
                 std::thread([this, data]()
                 {
                     this->data_p = std::make_shared<AttitudeEulerData>(data, "attitude_euler");
@@ -300,8 +306,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
+            std::cout << "subscribe_home" << std::endl;
             handle = telemetry->subscribe_home([this](mavsdk::Telemetry::Position data)
             {
+                std::cout << "subscribe_home" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<PositionData>(data, "home_position"));
@@ -328,8 +336,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
+            std::cout << "subscribe_position" << std::endl;
             handle = telemetry->subscribe_position([this](mavsdk::Telemetry::Position data)
             {
+                std::cout << "subscribe_position" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<PositionData>(data, "uav_position"));
@@ -345,19 +355,21 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     };
 
 
-    class HeadingCollector : public uav_ci::data_ci::SingleObserverDataCollector<mavsdk::Telemetry::Heading, nlohmann::json>
+    class UavHeadingCollector : public uav_ci::data_ci::SingleObserverDataCollector<mavsdk::Telemetry::Heading, nlohmann::json>
     {
     private:
         std::shared_ptr<mavsdk::Telemetry> telemetry;
         mavsdk::Telemetry::HeadingHandle handle;
     public:
-        HeadingCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<uav_ci::data_ci::DataObserverInterface<mavsdk::Telemetry::Heading, nlohmann::json>> observer)
+        UavHeadingCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<uav_ci::data_ci::DataObserverInterface<mavsdk::Telemetry::Heading, nlohmann::json>> observer)
         {
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
+            std::cout << "subscribe_heading" << std::endl;
             handle = telemetry->subscribe_heading([this](mavsdk::Telemetry::Heading data)
             {
+                std::cout << "subscribe_heading" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<HeadingData>(data, "uav_heading"));
@@ -366,7 +378,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         }
 
 
-        ~HeadingCollector()
+        ~UavHeadingCollector()
         {
             telemetry->unsubscribe_heading(handle);
         }
@@ -384,8 +396,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
+            std::cout << "subscribe_health" << std::endl;
             handle = telemetry->subscribe_health([this](mavsdk::Telemetry::Health data)
             {
+                std::cout << "subscribe_health" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<FcuHealthData>(data, "fcu_health"));
@@ -413,8 +427,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
+            std::cout << "subscribe_gps_info" << std::endl;
             handle = telemetry->subscribe_gps_info([this](mavsdk::Telemetry::GpsInfo data)
             {
+                std::cout << "subscribe_gps_info" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<GpsInfoData>(data, "gps_info"));
@@ -442,8 +458,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
+            std::cout << "subscribe_battery" << std::endl;
             handle = telemetry->subscribe_battery([this](mavsdk::Telemetry::Battery data)
             {
+                std::cout << "subscribe_battery" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<BatteryData>(data, "battery_info"));
@@ -551,8 +569,9 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     struct TelemetryData
     {
     public:
-        TelemetryData()
+        TelemetryData(std::shared_ptr<mavsdk::Telemetry> telemetry_p)
         {
+            telemetry = telemetry_p;
             distance_sensor_observer_p = std::make_shared<DistanceSensorObserver>(std::make_shared<DistanceSensorData>("distance_sensor"));
             flight_mode_observer_p = std::make_shared<FlightModeObserver>(std::make_shared<FlightModeData>("flight_mode"));
             attitude_euler_observer_p = std::make_shared<AttitudeEulerObserver>(std::make_shared<AttitudeEulerData>("attitude_euler"));
@@ -562,17 +581,27 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             fcu_health_observer_p = std::make_shared<FcuHealthObserver>(std::make_shared<FcuHealthData>("fcu_health"));
             gps_info_observer_p = std::make_shared<GpsInfoObserver>(std::make_shared<GpsInfoData>("gps_info"));
             battery_observer_p = std::make_shared<BatteryObserver>(std::make_shared<BatteryData>("battery_info"));
+        
+            std::shared_ptr<DistanceSensorCollector> distance_sensorcollector_p = std::make_shared<DistanceSensorCollector>(telemetry, this->distance_sensor_observer_p);
+            std::shared_ptr<FlightModeCollector> flight_modecollector_p = std::make_shared<FlightModeCollector>(telemetry, this->flight_mode_observer_p);
+            std::shared_ptr<AttitudeEulerCollector> attitude_eulercollector_p = std::make_shared<AttitudeEulerCollector>(telemetry, this->attitude_euler_observer_p);
+            std::shared_ptr<HomePositionCollector> home_positioncollector_p = std::make_shared<HomePositionCollector>(telemetry, this->home_position_observer_p);
+            std::shared_ptr<UavPositionCollector> uav_positioncollector_p = std::make_shared<UavPositionCollector>(telemetry, this->uav_position_observer_p);
+            std::shared_ptr<UavHeadingCollector> uav_headingcollector_p = std::make_shared<UavHeadingCollector>(telemetry, this->uav_heading_observer_p);
+            std::shared_ptr<FcuHealthCollector> fcu_healthcollector_p = std::make_shared<FcuHealthCollector>(telemetry, this->fcu_health_observer_p);
+            std::shared_ptr<GpsInfoCollector> gps_infocollector_p = std::make_shared<GpsInfoCollector>(telemetry, this->gps_info_observer_p);
+            std::shared_ptr<BatteryCollector> batterycollector_p = std::make_shared<BatteryCollector>(telemetry, this->battery_observer_p);
         }
         
-        std::shared_ptr<DistanceSensorObserver> get_distance_sensor_observer_pointer() { return distance_sensor_observer_p; }
-        std::shared_ptr<FlightModeObserver> get_flight_mode_observer_pointer() { return flight_mode_observer_p; }
-        std::shared_ptr<AttitudeEulerObserver> get_attitude_euler_observer_pointer() { return attitude_euler_observer_p; }
-        std::shared_ptr<HomePositionObserver> get_home_position_observer_pointer() { return home_position_observer_p; }
-        std::shared_ptr<UavPositionObserver> get_uav_position_observer_pointer() { return uav_position_observer_p; }
-        std::shared_ptr<UavHeadingObserver> get_uav_heading_observer_pointer() { return uav_heading_observer_p; }
-        std::shared_ptr<FcuHealthObserver> get_fcu_health_observer_pointer() { return fcu_health_observer_p; }
-        std::shared_ptr<GpsInfoObserver> get_gps_info_observer_pointer() { return gps_info_observer_p; }
-        std::shared_ptr<BatteryObserver> get_battery_observer_pointer() { return battery_observer_p; }
+        // std::shared_ptr<DistanceSensorObserver> get_distance_sensor_observer_pointer() { return distance_sensor_observer_p; }
+        // std::shared_ptr<FlightModeObserver> get_flight_mode_observer_pointer() { return flight_mode_observer_p; }
+        // std::shared_ptr<AttitudeEulerObserver> get_attitude_euler_observer_pointer() { return attitude_euler_observer_p; }
+        // std::shared_ptr<HomePositionObserver> get_home_position_observer_pointer() { return home_position_observer_p; }
+        // std::shared_ptr<UavPositionObserver> get_uav_position_observer_pointer() { return uav_position_observer_p; }
+        // std::shared_ptr<UavHeadingObserver> get_uav_heading_observer_pointer() { return uav_heading_observer_p; }
+        // std::shared_ptr<FcuHealthObserver> get_fcu_health_observer_pointer() { return fcu_health_observer_p; }
+        // std::shared_ptr<GpsInfoObserver> get_gps_info_observer_pointer() { return gps_info_observer_p; }
+        // std::shared_ptr<BatteryObserver> get_battery_observer_pointer() { return battery_observer_p; }
 
         std::shared_ptr<DistanceSensorData> get_distance_sensor_data() { return std::dynamic_pointer_cast<DistanceSensorData>(distance_sensor_observer_p->get_data()); }
         std::shared_ptr<FlightModeData> get_flight_mode_data() { return std::dynamic_pointer_cast<FlightModeData>(flight_mode_observer_p->get_data()); }
@@ -594,6 +623,18 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         std::shared_ptr<FcuHealthObserver> fcu_health_observer_p;
         std::shared_ptr<GpsInfoObserver> gps_info_observer_p;
         std::shared_ptr<BatteryObserver> battery_observer_p;
+
+        std::shared_ptr<DistanceSensorCollector> distance_sensorcollector_p;
+        std::shared_ptr<FlightModeCollector> flight_modecollector_p;
+        std::shared_ptr<AttitudeEulerCollector> attitude_eulercollector_p;
+        std::shared_ptr<HomePositionCollector> home_positioncollector_p;
+        std::shared_ptr<UavPositionCollector> uav_positioncollector_p;
+        std::shared_ptr<UavHeadingCollector> uav_headingcollector_p;
+        std::shared_ptr<FcuHealthCollector> fcu_healthcollector_p;
+        std::shared_ptr<GpsInfoCollector> gps_infocollector_p;
+        std::shared_ptr<BatteryCollector> batterycollector_p;
+
+        std::shared_ptr<mavsdk::Telemetry> telemetry;
     };
 
 

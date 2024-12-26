@@ -248,6 +248,8 @@ namespace uav_ci /// uav_control_interfaces
 
             void update_data(std::shared_ptr<DataInterface<Msg, UniversalDataFormat>> data) override 
             {
+
+                std::cout << "DataSubscriber::update_data: " << data->get_data() << std::endl;
                 this->data = data;
                 this->notify_observers();
             }
