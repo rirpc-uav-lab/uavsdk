@@ -16,18 +16,17 @@ find_package(MAVSDK REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-include_directories(include)
 
 set(UTILS_LIB_SOURCES include/uavsdk/utils/coversion_functions.hpp)
-add_library(utils_lib ${UTILS_LIB_SOURCES})
+add_library(utils_lib SHARED ${UTILS_LIB_SOURCES})
 set_target_properties(utils_lib PROPERTIES LINKER_LANGUAGE CXX)
 
 set(DACOLLINTER_LIB_SOURCES include/uavsdk/uav_control_interfaces/data_collector_interfaces.hpp)
-add_library(data_collector_lib ${DACOLLINTER_LIB_SOURCES})
+add_library(data_collector_lib SHARED ${DACOLLINTER_LIB_SOURCES})
 set_target_properties(data_collector_lib PROPERTIES LINKER_LANGUAGE CXX)
 
 set(MAVSDK_FCUTELCOLLIB_SOURCES include/uavsdk/fcu_telemetry_collector/mavsdk_fcu_telemetry_collector.hpp)
-add_library(mavsdk_fcu_tel_collector_lib ${MAVSDK_FCUTELCOLLIB_SOURCES})
+add_library(mavsdk_fcu_tel_collector_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
 set_target_properties(mavsdk_fcu_tel_collector_lib PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(mavsdk_fcu_tel_collector_lib MAVSDK::mavsdk data_collector_lib utils_lib)
 
@@ -40,17 +39,34 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+# install(
+#   DIRECTORY include/${PROJECT_NAME}
+#   DESTINATION include
+#   )
+
+include_directories(include)
 
 ament_export_targets(utils_lib HAS_LIBRARY_TARGET)
 
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
-  )
+)
 
 install(
     TARGETS utils_lib
     EXPORT utils_lib
+    LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
+ament_export_targets(data_collector_lib HAS_LIBRARY_TARGET)
+
+install(
+    TARGETS data_collector_lib
+    EXPORT data_collector_lib
     LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
     ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
     RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
@@ -68,16 +84,7 @@ install(
     INCLUDES DESTINATION include
 )
 
-ament_export_targets(data_collector_lib HAS_LIBRARY_TARGET)
 
-install(
-    TARGETS data_collector_lib
-    EXPORT data_collector_lib
-    LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
-    INCLUDES DESTINATION include
-)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
