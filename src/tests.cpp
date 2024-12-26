@@ -25,9 +25,9 @@ int main()
     {
         std::cout << "attitude_euler: " << telem_data.get_attitude_euler_data()->get_data() << "\n";
         std::cout << "uav_position: " << telem_data.get_uav_position_data()->get_data() << "\n";
-        std::cout << "uav_position: " << telem_data.get_flight_mode_data()->get_data() << "\n\n";
+        std::cout << "flight_mode: " << telem_data.get_flight_mode_data()->get_data() << "\n\n";
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     return 0;

@@ -30,6 +30,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->data["orientation.pitch_deg"] = msg.orientation.pitch_deg;
             this->data["orientation.roll_deg"] = msg.orientation.roll_deg;
             this->data["orientation.yaw_deg"] = msg.orientation.yaw_deg;
+            this->data["initialized"] = true;
         }
 
         DistanceSensorData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::DistanceSensor>("mavsdk::Telemetry::DistanceSensor", message_name)
@@ -37,6 +38,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->msg = mavsdk::Telemetry::DistanceSensor();
             
             this->data = nlohmann::json();
+            this->data["initialized"] = false;
         }
     };
 
@@ -50,6 +52,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             
             data = nlohmann::json();
             data["flight_mode"] = utils::conversions::convert_flight_mode_to_str(msg);
+            this->data["initialized"] = true;
         }
         
         FlightModeData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::FlightMode>("mavsdk::Telemetry::FlightMode", message_name)
@@ -57,6 +60,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->msg = mavsdk::Telemetry::FlightMode();
 
             this->data = nlohmann::json();
+            this->data["initialized"] = false;
         }
     };
 
@@ -72,12 +76,14 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             data["pitch_deg"] = msg.pitch_deg;
             data["roll_deg"] = msg.roll_deg;
             data["yaw_deg"] = msg.yaw_deg;
+            this->data["initialized"] = true;
         }
 
         AttitudeEulerData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::EulerAngle>("mavsdk::Telemetry::EulerAngle", message_name)
         {
             this->msg = mavsdk::Telemetry::EulerAngle(); 
             data = nlohmann::json();
+            this->data["initialized"] = false;
         }
     };
 
@@ -94,6 +100,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             data["latitude_deg"] = msg.latitude_deg;
             data["longitude_deg"] = msg.longitude_deg;
             data["relative_altitude_m"] = msg.relative_altitude_m;
+            this->data["initialized"] = true;
         }
 
         PositionData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Position>("mavsdk::Telemetry::Position", message_name)
@@ -101,6 +108,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->msg = mavsdk::Telemetry::Position();
             
             data = nlohmann::json();
+            this->data["initialized"] = false;
         }
     };
 
@@ -114,6 +122,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             
             data = nlohmann::json();
             data["heading_deg"] = msg.heading_deg;
+            this->data["initialized"] = true;
         }
 
         HeadingData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Heading>("mavsdk::Telemetry::Heading", message_name)
@@ -121,6 +130,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->msg = mavsdk::Telemetry::Heading();
             
             data = nlohmann::json();
+            this->data["initialized"] = false;
         }
     };
 
@@ -140,6 +150,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             data["is_home_position_ok"] = msg.is_home_position_ok;
             data["is_local_position_ok"] = msg.is_local_position_ok;
             data["is_magnetometer_calibration_ok"] = msg.is_magnetometer_calibration_ok;
+            this->data["initialized"] = true;
         }
 
         FcuHealthData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Health>("mavsdk::Telemetry::Health", message_name)
@@ -147,6 +158,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->msg = mavsdk::Telemetry::Health();
             
             data = nlohmann::json();
+            this->data["initialized"] = false;
         }
     };
 
@@ -161,6 +173,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             data = nlohmann::json();
             data["fix_type"] = utils::conversions::convert_fix_type_to_str(msg.fix_type);
             data["num_satellites"] = msg.num_satellites;
+            this->data["initialized"] = true;
         }
         
         GpsInfoData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::GpsInfo>("mavsdk::Telemetry::GpsInfo", message_name)
@@ -168,6 +181,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->msg = mavsdk::Telemetry::GpsInfo();
             
             data = nlohmann::json();
+            this->data["initialized"] = false;
         }
     };
 
@@ -186,6 +200,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             data["remaining_percent"] = msg.remaining_percent;
             data["temperature_degc"] = msg.temperature_degc;
             data["voltage_v"] = msg.voltage_v;
+            this->data["initialized"] = true;
         }
 
         BatteryData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Battery>("mavsdk::Telemetry::Battery", message_name)
@@ -193,6 +208,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->msg = mavsdk::Telemetry::Battery();
             
             data = nlohmann::json();
+            this->data["initialized"] = false;
         }
     };
 
@@ -216,10 +232,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
-            std::cout << "subscribe_distance_sensor" << std::endl;
+            // std::cout << "subscribe_distance_sensor" << std::endl;
             handle = telemetry->subscribe_distance_sensor([this](mavsdk::Telemetry::DistanceSensor data)
             {
-                std::cout << "subscribe_distance_sensor" << std::endl;
+                // std::cout << "subscribe_distance_sensor" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<DistanceSensorData>(data, "distance_sensor"));
@@ -247,10 +263,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
-            std::cout << "subscribe_flight_mode" << std::endl;
+            // std::cout << "subscribe_flight_mode" << std::endl;
             handle = telemetry->subscribe_flight_mode([this](mavsdk::Telemetry::FlightMode data)
             {
-                std::cout << "subscribe_flight_mode" << std::endl;
+                // std::cout << "subscribe_flight_mode" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<FlightModeData>(data, "flight_mode"));
@@ -276,10 +292,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         {
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
-            std::cout << "subscribe_attitude_euler" << std::endl;
+            // std::cout << "subscribe_attitude_euler" << std::endl;
             handle = telemetry->subscribe_attitude_euler([this](mavsdk::Telemetry::EulerAngle data)
             {
-                std::cout << "subscribe_attitude_euler" << std::endl;
+                // std::cout << "subscribe_attitude_euler" << std::endl;
                 std::thread([this, data]()
                 {
                     this->data_p = std::make_shared<AttitudeEulerData>(data, "attitude_euler");
@@ -306,10 +322,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
-            std::cout << "subscribe_home" << std::endl;
+            // std::cout << "subscribe_home" << std::endl;
             handle = telemetry->subscribe_home([this](mavsdk::Telemetry::Position data)
             {
-                std::cout << "subscribe_home" << std::endl;
+                // std::cout << "subscribe_home" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<PositionData>(data, "home_position"));
@@ -336,10 +352,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
-            std::cout << "subscribe_position" << std::endl;
+            // std::cout << "subscribe_position" << std::endl;
             handle = telemetry->subscribe_position([this](mavsdk::Telemetry::Position data)
             {
-                std::cout << "subscribe_position" << std::endl;
+                // std::cout << "subscribe_position" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<PositionData>(data, "uav_position"));
@@ -366,10 +382,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
-            std::cout << "subscribe_heading" << std::endl;
+            // std::cout << "subscribe_heading" << std::endl;
             handle = telemetry->subscribe_heading([this](mavsdk::Telemetry::Heading data)
             {
-                std::cout << "subscribe_heading" << std::endl;
+                // std::cout << "subscribe_heading" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<HeadingData>(data, "uav_heading"));
@@ -396,10 +412,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
-            std::cout << "subscribe_health" << std::endl;
+            // std::cout << "subscribe_health" << std::endl;
             handle = telemetry->subscribe_health([this](mavsdk::Telemetry::Health data)
             {
-                std::cout << "subscribe_health" << std::endl;
+                // std::cout << "subscribe_health" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<FcuHealthData>(data, "fcu_health"));
@@ -427,10 +443,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
-            std::cout << "subscribe_gps_info" << std::endl;
+            // std::cout << "subscribe_gps_info" << std::endl;
             handle = telemetry->subscribe_gps_info([this](mavsdk::Telemetry::GpsInfo data)
             {
-                std::cout << "subscribe_gps_info" << std::endl;
+                // std::cout << "subscribe_gps_info" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<GpsInfoData>(data, "gps_info"));
@@ -458,10 +474,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->telemetry = telemetry_p;
             this->attach_observer(observer);
 
-            std::cout << "subscribe_battery" << std::endl;
+            // std::cout << "subscribe_battery" << std::endl;
             handle = telemetry->subscribe_battery([this](mavsdk::Telemetry::Battery data)
             {
-                std::cout << "subscribe_battery" << std::endl;
+                // std::cout << "subscribe_battery" << std::endl;
                 std::thread([this, data]()
                 {
                     this->update_data(std::make_shared<BatteryData>(data, "battery_info"));
@@ -569,7 +585,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     struct TelemetryData
     {
     public:
-        TelemetryData(std::shared_ptr<mavsdk::Telemetry> telemetry_p)
+        TelemetryData(std::shared_ptr<mavsdk::Telemetry>& telemetry_p) 
         {
             telemetry = telemetry_p;
             distance_sensor_observer_p = std::make_shared<DistanceSensorObserver>(std::make_shared<DistanceSensorData>("distance_sensor"));
@@ -582,15 +598,15 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             gps_info_observer_p = std::make_shared<GpsInfoObserver>(std::make_shared<GpsInfoData>("gps_info"));
             battery_observer_p = std::make_shared<BatteryObserver>(std::make_shared<BatteryData>("battery_info"));
         
-            std::shared_ptr<DistanceSensorCollector> distance_sensorcollector_p = std::make_shared<DistanceSensorCollector>(telemetry, this->distance_sensor_observer_p);
-            std::shared_ptr<FlightModeCollector> flight_modecollector_p = std::make_shared<FlightModeCollector>(telemetry, this->flight_mode_observer_p);
-            std::shared_ptr<AttitudeEulerCollector> attitude_eulercollector_p = std::make_shared<AttitudeEulerCollector>(telemetry, this->attitude_euler_observer_p);
-            std::shared_ptr<HomePositionCollector> home_positioncollector_p = std::make_shared<HomePositionCollector>(telemetry, this->home_position_observer_p);
-            std::shared_ptr<UavPositionCollector> uav_positioncollector_p = std::make_shared<UavPositionCollector>(telemetry, this->uav_position_observer_p);
-            std::shared_ptr<UavHeadingCollector> uav_headingcollector_p = std::make_shared<UavHeadingCollector>(telemetry, this->uav_heading_observer_p);
-            std::shared_ptr<FcuHealthCollector> fcu_healthcollector_p = std::make_shared<FcuHealthCollector>(telemetry, this->fcu_health_observer_p);
-            std::shared_ptr<GpsInfoCollector> gps_infocollector_p = std::make_shared<GpsInfoCollector>(telemetry, this->gps_info_observer_p);
-            std::shared_ptr<BatteryCollector> batterycollector_p = std::make_shared<BatteryCollector>(telemetry, this->battery_observer_p);
+            distance_sensorcollector_p = std::make_shared<DistanceSensorCollector>(telemetry, this->distance_sensor_observer_p);
+            flight_modecollector_p = std::make_shared<FlightModeCollector>(telemetry, this->flight_mode_observer_p);
+            attitude_eulercollector_p = std::make_shared<AttitudeEulerCollector>(telemetry, this->attitude_euler_observer_p);
+            home_positioncollector_p = std::make_shared<HomePositionCollector>(telemetry, this->home_position_observer_p);
+            uav_positioncollector_p = std::make_shared<UavPositionCollector>(telemetry, this->uav_position_observer_p);
+            uav_headingcollector_p = std::make_shared<UavHeadingCollector>(telemetry, this->uav_heading_observer_p);
+            fcu_healthcollector_p = std::make_shared<FcuHealthCollector>(telemetry, this->fcu_health_observer_p);
+            gps_infocollector_p = std::make_shared<GpsInfoCollector>(telemetry, this->gps_info_observer_p);
+            batterycollector_p = std::make_shared<BatteryCollector>(telemetry, this->battery_observer_p);
         }
         
         // std::shared_ptr<DistanceSensorObserver> get_distance_sensor_observer_pointer() { return distance_sensor_observer_p; }
