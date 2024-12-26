@@ -41,6 +41,44 @@ install(TARGETS
 )
 
 
+ament_export_targets(utils_lib HAS_LIBRARY_TARGET)
+
+install(
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+  )
+
+install(
+    TARGETS utils_lib
+    EXPORT utils_lib
+    LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
+ament_export_targets(mavsdk_fcu_tel_collector_lib HAS_LIBRARY_TARGET)
+
+install(
+    TARGETS mavsdk_fcu_tel_collector_lib
+    EXPORT mavsdk_fcu_tel_collector_lib
+    LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
+ament_export_targets(data_collector_lib HAS_LIBRARY_TARGET)
+
+install(
+    TARGETS data_collector_lib
+    EXPORT data_collector_lib
+    LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
