@@ -17,11 +17,11 @@ find_package(MAVSDK REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 
-set(UTILS_LIB_SOURCES include/uavsdk/utils/coversion_functions.hpp)
+set(UTILS_LIB_SOURCES include/uavsdk/utils/conversion_functions.hpp include/uavsdk/utils/cpp_custom_extras.hpp)
 add_library(utils_lib SHARED ${UTILS_LIB_SOURCES})
 set_target_properties(utils_lib PROPERTIES LINKER_LANGUAGE CXX)
 
-set(DACOLLINTER_LIB_SOURCES include/uavsdk/uav_control_interfaces/data_collector_interfaces.hpp)
+set(DACOLLINTER_LIB_SOURCES include/uavsdk/uav_control_interfaces/data_collector_interfaces.hpp include/uavsdk/uav_control_interfaces/data_collector_implementations.hpp)
 add_library(data_collector_lib SHARED ${DACOLLINTER_LIB_SOURCES})
 set_target_properties(data_collector_lib PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -30,12 +30,23 @@ add_library(mavsdk_fcu_tel_collector_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
 set_target_properties(mavsdk_fcu_tel_collector_lib PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(mavsdk_fcu_tel_collector_lib MAVSDK::mavsdk data_collector_lib utils_lib)
 
+set(USEF_DATA_LIB 
+  include/uavsdk/useful_data_lib/useful_data_interfaces.hpp
+  include/uavsdk/useful_data_lib/useful_data_impl.hpp
+  )
+add_library(useful_data_lib SHARED ${USEF_DATA_LIB})
+set_target_properties(useful_data_lib PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(tests src/tests.cpp)
-target_link_libraries(tests MAVSDK::mavsdk utils_lib data_collector_lib mavsdk_fcu_tel_collector_lib)
+target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib)
+
+add_executable(inheritance_tests src/inheritance_tests.cpp)
+target_link_libraries(inheritance_tests useful_data_lib)
+
 
 install(TARGETS
   tests
+  inheritance_tests
   DESTINATION lib/${PROJECT_NAME}
 )
 

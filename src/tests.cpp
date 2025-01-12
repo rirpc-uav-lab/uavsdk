@@ -23,12 +23,24 @@ int main()
 
     while (true)
     {
-        std::cout << "attitude_euler: " << telem_data.get_attitude_euler_data()->get_data() << "\n";
-        std::cout << "uav_position: " << telem_data.get_uav_position_data()->get_data() << "\n";
-        std::cout << "flight_mode: " << telem_data.get_flight_mode_data()->get_data() << "\n\n";
+        std::cout << telem_data.get_data() << "\n";
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     return 0;
 }
+
+// #include <variant>
+// #include <string>
+// #include <iostream>
+
+// int main()
+// {
+//     std::variant<int, std::string> v = 1;
+
+//     const size_t i = 0;
+//     const size_t a = i + 1;
+//     std::cout << std::get<a>(v) << "\n";
+// }
+
