@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include <nlohmann/json.hpp>
 
 #include <uavsdk/useful_data_lib/useful_data_interfaces.hpp>
@@ -167,14 +169,19 @@ namespace useful_di
         protected:
         nlohmann::json _get_data() override
         {
+            std::cout << "DataCompositeJson::_get_data()\n";
             nlohmann::json new_data;
+
+            // std::cout << bool(std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->begin() == std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->end()) << "\n";
+            // std::cout << std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->size() << "\n";
             for (typename std::map<Id, std::shared_ptr<useful_di::TypeInterface>>::iterator iter = std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->begin(); iter != std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->end(); iter++)
             {
                 auto type = iter->second->___get_type();
                 // if (type == utils::cppext::get_type<ABC>())
                 // {
                 auto data = std::dynamic_pointer_cast<DataObjectJson<int>>(iter->second);
-                new_data[iter->first] = data->get_data();
+                // std::cout << "DataCompositeJson::_get_data(): " << data << "\n";
+                new_data[static_cast<int>(iter->first)] = data->get_data();
                 // }
                 // else if (type == utils::cppext::get_type<BCA>())
                 // {

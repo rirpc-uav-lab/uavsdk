@@ -24,6 +24,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         public:
         DistanceSensorData(mavsdk::Telemetry::DistanceSensor msg, std::string message_name) : useful_di::DataObjectJson<mavsdk::Telemetry::DistanceSensor>(message_name)
         {
+            this->___set_type();
             this->msg = msg;
             
             this->data = nlohmann::json();
@@ -38,6 +39,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         DistanceSensorData(std::string message_name) : useful_di::DataObjectJson<mavsdk::Telemetry::DistanceSensor>(message_name)
         {
+            this->___set_type();
             this->msg = mavsdk::Telemetry::DistanceSensor();
             
             this->data = nlohmann::json();
@@ -57,6 +59,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         public:
         FlightModeData(mavsdk::Telemetry::FlightMode msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::FlightMode>(message_name)
         {
+            this->___set_type();
             this->msg = msg;
             
             data = nlohmann::json();
@@ -66,6 +69,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         
         FlightModeData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::FlightMode>(message_name)
         {
+            this->___set_type();
             this->msg = mavsdk::Telemetry::FlightMode();
 
             this->data = nlohmann::json();
@@ -85,6 +89,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         public:
         AttitudeEulerData(mavsdk::Telemetry::EulerAngle msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::EulerAngle>(message_name)
         {
+            this->___set_type();
             this->msg = msg;
 
             data = nlohmann::json();
@@ -96,6 +101,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         AttitudeEulerData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::EulerAngle>(message_name)
         {
+            this->___set_type();
             this->msg = mavsdk::Telemetry::EulerAngle(); 
             data = nlohmann::json();
             this->data["initialized"] = false;
@@ -114,6 +120,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         public:
         PositionData(mavsdk::Telemetry::Position msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::Position>(message_name)
         {
+            this->___set_type();
             this->msg = msg;
             
             data = nlohmann::json();
@@ -126,6 +133,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         PositionData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::Position>(message_name)
         {
+            this->___set_type();
             this->msg = mavsdk::Telemetry::Position();
             
             data = nlohmann::json();
@@ -145,6 +153,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         public:
         HeadingData(mavsdk::Telemetry::Heading msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::Heading>(message_name)
         {
+            this->___set_type();
             this->msg = msg;
             
             data = nlohmann::json();
@@ -154,6 +163,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         HeadingData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::Heading>(message_name)
         {
+            this->___set_type();
             this->msg = mavsdk::Telemetry::Heading();
             
             data = nlohmann::json();
@@ -173,6 +183,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         public:
         FcuHealthData(mavsdk::Telemetry::Health msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::Health>(message_name)
         {
+            this->___set_type();
             this->msg = msg;
             
             data = nlohmann::json();
@@ -188,6 +199,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         FcuHealthData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::Health>(message_name)
         {
+            this->___set_type();
             this->msg = mavsdk::Telemetry::Health();
             
             data = nlohmann::json();
@@ -207,6 +219,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         public:
         GpsInfoData(mavsdk::Telemetry::GpsInfo msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::GpsInfo>(message_name)
         {
+            this->___set_type();
             this->msg = msg;
             
             data = nlohmann::json();
@@ -217,6 +230,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         
         GpsInfoData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::GpsInfo>(message_name)
         {
+            this->___set_type();
             this->msg = mavsdk::Telemetry::GpsInfo();
             
             data = nlohmann::json();
@@ -236,6 +250,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         public:
         BatteryData(mavsdk::Telemetry::Battery msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::Battery>(message_name)
         {
+            this->___set_type();
             this->msg = msg;
             
             data = nlohmann::json();
@@ -250,6 +265,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         BatteryData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::Battery>(message_name)
         {
+            this->___set_type();
             this->msg = mavsdk::Telemetry::Battery();
             
             data = nlohmann::json();

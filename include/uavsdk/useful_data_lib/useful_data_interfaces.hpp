@@ -9,7 +9,7 @@ namespace useful_di
         public:
         TypeInterface()
         {
-            // this->_set_type();
+            // this->___set_type();
         }
 
 
