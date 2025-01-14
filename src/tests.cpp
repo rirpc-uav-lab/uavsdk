@@ -23,7 +23,7 @@ int main()
 
     while (true)
     {
-        std::cout << telem_data.get_registry_data() << "\n";
+        std::cout << telem_data.get_registry_data()->get_data() << "\n";
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }

@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 #include <thread>
 
 #include <mavsdk/mavsdk.h>
@@ -658,27 +658,27 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     class IdFactoryTelemetryData : public useful_di::IdFactoryInterface<TelemetryDataTypeId>
     {
         public: 
-            
             TelemetryDataTypeId get_id(std::shared_ptr<useful_di::TypeInterface> data) override
             {
-                TelemetryDataTypeId id;
+                using namespace utils::cppext;
                 
-                if (data->___get_type() == "mavsdk::Telemetry::DistanceSensor")
+                TelemetryDataTypeId id;
+                if (data->___get_type() == get_type<mavsdk::Telemetry::DistanceSensor>())
                 {
                     id = TelemetryDataTypeId::DistanceSensorData;
                     return id;
                 }
-                else if (data->___get_type() == "mavsdk::Telemetry::FlightModeData")
+                else if (data->___get_type() == get_type<mavsdk::Telemetry::FlightMode>())
                 {
                     id = TelemetryDataTypeId::FlightModeData;
                     return id;
                 }
-                else if (data->___get_type() == "mavsdk::Telemetry::AttitudeEulerData")
+                else if (data->___get_type() == get_type<mavsdk::Telemetry::EulerAngle>())
                 {
                     id = TelemetryDataTypeId::AttitudeEulerData;
                     return id;
                 }
-                else if (data->___get_type() == "mavsdk::Telemetry::mavsdk::Telemetry::Position")
+                else if (data->___get_type() == get_type<mavsdk::Telemetry::Position>())
                 {
                     auto _data = std::dynamic_pointer_cast<useful_di::DataObjectJson<mavsdk::Telemetry::Position>>(data);
                     std::string data_type = _data->get_name();
@@ -690,27 +690,31 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
                     }
                     return id;
                 }
-                else if (data->___get_type() == "mavsdk::Telemetry::HeadingData")
+                else if (data->___get_type() == get_type<mavsdk::Telemetry::Heading>())
                 {
                     id = TelemetryDataTypeId::HeadingData;
                     return id;
                 }
-                else if (data->___get_type() == "mavsdk::Telemetry::FcuHealthData")
+                else if (data->___get_type() == get_type<mavsdk::Telemetry::Health>())
                 {
                     id = TelemetryDataTypeId::FcuHealthData;
                     return id;
                 }
-                else if (data->___get_type() == "mavsdk::Telemetry::GpsInfoData")
+                else if (data->___get_type() == get_type<mavsdk::Telemetry::GpsInfo>())
                 {
                     id = TelemetryDataTypeId::GpsInfoData;
                     return id;
                 }
-                else if (data->___get_type() == "mavsdk::Telemetry::BatteryData")
+                else if (data->___get_type() == get_type<mavsdk::Telemetry::Battery>())
                 {
                     id = TelemetryDataTypeId::BatteryData;
                     return id;
                 }
-                else throw std::runtime_error("Unknown data type");
+                else 
+                {
+                    std::string msg = "Unknown data with type: " + data->___get_type();
+                    throw std::runtime_error(msg);
+                }
             }
     };
 
