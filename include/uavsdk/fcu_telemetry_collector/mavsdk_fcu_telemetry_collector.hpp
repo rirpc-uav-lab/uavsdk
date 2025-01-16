@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+
 #include <thread>
 
 #include <mavsdk/mavsdk.h>
@@ -19,10 +19,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     // ###############  Data Classes   ############### 
     // ############################################### 
 
-    class DistanceSensorData : public useful_di::DataObjectJson<mavsdk::Telemetry::DistanceSensor>
+    class DistanceSensorData : public useful_di::TypedDataObject<mavsdk::Telemetry::DistanceSensor>
     {
         public:
-        DistanceSensorData(mavsdk::Telemetry::DistanceSensor msg, std::string message_name) : useful_di::DataObjectJson<mavsdk::Telemetry::DistanceSensor>(message_name)
+        DistanceSensorData(mavsdk::Telemetry::DistanceSensor msg, std::string message_name) : useful_di::TypedDataObject<mavsdk::Telemetry::DistanceSensor>(message_name)
         {
             this->___set_type();
             this->msg = msg;
@@ -37,7 +37,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->data["initialized"] = true;
         }
 
-        DistanceSensorData(std::string message_name) : useful_di::DataObjectJson<mavsdk::Telemetry::DistanceSensor>(message_name)
+        DistanceSensorData(std::string message_name) : useful_di::TypedDataObject<mavsdk::Telemetry::DistanceSensor>(message_name)
         {
             this->___set_type();
             this->msg = mavsdk::Telemetry::DistanceSensor();
@@ -54,10 +54,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     };
 
 
-    class FlightModeData : public useful_di::DataObjectJson<mavsdk::Telemetry::FlightMode>
+    class FlightModeData : public useful_di::TypedDataObject<mavsdk::Telemetry::FlightMode>
     {
         public:
-        FlightModeData(mavsdk::Telemetry::FlightMode msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::FlightMode>(message_name)
+        FlightModeData(mavsdk::Telemetry::FlightMode msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::FlightMode>(message_name)
         {
             this->___set_type();
             this->msg = msg;
@@ -67,7 +67,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->data["initialized"] = true;
         }
         
-        FlightModeData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::FlightMode>(message_name)
+        FlightModeData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::FlightMode>(message_name)
         {
             this->___set_type();
             this->msg = mavsdk::Telemetry::FlightMode();
@@ -84,10 +84,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     };
 
 
-    class AttitudeEulerData : public useful_di::DataObjectJson<mavsdk::Telemetry::EulerAngle>
+    class AttitudeEulerData : public useful_di::TypedDataObject<mavsdk::Telemetry::EulerAngle>
     {
         public:
-        AttitudeEulerData(mavsdk::Telemetry::EulerAngle msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::EulerAngle>(message_name)
+        AttitudeEulerData(mavsdk::Telemetry::EulerAngle msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::EulerAngle>(message_name)
         {
             this->___set_type();
             this->msg = msg;
@@ -99,7 +99,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->data["initialized"] = true;
         }
 
-        AttitudeEulerData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::EulerAngle>(message_name)
+        AttitudeEulerData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::EulerAngle>(message_name)
         {
             this->___set_type();
             this->msg = mavsdk::Telemetry::EulerAngle(); 
@@ -115,10 +115,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     };
 
 
-    class PositionData : public useful_di::DataObjectJson<mavsdk::Telemetry::Position>
+    class PositionData : public useful_di::TypedDataObject<mavsdk::Telemetry::Position>
     {
         public:
-        PositionData(mavsdk::Telemetry::Position msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::Position>(message_name)
+        PositionData(mavsdk::Telemetry::Position msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::Position>(message_name)
         {
             this->___set_type();
             this->msg = msg;
@@ -131,7 +131,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->data["initialized"] = true;
         }
 
-        PositionData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::Position>(message_name)
+        PositionData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Position>(message_name)
         {
             this->___set_type();
             this->msg = mavsdk::Telemetry::Position();
@@ -148,10 +148,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     };
 
 
-    class HeadingData : public useful_di::DataObjectJson<mavsdk::Telemetry::Heading>
+    class HeadingData : public useful_di::TypedDataObject<mavsdk::Telemetry::Heading>
     {
         public:
-        HeadingData(mavsdk::Telemetry::Heading msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::Heading>(message_name)
+        HeadingData(mavsdk::Telemetry::Heading msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::Heading>(message_name)
         {
             this->___set_type();
             this->msg = msg;
@@ -161,7 +161,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->data["initialized"] = true;
         }
 
-        HeadingData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::Heading>(message_name)
+        HeadingData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Heading>(message_name)
         {
             this->___set_type();
             this->msg = mavsdk::Telemetry::Heading();
@@ -178,10 +178,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     };
 
 
-    class FcuHealthData : public useful_di::DataObjectJson<mavsdk::Telemetry::Health>
+    class FcuHealthData : public useful_di::TypedDataObject<mavsdk::Telemetry::Health>
     {
         public:
-        FcuHealthData(mavsdk::Telemetry::Health msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::Health>(message_name)
+        FcuHealthData(mavsdk::Telemetry::Health msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::Health>(message_name)
         {
             this->___set_type();
             this->msg = msg;
@@ -197,7 +197,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->data["initialized"] = true;
         }
 
-        FcuHealthData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::Health>(message_name)
+        FcuHealthData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Health>(message_name)
         {
             this->___set_type();
             this->msg = mavsdk::Telemetry::Health();
@@ -214,10 +214,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     };
 
 
-    class GpsInfoData : public useful_di::DataObjectJson<mavsdk::Telemetry::GpsInfo>
+    class GpsInfoData : public useful_di::TypedDataObject<mavsdk::Telemetry::GpsInfo>
     {
         public:
-        GpsInfoData(mavsdk::Telemetry::GpsInfo msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::GpsInfo>(message_name)
+        GpsInfoData(mavsdk::Telemetry::GpsInfo msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::GpsInfo>(message_name)
         {
             this->___set_type();
             this->msg = msg;
@@ -228,7 +228,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->data["initialized"] = true;
         }
         
-        GpsInfoData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::GpsInfo>(message_name)
+        GpsInfoData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::GpsInfo>(message_name)
         {
             this->___set_type();
             this->msg = mavsdk::Telemetry::GpsInfo();
@@ -245,10 +245,10 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     };
 
 
-    class BatteryData : public useful_di::DataObjectJson<mavsdk::Telemetry::Battery>
+    class BatteryData : public useful_di::TypedDataObject<mavsdk::Telemetry::Battery>
     {
         public:
-        BatteryData(mavsdk::Telemetry::Battery msg, std::string message_name) : DataObjectJson<mavsdk::Telemetry::Battery>(message_name)
+        BatteryData(mavsdk::Telemetry::Battery msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::Battery>(message_name)
         {
             this->___set_type();
             this->msg = msg;
@@ -263,7 +263,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             this->data["initialized"] = true;
         }
 
-        BatteryData(std::string message_name) : DataObjectJson<mavsdk::Telemetry::Battery>(message_name)
+        BatteryData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Battery>(message_name)
         {
             this->___set_type();
             this->msg = mavsdk::Telemetry::Battery();
@@ -308,8 +308,6 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
                     this->update_data(std::make_shared<DistanceSensorData>(data, "distance_sensor"));
                 }).detach();
             });
-
-
         }
 
         ~DistanceSensorCollector()
@@ -644,90 +642,93 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
     enum class TelemetryDataTypeId
     {
-        DistanceSensorData = 0,
-        FlightModeData = 1,
-        AttitudeEulerData = 2,
-        HomePositionData = 3,
-        UavPositionData = 4,
-        HeadingData = 5,
-        FcuHealthData = 6,
-        GpsInfoData = 7,
-        BatteryData = 8,
+        DistanceSensorData,
+        FlightModeData,
+        AttitudeEulerData,
+        HomePositionData,
+        UavPositionData,
+        HeadingData,
+        FcuHealthData,
+        GpsInfoData,
+        BatteryData,
     };
+    
 
     class IdFactoryTelemetryData : public useful_di::IdFactoryInterface<TelemetryDataTypeId>
     {
         public: 
+            
             TelemetryDataTypeId get_id(std::shared_ptr<useful_di::TypeInterface> data) override
             {
-                using namespace utils::cppext;
-                
                 TelemetryDataTypeId id;
-                if (data->___get_type() == get_type<mavsdk::Telemetry::DistanceSensor>())
+                
+                if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::DistanceSensor>())
                 {
                     id = TelemetryDataTypeId::DistanceSensorData;
                     return id;
                 }
-                else if (data->___get_type() == get_type<mavsdk::Telemetry::FlightMode>())
+                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::FlightMode>())
                 {
                     id = TelemetryDataTypeId::FlightModeData;
                     return id;
                 }
-                else if (data->___get_type() == get_type<mavsdk::Telemetry::EulerAngle>())
+                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::EulerAngle>())
                 {
                     id = TelemetryDataTypeId::AttitudeEulerData;
                     return id;
                 }
-                else if (data->___get_type() == get_type<mavsdk::Telemetry::Position>())
+                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::Position>())
                 {
                     auto _data = std::dynamic_pointer_cast<useful_di::DataObjectJson<mavsdk::Telemetry::Position>>(data);
                     std::string data_type = _data->get_name();
                     if (data_type == "home_position") id = TelemetryDataTypeId::HomePositionData;
                     else if (data_type == "uav_position") id = TelemetryDataTypeId::UavPositionData;
-                    else 
+                    else    
                     {
                         throw std::runtime_error("Unknown data meaning");
                     }
                     return id;
                 }
-                else if (data->___get_type() == get_type<mavsdk::Telemetry::Heading>())
+                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::Heading>())
                 {
                     id = TelemetryDataTypeId::HeadingData;
                     return id;
                 }
-                else if (data->___get_type() == get_type<mavsdk::Telemetry::Health>())
+                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::Health>())
                 {
                     id = TelemetryDataTypeId::FcuHealthData;
                     return id;
                 }
-                else if (data->___get_type() == get_type<mavsdk::Telemetry::GpsInfo>())
+                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::GpsInfo>())
                 {
                     id = TelemetryDataTypeId::GpsInfoData;
                     return id;
                 }
-                else if (data->___get_type() == get_type<mavsdk::Telemetry::Battery>())
+                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::Battery>())
                 {
                     id = TelemetryDataTypeId::BatteryData;
                     return id;
                 }
-                else 
-                {
-                    std::string msg = "Unknown data with type: " + data->___get_type();
-                    throw std::runtime_error(msg);
-                }
+                else throw std::runtime_error("Unknown data type. Current one is:  " + data->___get_type());
             }
     };
+
+
 
     // ############################################### 
     // ##############  Client Classes   ############## 
     // ############################################### 
-    // struct TelemetryData : useful_di::DataCompositeJson<>
-    struct TelemetryData : useful_di::DataCompositeJson<TelemetryDataTypeId, IdFactoryTelemetryData>
+    // struct TelemetryDataComposite : useful_di::DataCompositeJson<>
+    class TelemetryDataComposite : public useful_di::DataCompositeInterface<nlohmann::json, TelemetryDataTypeId, IdFactoryTelemetryData, useful_di::RegistryDataStorage<TelemetryDataTypeId, IdFactoryTelemetryData, nlohmann::json>>
     {
     public:
-        TelemetryData(std::shared_ptr<mavsdk::Telemetry>& telemetry_p) 
+        TelemetryDataComposite(std::shared_ptr<mavsdk::Telemetry>& telemetry_p) 
         {
+            this->___set_type();
             telemetry = telemetry_p;
+
+            decorated_composite = std::make_shared<useful_di::DataCompositeJson<TelemetryDataTypeId, IdFactoryTelemetryData>>();
+
             distance_sensor_observer_p = std::make_shared<DistanceSensorObserver>(std::make_shared<DistanceSensorData>("distance_sensor"));
             flight_mode_observer_p = std::make_shared<FlightModeObserver>(std::make_shared<FlightModeData>("flight_mode"));
             attitude_euler_observer_p = std::make_shared<AttitudeEulerObserver>(std::make_shared<AttitudeEulerData>("attitude_euler"));
@@ -749,42 +750,16 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             batterycollector_p = std::make_shared<BatteryCollector>(telemetry, this->battery_observer_p);
         }
         
-        
-        std::shared_ptr<useful_di::RegistryDataStorage<TelemetryDataTypeId, IdFactoryTelemetryData>> get_registry_data() 
-        { 
-            this->add_data(this->distance_sensor_observer_p->get_data());
-            this->add_data(this->flight_mode_observer_p->get_data());
-            this->add_data(this->attitude_euler_observer_p->get_data());
-            this->add_data(this->home_position_observer_p->get_data());
-            this->add_data(this->uav_position_observer_p->get_data());
-            this->add_data(this->uav_heading_observer_p->get_data());
-            this->add_data(this->fcu_health_observer_p->get_data());
-            this->add_data(this->gps_info_observer_p->get_data());
-            this->add_data(this->battery_observer_p->get_data());
-            return std::dynamic_pointer_cast<useful_di::RegistryDataStorage<TelemetryDataTypeId, IdFactoryTelemetryData>>(this->msg);
+
+        void add_data(std::shared_ptr<useful_di::UniversalDataInterface<nlohmann::json>> data) override
+        {
+            this->decorated_composite->add_data(data);
         }
 
-        // std::shared_ptr<DistanceSensorObserver> get_distance_sensor_observer_pointer() { return distance_sensor_observer_p; }
-        // std::shared_ptr<FlightModeObserver> get_flight_mode_observer_pointer() { return flight_mode_observer_p; }
-        // std::shared_ptr<AttitudeEulerObserver> get_attitude_euler_observer_pointer() { return attitude_euler_observer_p; }
-        // std::shared_ptr<HomePositionObserver> get_home_position_observer_pointer() { return home_position_observer_p; }
-        // std::shared_ptr<UavPositionObserver> get_uav_position_observer_pointer() { return uav_position_observer_p; }
-        // std::shared_ptr<UavHeadingObserver> get_uav_heading_observer_pointer() { return uav_heading_observer_p; }
-        // std::shared_ptr<FcuHealthObserver> get_fcu_health_observer_pointer() { return fcu_health_observer_p; }
-        // std::shared_ptr<GpsInfoObserver> get_gps_info_observer_pointer() { return gps_info_observer_p; }
-        // std::shared_ptr<BatteryObserver> get_battery_observer_pointer() { return battery_observer_p; }
-
-        // std::shared_ptr<DistanceSensorData> get_distance_sensor_data() { return std::dynamic_pointer_cast<DistanceSensorData>(distance_sensor_observer_p->get_data()); }
-        // std::shared_ptr<FlightModeData> get_flight_mode_data() { return std::dynamic_pointer_cast<FlightModeData>(flight_mode_observer_p->get_data()); }
-        // std::shared_ptr<AttitudeEulerData> get_attitude_euler_data() { return std::dynamic_pointer_cast<AttitudeEulerData>(attitude_euler_observer_p->get_data()); }
-        // std::shared_ptr<PositionData> get_home_position_data() { return std::dynamic_pointer_cast<PositionData>(home_position_observer_p->get_data()); }
-        // std::shared_ptr<PositionData> get_uav_position_data() { return std::dynamic_pointer_cast<PositionData>(uav_position_observer_p->get_data()); }
-        // std::shared_ptr<HeadingData> get_heading_data() { return std::dynamic_pointer_cast<HeadingData>(uav_heading_observer_p->get_data()); }
-        // std::shared_ptr<FcuHealthData> get_fcu_health_data() { return std::dynamic_pointer_cast<FcuHealthData>(fcu_health_observer_p->get_data()); }
-        // std::shared_ptr<GpsInfoData> get_gps_info_data() { return std::dynamic_pointer_cast<GpsInfoData>(gps_info_observer_p->get_data()); }
-        // std::shared_ptr<BatteryData> get_battery_data() { return std::dynamic_pointer_cast<BatteryData>(battery_observer_p->get_data()); }
 
     private:
+        std::shared_ptr<useful_di::DataCompositeJson<TelemetryDataTypeId, IdFactoryTelemetryData>> decorated_composite;
+
         std::shared_ptr<DistanceSensorObserver> distance_sensor_observer_p;
         std::shared_ptr<FlightModeObserver> flight_mode_observer_p;
         std::shared_ptr<AttitudeEulerObserver> attitude_euler_observer_p;
@@ -806,6 +781,43 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         std::shared_ptr<BatteryCollector> batterycollector_p;
 
         std::shared_ptr<mavsdk::Telemetry> telemetry;
+
+
+        void ___set_type() override
+        {
+            this->___type = utils::cppext::get_type<TelemetryDataComposite>();
+        }
+
+
+        nlohmann::json _get_data() override
+        {
+            this->decorated_composite->add_data(this->distance_sensor_observer_p->get_data());
+            this->decorated_composite->add_data(this->flight_mode_observer_p->get_data());
+            this->decorated_composite->add_data(this->attitude_euler_observer_p->get_data());
+            this->decorated_composite->add_data(this->home_position_observer_p->get_data());
+            this->decorated_composite->add_data(this->uav_position_observer_p->get_data());
+            this->decorated_composite->add_data(this->uav_heading_observer_p->get_data());
+            this->decorated_composite->add_data(this->fcu_health_observer_p->get_data());
+            this->decorated_composite->add_data(this->gps_info_observer_p->get_data());
+            this->decorated_composite->add_data(this->battery_observer_p->get_data());
+            return this->decorated_composite->get_data();
+        }
+
+
+        std::shared_ptr<useful_di::DataStorageInterface<fcu_tel_collector::TelemetryDataTypeId, fcu_tel_collector::IdFactoryTelemetryData, nlohmann::json>> _get_msg() override
+        { 
+            this->decorated_composite->add_data(this->distance_sensor_observer_p->get_data());
+            this->decorated_composite->add_data(this->flight_mode_observer_p->get_data());
+            this->decorated_composite->add_data(this->attitude_euler_observer_p->get_data());
+            this->decorated_composite->add_data(this->home_position_observer_p->get_data());
+            this->decorated_composite->add_data(this->uav_position_observer_p->get_data());
+            this->decorated_composite->add_data(this->uav_heading_observer_p->get_data());
+            this->decorated_composite->add_data(this->fcu_health_observer_p->get_data());
+            this->decorated_composite->add_data(this->gps_info_observer_p->get_data());
+            this->decorated_composite->add_data(this->battery_observer_p->get_data());
+
+            return std::dynamic_pointer_cast<useful_di::RegistryDataStorage<TelemetryDataTypeId, IdFactoryTelemetryData, nlohmann::json>>(this->decorated_composite->get_msg());
+        }
     };
 
 
@@ -827,7 +839,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
     // private:
     //     std::shared_ptr<mavsdk::Telemetry> telemetry;
-    //     TelemetryData telemetry_data;
+    //     TelemetryDataComposite telemetry_data;
 
     //     inline std::shared_ptr<DistanceSensorData> subscribe_distance_sensor()
     //     {

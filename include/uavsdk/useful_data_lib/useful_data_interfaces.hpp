@@ -36,35 +36,38 @@ namespace useful_di
     };
 
 
+    template <typename UniversalDataFormat>
+    class UniversalDataInterface : public TypeInterface
+    {
+        public:
+            /**
+             * @brief Returns universal data structure of type UniversalDataFormat
+             */
+            UniversalDataFormat get_data()
+            {
+                return this->_get_data();
+            }
+
+
+            virtual UniversalDataFormat _get_data()
+            {
+                return this->data;
+            }
+            
+
+        protected:
+            UniversalDataFormat data;
+    };
+
+
     /**
      * @tparam SubjectType тип изначального объекта данных
      * @tparam UniversalDataFormat универсальный тип данных 
      */
     template<typename SubjectType, typename UniversalDataFormat>
-    class DataInterface : public TypeInterface
+    class DataInterface : public UniversalDataInterface<UniversalDataFormat>
     {
         public:
-        // void set_data(UniversalDataFormat _data)
-        // {
-        //     this->_set_data(_data);
-        // }
-        
-
-        /**
-         * @brief Returns universal data structure of type UniversalDataFormat
-         */
-        UniversalDataFormat get_data()
-        {
-            return this->_get_data();
-        }
-
-
-        // void set_msg(const SubjectType& _msg)
-        // {
-        //     this->_set_msg(_msg);
-        // }
-
-
         /**
          * @brief returns original data structure of type SubjectType
          */
@@ -74,34 +77,14 @@ namespace useful_di
         }
 
 
-
         protected:
-        UniversalDataFormat data;
         SubjectType msg;
-
-
-        // virtual void _set_data(UniversalDataFormat& _data)
-        // {
-        //     this->data = _data;
-        // }
-
-
-        virtual UniversalDataFormat _get_data()
-        {
-            return this->data;
-        }
 
 
         virtual SubjectType _get_msg()
         {
             return this->msg;
         }
-
-
-        // virtual void _set_msg(const SubjectType& _msg)
-        // {
-        //     this->msg = _msg;
-        // }
     };
 
 
@@ -123,11 +106,11 @@ namespace useful_di
      * @tparam UniversalDataFormat универсальный тип данных 
      * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
      */
-    template <typename Id, typename IdFactoryType>
+    template <typename Id, typename IdFactoryType, typename UniversalDataFormat>
     class DataStorageInterface
     {
     public:
-        Id add_data(const std::shared_ptr<TypeInterface>& _data)
+        Id add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
         {
             return this->_add_data(_data);
         }
@@ -137,11 +120,10 @@ namespace useful_di
             this->_remove_data(data_identifier);
         }
 
-        std::shared_ptr<TypeInterface> at(const Id& data_identifier)
+        std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> at(const Id& data_identifier)
         {
             return this->_at(data_identifier);
         }
-
 
 
         size_t size()
@@ -150,7 +132,7 @@ namespace useful_di
         }
         
         
-        void modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data)
+        void modify_data(const Id& data_identifier, const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
         {
             this->_modify_data(data_identifier, _data);
         }
@@ -158,25 +140,24 @@ namespace useful_di
 
     protected:
         std::shared_ptr<IdFactoryType> _id_factory;
-        virtual Id _get_id_for_data(const std::shared_ptr<TypeInterface>& _data) = 0;
-        virtual Id _add_data(const std::shared_ptr<TypeInterface>& _data) = 0;
+        virtual Id _get_id_for_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data) = 0;
+        virtual Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data) = 0;
         virtual void _remove_data(const Id& data_identifier) = 0;
-        virtual std::shared_ptr<TypeInterface> _at(const Id& data_identifier) = 0;
+        virtual std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> _at(const Id& data_identifier) = 0;
         virtual size_t _size() = 0;
-        virtual void _modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
+        virtual void _modify_data(const Id& data_identifier, const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data) = 0;
     };
 
 
-    //  * @tparam CompositeSubjectType - композит объектов  изначальных типов
     /**
      * @tparam UniversalDataFormat универсальный тип данных 
      * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
      * @tparam SubjectTypes множество типов изначальных объектов данных, которые могут использоваться в контейтере, индексируемом перечислением, которое создает этот класс
      */
     template <typename UniversalDataFormat, typename Id, typename IdFactoryType, typename StorageType>
-    class DataCompositeInterface : public DataInterface<std::shared_ptr<DataStorageInterface<Id, IdFactoryType>>, UniversalDataFormat>
+    class DataCompositeInterface : public DataInterface<std::shared_ptr<DataStorageInterface<Id, IdFactoryType, UniversalDataFormat>>, UniversalDataFormat>
     {
-        static_assert(std::is_base_of<DataStorageInterface<Id, IdFactoryType>, StorageType>::value, "DataCompositeInterface: provided StorageType is not derived from DataStorageInterface");
+        static_assert(std::is_base_of<DataStorageInterface<Id, IdFactoryType, UniversalDataFormat>, StorageType>::value, "DataCompositeInterface: provided StorageType is not derived from DataStorageInterface");
     protected:
         // std::shared_ptr<DataStorageInterface<Msg, UniversalDataFormat, Id>> data_storage;
     
@@ -186,7 +167,7 @@ namespace useful_di
             this->msg = std::make_shared<StorageType>();
         }
 
-        virtual void add_data(std::shared_ptr<TypeInterface> data) = 0;
+        virtual void add_data(std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> data) = 0;
     };
 
 
@@ -204,8 +185,8 @@ namespace useful_di
             /**
              * @brief метод, который будет вызван, когда DataCollectorInterface<DataType> изменит свое состояние
              */
-            virtual void notify(std::shared_ptr<useful_di::TypeInterface> input_data) = 0;
-            virtual std::shared_ptr<useful_di::TypeInterface> get_data() = 0;
+            virtual void be_notified(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> input_data) = 0;
+            virtual std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> get_data() = 0;
         };
 
 
@@ -221,7 +202,7 @@ namespace useful_di
             /**
              * @brief метод для изменения состояния субъекта
              */
-            virtual void update_data(std::shared_ptr<useful_di::TypeInterface> data) = 0;
+            virtual void update_data(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> data) = 0;
 
             /**
              * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта

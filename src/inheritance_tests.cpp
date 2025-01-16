@@ -70,7 +70,7 @@ class IdFactory : public useful_di::IdFactoryInterface<TypeId>
 };
 
 
-class DataStorageExample : public useful_di::RegistryDataStorage<TypeId, IdFactory>
+class DataStorageExample : public useful_di::RegistryDataStorage<TypeId, IdFactory, nlohmann::json>
 {
 
 };
@@ -85,7 +85,7 @@ class DataCompositeExample : public useful_di::DataCompositeInterface<nlohmann::
 
 
     public: 
-    void add_data(std::shared_ptr<TypeInterface> data) override
+    void add_data(std::shared_ptr<useful_di::UniversalDataInterface<nlohmann::json>> data) override
     {
         this->msg->add_data(data);
     }
@@ -95,7 +95,7 @@ class DataCompositeExample : public useful_di::DataCompositeInterface<nlohmann::
     nlohmann::json _get_data() override
     {
         nlohmann::json new_data;
-        for (std::map<TypeId, std::shared_ptr<useful_di::TypeInterface>>::iterator iter = std::dynamic_pointer_cast<DataStorageExample>(this->msg)->begin(); iter != std::dynamic_pointer_cast<DataStorageExample>(this->msg)->end(); iter++)
+        for (std::map<TypeId, std::shared_ptr<useful_di::UniversalDataInterface<nlohmann::json>>>::iterator iter = std::dynamic_pointer_cast<DataStorageExample>(this->msg)->begin(); iter != std::dynamic_pointer_cast<DataStorageExample>(this->msg)->end(); iter++)
         {
             auto type = iter->second->___get_type();
             if (type == utils::cppext::get_type<ABC>())

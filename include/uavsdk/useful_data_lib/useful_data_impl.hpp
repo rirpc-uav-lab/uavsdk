@@ -25,7 +25,7 @@ namespace useful_di
         
         std::string get_name() { return this->name; }
         
-        virtual nlohmann::json get_data() 
+        virtual nlohmann::json _get_data() override 
         { 
             this->data["name"] = this->name;
             return this->data; 
@@ -59,10 +59,10 @@ namespace useful_di
 
             std::string get_type() { return this->type; }
 
-            nlohmann::json get_data() override 
+            virtual nlohmann::json _get_data() override 
             { 
-                this->data["name"] = this->name;
-                this->data["type"] = this->type;
+                this->data["name"] = this->get_name();
+                this->data["type"] = this->get_type();
                 return this->data; 
             }
         };
@@ -76,8 +76,8 @@ namespace useful_di
      * хранить столько объектов, сколько определено ключей в Id. При повторении
      * ввода данных по уже существующему ключу, перезаписывает данные.
      */
-    template <typename Id, typename ConcreteIdFactory>
-    class RegistryDataStorage : public DataStorageInterface<Id, ConcreteIdFactory>
+    template <typename Id, typename ConcreteIdFactory, typename UniversalDataFormat>
+    class RegistryDataStorage : public DataStorageInterface<Id, ConcreteIdFactory, UniversalDataFormat>
     {
     public:
         RegistryDataStorage()
@@ -91,25 +91,25 @@ namespace useful_di
 
 
 
-        std::map<Id, std::shared_ptr<TypeInterface>>::iterator begin() { return this->data_storage.begin(); }
-        std::map<Id, std::shared_ptr<TypeInterface>>::iterator end() { return this->data_storage.end(); }
+        std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator begin() { return this->data_storage.begin(); }
+        std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator end() { return this->data_storage.end(); }
 
 
     protected:
-        std::map<Id, std::shared_ptr<TypeInterface>> data_storage;
+        std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>> data_storage;
 
-        Id _get_id_for_data(const std::shared_ptr<TypeInterface>& data) override
+        Id _get_id_for_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& data) override
         {
             return this->_id_factory->get_id(data);
         }
 
 
-        virtual Id _add_data(const std::shared_ptr<TypeInterface>& data) override 
+        virtual Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& data) override 
         {
             Id id = this->_get_id_for_data(data);
             if (not this->data_storage.count(id))
             {
-                this->data_storage.insert(std::pair<Id, std::shared_ptr<TypeInterface>>(id, data)); 
+                this->data_storage.insert(std::pair<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>(id, data)); 
             }
             else 
             {
@@ -125,19 +125,19 @@ namespace useful_di
         }
 
 
-        std::shared_ptr<TypeInterface> _at(const Id& data_identifier) override
+        std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> _at(const Id& data_identifier) override
         {
             return this->data_storage.at(data_identifier);
         }
 
 
-        std::shared_ptr<TypeInterface> _at(const std::map<Id, std::shared_ptr<TypeInterface>>::iterator iterator)
+        std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> _at(const std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator iterator)
         {
             return this->data_storage.at(iterator);
         }
 
 
-        void _modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& new_data) override
+        void _modify_data(const Id& data_identifier, const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& new_data) override
         {
             this->data_storage.at(data_identifier) = new_data;
         }
@@ -151,7 +151,7 @@ namespace useful_di
 
 
     template <typename Id, typename ConcreteIdFactory>
-    class DataCompositeJson : public useful_di::DataCompositeInterface<nlohmann::json, Id, ConcreteIdFactory, RegistryDataStorage<Id, ConcreteIdFactory>>
+    class DataCompositeJson : public useful_di::DataCompositeInterface<nlohmann::json, Id, ConcreteIdFactory, RegistryDataStorage<Id, ConcreteIdFactory, nlohmann::json>>
     {
         void ___set_type() override
         {
@@ -160,7 +160,7 @@ namespace useful_di
 
 
         public: 
-        void add_data(std::shared_ptr<TypeInterface> data) override
+        void add_data(std::shared_ptr<UniversalDataInterface<nlohmann::json>> data) override
         {
             this->msg->add_data(data);
         }
@@ -169,19 +169,27 @@ namespace useful_di
         protected:
         nlohmann::json _get_data() override
         {
-            std::cout << "DataCompositeJson::_get_data()\n";
+            // int counter = 0;
             nlohmann::json new_data;
 
-            // std::cout << bool(std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->begin() == std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->end()) << "\n";
-            // std::cout << std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->size() << "\n";
-            for (typename std::map<Id, std::shared_ptr<useful_di::TypeInterface>>::iterator iter = std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->begin(); iter != std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory>>(this->msg)->end(); iter++)
+            for (typename std::map<Id, std::shared_ptr<useful_di::UniversalDataInterface<nlohmann::json>>>::iterator iter = std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory, nlohmann::json>>(this->msg)->begin(); iter != std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory, nlohmann::json>>(this->msg)->end(); iter++)
             {
                 auto type = iter->second->___get_type();
                 // if (type == utils::cppext::get_type<ABC>())
                 // {
-                auto data = std::dynamic_pointer_cast<DataObjectJson<int>>(iter->second);
+                auto data = std::dynamic_pointer_cast<useful_di::UniversalDataInterface<nlohmann::json>>(iter->second);
                 // std::cout << "DataCompositeJson::_get_data(): " << data << "\n";
-                new_data[static_cast<int>(iter->first)] = data->get_data();
+                if (data)
+                {
+                    nlohmann::json json_data = data->get_data();
+
+                    // new_data[static_cast<int>(iter->first)] = data->get_data();
+                    new_data[json_data["name"]] = json_data;
+                }
+                else
+                {
+                    std::cerr << "Warning! Shared pointer is nullptr" << "\n";
+                }
                 // }
                 // else if (type == utils::cppext::get_type<BCA>())
                 // {
@@ -214,7 +222,7 @@ namespace useful_di
             this->observer = observer;
         }
 
-        void update_data(std::shared_ptr<useful_di::TypeInterface> data) override 
+        void update_data(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> data) override 
         {
 
             // std::cout << "DataSubscriber::update_data: " << data->get_data() << std::endl;
@@ -227,12 +235,12 @@ namespace useful_di
         {
             if (this->observer != nullptr)
             {
-                this->observer->notify(this->data);
+                this->observer->be_notified(this->data);
             }
         }
 
     private:
-        std::shared_ptr<useful_di::TypeInterface> data;
+        std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> data;
         std::shared_ptr<DataObserverInterface<SubjectType, UniversalDataFormat>> observer;
     };
 
@@ -248,13 +256,13 @@ namespace useful_di
         /**
          * @brief Конструктор объекта DataSubscriber.
          */
-        DataSubscriber(std::shared_ptr<useful_di::TypeInterface> input_data) { this->data = input_data; }
+        DataSubscriber(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> input_data) { this->data = input_data; }
         // DataSubscriber() { this->data = std::make_shared<DataInterface<SubjectType, UniversalDataFormat>>(); }
 
         /**
          * @brief Обновляет данные по указателю this->data.
          */
-        void notify(std::shared_ptr<useful_di::TypeInterface> input_data) override
+        void be_notified(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> input_data) override
         {
             std::lock_guard<std::mutex> lock(data_mx);
             // std::cout << "\nBefore:  " << input_data->get_data() << std::endl;
@@ -263,7 +271,7 @@ namespace useful_di
         }
 
 
-        std::shared_ptr<useful_di::TypeInterface> get_data() override 
+        std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> get_data() override 
         { 
             std::lock_guard<std::mutex> lock(data_mx);
             return this->data; 
@@ -278,7 +286,7 @@ namespace useful_di
 
 
     protected:
-        std::shared_ptr<useful_di::TypeInterface> data; ///< Указатель на объект, который будет обновляться при изменении состояния субъекта DataCollectorInterface.
+        std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> data; ///< Указатель на объект, который будет обновляться при изменении состояния субъекта DataCollectorInterface.
         std::mutex data_mx;
     };
 };

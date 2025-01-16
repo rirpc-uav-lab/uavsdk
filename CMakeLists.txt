@@ -12,6 +12,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(MAVSDK REQUIRED)
+
+find_package(backward_ros REQUIRED)
+
+include(FetchContent)
+
+# Also requires one of: libbfd (gnu binutils), libdwarf, libdw (elfutils)
+FetchContent_Declare(Backward    #Note: For some reason I ran into issues when the target here is called backwards with a small b at the beginning
+    GIT_REPOSITORY https://github.com/bombela/backward-cpp
+    GIT_TAG master  # or a version tag, such as v1.6
+)
+FetchContent_MakeAvailable(Backward)
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -38,15 +50,15 @@ add_library(useful_data_lib SHARED ${USEF_DATA_LIB})
 set_target_properties(useful_data_lib PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(tests src/tests.cpp)
-target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib)
+target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib backward_object)
 
-add_executable(inheritance_tests src/inheritance_tests.cpp)
-target_link_libraries(inheritance_tests useful_data_lib)
+# add_executable(inheritance_tests src/inheritance_tests.cpp)
+# target_link_libraries(inheritance_tests useful_data_lib backward_object)
 
 
 install(TARGETS
   tests
-  inheritance_tests
+  # inheritance_tests
   DESTINATION lib/${PROJECT_NAME}
 )
 

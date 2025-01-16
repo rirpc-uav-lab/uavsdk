@@ -19,11 +19,15 @@ int main()
     std::shared_ptr<Telemetry> telemetry = std::make_shared<Telemetry>(system.value());
 
 
-    TelemetryData telem_data(telemetry);
+    TelemetryDataComposite telem_data(telemetry);
 
     while (true)
     {
-        std::cout << telem_data.get_registry_data()->get_data() << "\n";
+        // std::cout << telem_data.get_data() << "\n";
+
+        auto registry = telem_data.get_msg();
+        auto gps_info = std::dynamic_pointer_cast<mavsdk::Telemetry::GpsInfo>(registry->at(fcu_tel_collector::TelemetryDataTypeId::GpsInfoData));
+        std::cout << gps_info->num_satellites <<  std::endl;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
