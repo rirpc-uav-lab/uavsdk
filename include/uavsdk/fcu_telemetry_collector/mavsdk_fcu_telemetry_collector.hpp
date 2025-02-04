@@ -49,7 +49,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         void ___set_type() override
         {
-            this->___type = utils::cppext::get_type<mavsdk::Telemetry::DistanceSensor>();
+            this->___type = utils::cppext::get_type<DistanceSensorData>();
         }
     };
 
@@ -79,7 +79,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         void ___set_type() override
         {
-            this->___type = utils::cppext::get_type<mavsdk::Telemetry::FlightMode>();
+            this->___type = utils::cppext::get_type<FlightModeData>();
         }
     };
 
@@ -110,7 +110,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         void ___set_type() override
         {
-            this->___type = utils::cppext::get_type<mavsdk::Telemetry::EulerAngle>();
+            this->___type = utils::cppext::get_type<AttitudeEulerData>();
         }
     };
 
@@ -143,7 +143,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         void ___set_type() override
         {
-            this->___type = utils::cppext::get_type<mavsdk::Telemetry::Position>();
+            this->___type = utils::cppext::get_type<PositionData>();
         }
     };
 
@@ -173,7 +173,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         void ___set_type() override
         {
-            this->___type = utils::cppext::get_type<mavsdk::Telemetry::Heading>();
+            this->___type = utils::cppext::get_type<HeadingData>();
         }
     };
 
@@ -209,7 +209,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         void ___set_type() override
         {
-            this->___type = utils::cppext::get_type<mavsdk::Telemetry::Health>();
+            this->___type = utils::cppext::get_type<FcuHealthData>();
         }
     };
 
@@ -240,7 +240,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         void ___set_type() override
         {
-            this->___type = utils::cppext::get_type<mavsdk::Telemetry::GpsInfo>();
+            this->___type = utils::cppext::get_type<GpsInfoData>();
         }
     };
 
@@ -275,7 +275,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
 
         void ___set_type() override
         {
-            this->___type = utils::cppext::get_type<mavsdk::Telemetry::Battery>();
+            this->___type = utils::cppext::get_type<BatteryData>();
         }
     };
 
@@ -664,24 +664,25 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
             {
                 TelemetryDataTypeId id;
                 
-                if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::DistanceSensor>())
+                if (data->___get_type() == utils::cppext::get_type<DistanceSensorData>())
                 {
                     id = TelemetryDataTypeId::DistanceSensorData;
                     return id;
                 }
-                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::FlightMode>())
+                else if (data->___get_type() == utils::cppext::get_type<FlightModeData>())
                 {
                     id = TelemetryDataTypeId::FlightModeData;
                     return id;
                 }
-                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::EulerAngle>())
+                else if (data->___get_type() == utils::cppext::get_type<AttitudeEulerData>())
                 {
                     id = TelemetryDataTypeId::AttitudeEulerData;
                     return id;
                 }
-                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::Position>())
+                else if (data->___get_type() == utils::cppext::get_type<PositionData>())
                 {
-                    auto _data = std::dynamic_pointer_cast<useful_di::DataObjectJson<mavsdk::Telemetry::Position>>(data);
+                    auto _data = std::dynamic_pointer_cast<PositionData>(data);
+                    // auto _data = std::dynamic_pointer_cast<useful_di::DataObjectJson<mavsdk::Telemetry::Position>>(data);
                     std::string data_type = _data->get_name();
                     if (data_type == "home_position") id = TelemetryDataTypeId::HomePositionData;
                     else if (data_type == "uav_position") id = TelemetryDataTypeId::UavPositionData;
@@ -691,22 +692,22 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
                     }
                     return id;
                 }
-                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::Heading>())
+                else if (data->___get_type() == utils::cppext::get_type<HeadingData>())
                 {
                     id = TelemetryDataTypeId::HeadingData;
                     return id;
                 }
-                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::Health>())
+                else if (data->___get_type() == utils::cppext::get_type<FcuHealthData>())
                 {
                     id = TelemetryDataTypeId::FcuHealthData;
                     return id;
                 }
-                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::GpsInfo>())
+                else if (data->___get_type() == utils::cppext::get_type<GpsInfoData>())
                 {
                     id = TelemetryDataTypeId::GpsInfoData;
                     return id;
                 }
-                else if (data->___get_type() == utils::cppext::get_type<mavsdk::Telemetry::Battery>())
+                else if (data->___get_type() == utils::cppext::get_type<BatteryData>())
                 {
                     id = TelemetryDataTypeId::BatteryData;
                     return id;
@@ -722,7 +723,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     // ##############  Client Classes   ############## 
     // ############################################### 
     // struct TelemetryDataComposite : useful_di::DataCompositeJson<>
-    class TelemetryDataComposite : public useful_di::DataCompositeInterface<nlohmann::json, TelemetryDataTypeId, IdFactoryTelemetryData, useful_di::RegistryDataStorage<TelemetryDataTypeId, IdFactoryTelemetryData, nlohmann::json>>
+    class TelemetryDataComposite : public useful_di::DataCompositeInterface<nlohmann::json, TelemetryDataTypeId, useful_di::RegistryDataStorage<TelemetryDataTypeId, IdFactoryTelemetryData, nlohmann::json>>
     {
     public:
         TelemetryDataComposite(std::shared_ptr<mavsdk::Telemetry>& telemetry_p) 

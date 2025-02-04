@@ -1,6 +1,9 @@
 #pragma once
 
+#include <random>
+
 #include <iostream>
+#include <set>
 
 #include <nlohmann/json.hpp>
 
@@ -91,15 +94,15 @@ namespace useful_di
 
 
 
+        #warning Developer warning. Next two methods should be in the interface:
         std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator begin() { return this->data_storage.begin(); }
         std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator end() { return this->data_storage.end(); }
-
 
     protected:
         std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>> data_storage;
         std::shared_ptr<IdFactoryInterface<Id>> _id_factory;
 
-        Id _get_id_for_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& data) override
+        Id _get_id_for_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& data)
         {
             return this->_id_factory->get_id(data);
         }
@@ -151,12 +154,131 @@ namespace useful_di
     };
 
 
-    // template <typename ConcreteIdFactory, typename UniversalDataFormat>
-    // class DescriptedUniMap : public DataStorageInterface<std::string, ConcreteIdFactory, UniversalDataFormat>
+
+    class UniMapStr : public useful_di::MapLikeDataStorageInterface<std::string, nlohmann::json>
+    {
+        public:
+            std::vector<std::string> get_present_keys()
+            {
+                return this->keys;
+            }
+
+
+            std::string add_data(const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& _data) 
+            {
+                this->_add_data(_data);
+            }
+
+
+            void add_data(const std::string _key, const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& _data)
+            {
+                this->_add_data(_key, _data);
+            }
+
+
+        #warning Developer warning. Next two methods should be in the interface:
+        std::map<std::string, std::shared_ptr<UniversalDataInterface<nlohmann::json>>>::iterator begin() { return this->data_storage.begin(); }
+        std::map<std::string, std::shared_ptr<UniversalDataInterface<nlohmann::json>>>::iterator end() { return this->data_storage.end(); }
+
+
+        private:
+            int _get_key_id(std::string search_key)
+            {
+                for (int i = 0; i < this->keys.size(); i++)
+                {
+                    if (this->keys.at(i) == search_key) return i;
+                }
+            }
+        
+        protected:
+            std::vector<std::string> keys;
+            // Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
+            virtual std::string _add_data(const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& _data) override
+            {
+
+                std::mt19937 generator(std::random_device{}()); // Seed with real randomness
+                std::uniform_int_distribution<int> distribution(0, RAND_MAX);
+
+                std::string _key = std::to_string(distribution(generator));
+                if (not this->data_storage.count(_key))
+                {
+                    this->keys.push_back(_key);
+                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<UniversalDataInterface<nlohmann::json>>>(std::move(_key), std::dynamic_pointer_cast<UniversalDataInterface<nlohmann::json>>(_data)));
+                }
+                else 
+                {
+                    this->modify_data(_key, _data);
+                    std::cout << "ATTENTION!!! Your new randomly generated key already exists! Overwriting data...\n";
+                    // throw std::runtime_error("UniMapStr::_add_data(id) - _key random generation failed. Randomly generated key is the same as one of existing keys");
+                }
+
+                return _key;
+            }
+
+
+            virtual void _add_data(const std::string _key, const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& _data) override
+            {
+                if (not this->data_storage.count(_key))
+                {
+                    std::string tmp_key = _key; 
+                    this->keys.push_back(_key);
+
+                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<UniversalDataInterface<nlohmann::json>>>(std::move(tmp_key), std::dynamic_pointer_cast<UniversalDataInterface<nlohmann::json>>(_data)));
+                }
+                else 
+                {
+                    // std::cout << "UniMapStr: Warning! Called _add_data(id, data), but this id is alredy in map. Calling modify_data(id, data). \n";
+                    this->modify_data(_key, _data);
+                }
+            }
+
+            virtual void _remove_data(const std::string& data_identifier) override
+            {
+                if (this->data_storage.count(data_identifier)) 
+                {
+                    this->data_storage.erase(data_identifier);
+                    this->keys.erase(this->keys.begin() + this->_get_key_id(data_identifier));
+                }
+                else
+                {
+                    throw std::runtime_error("UniMapStr: tried to remove data with key " + data_identifier + " but no such key exists");
+                }
+            }
+
+
+            std::shared_ptr<UniversalDataInterface<nlohmann::json>> _at(const std::string& data_identifier) override
+            {
+                return this->data_storage.at(data_identifier);
+            }
+
+
+
+            void _modify_data(const std::string& data_identifier, const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& new_data) override
+            {
+                if (this->data_storage.count(data_identifier))
+                {
+                    this->data_storage.at(data_identifier) = new_data;
+                }
+                else
+                {
+                    throw std::runtime_error("UniMapStr: tried to modify data with key " + data_identifier + " but no such key exists");
+                }
+            }
+
+
+            virtual size_t _size() override
+            {
+                return this->data_storage.size();
+            }
+    };
+
+
+    // template <typename UniversalDataFormat>
+    // class DescriptedUniMap : public DataStorageInterface<std::string, UniversalDataFormat>
 
 
     template <typename Id, typename ConcreteIdFactory>
-    class DataCompositeJson : public useful_di::DataCompositeInterface<nlohmann::json, Id, ConcreteIdFactory, RegistryDataStorage<Id, ConcreteIdFactory, nlohmann::json>>
+    class DataCompositeJson : public useful_di::DataCompositeInterface<nlohmann::json, Id, RegistryDataStorage<Id, ConcreteIdFactory, nlohmann::json>>
     {
         void ___set_type() override
         {
@@ -205,6 +327,52 @@ namespace useful_di
                 // {
                 //     throw std::runtime_error("Unknown type");
                 // }
+            }
+
+            this->data = new_data;
+            return this->data;
+        }
+    };
+
+
+    class DataCompositeJsonMap : public useful_di::DataCompositeInterface<nlohmann::json, std::string, UniMapStr>
+    {
+        void ___set_type() override
+        {
+            this->___type = utils::cppext::get_type<DataCompositeJsonMap>();
+        }
+
+
+        public: 
+        void add_data(std::shared_ptr<UniversalDataInterface<nlohmann::json>> data) override
+        {
+            this->msg->add_data(data);
+        }
+
+
+        protected:
+        nlohmann::json _get_data() override
+        {
+            // int counter = 0;
+            nlohmann::json new_data;
+
+            for (typename std::map<std::string, std::shared_ptr<useful_di::UniversalDataInterface<nlohmann::json>>>::iterator iter = std::dynamic_pointer_cast<UniMapStr>(this->msg)->begin(); iter != std::dynamic_pointer_cast<UniMapStr>(this->msg)->end(); iter++)
+            {
+                auto type = iter->second->___get_type();
+                // if (type == utils::cppext::get_type<ABC>())
+                // {
+                auto data = std::dynamic_pointer_cast<useful_di::UniversalDataInterface<nlohmann::json>>(iter->second);
+                // std::cout << "DataCompositeJson::_get_data(): " << data << "\n";
+                if (data)
+                {
+                    nlohmann::json json_data = data->get_data();
+
+                    new_data[json_data["name"]] = json_data;
+                }
+                else
+                {
+                    std::cerr << "Warning! Shared pointer is nullptr" << "\n";
+                }
             }
 
             this->data = new_data;
