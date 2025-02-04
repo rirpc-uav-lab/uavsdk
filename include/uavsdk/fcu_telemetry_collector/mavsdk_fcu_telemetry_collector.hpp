@@ -654,6 +654,8 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
     };
     
 
+
+
     class IdFactoryTelemetryData : public useful_di::IdFactoryInterface<TelemetryDataTypeId>
     {
         public: 
@@ -712,6 +714,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
                 else throw std::runtime_error("Unknown data type. Current one is:  " + data->___get_type());
             }
     };
+
 
 
 

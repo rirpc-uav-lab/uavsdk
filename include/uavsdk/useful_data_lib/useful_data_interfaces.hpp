@@ -4,6 +4,15 @@
 
 namespace useful_di
 {
+
+    /**
+     * @brief Интерфейс типа. Любой класс, являющися объектом данных и 
+     * предполагающий совместимость с композитной системой библиотеки useful_di, 
+     * должен напрямую или не напрямую унаследовать от этого класса. Каждый 
+     * класс наследник должен определить функцию ___set_type() и вызывать ее, 
+     * например, в конструкторе, чтобы можно было идентифицировать тип объекта 
+     * данных
+     */
     class TypeInterface
     {
         public:
@@ -13,6 +22,10 @@ namespace useful_di
         }
 
 
+        /**
+         * @brief Возвращает строку, хранящую тип данного объекта, заданный
+         * с помощью функции ___set_type()
+         */
         std::string ___get_type() 
         {
             if (not this->___type.empty()) return this->___type;
@@ -21,7 +34,7 @@ namespace useful_di
 
 
         protected:
-        std::string ___type;
+        std::string ___type; // Тип этого объекта данных
 
 
         /**
@@ -36,6 +49,26 @@ namespace useful_di
     };
 
 
+    /**
+     * @brief Класс, являющийся интерфейсом для адаптации используемых
+     * объектов данных к универсальному типу данных, в котором можно
+     * выразить любую структуру данных. Примерами таких типов являются:
+     * 
+     * - json
+     * 
+     * - yaml
+     * 
+     * - битовые строки
+     * 
+     * и другие.
+     * 
+     * @tparam UniversalDataFormat выбранный универсальный тип
+     * 
+     * @warning Внимание! Установка значения параметра data - Ваша обязанность!
+     * Лучше всего это делать в конструкторе, так как этот класс подразумевался
+     * как постоянный объект, хранящий выражение объекта-оригинала в универсальном
+     * формате
+     */
     template <typename UniversalDataFormat>
     class UniversalDataInterface : public TypeInterface
     {
@@ -49,20 +82,33 @@ namespace useful_di
             }
 
 
+        protected:
+            UniversalDataFormat data; // Данные в универсальном формате
+
+
+            /**
+             * @brief может быть использована для кастомизации логики работы
+             * публичного метода get_data()
+             */
             virtual UniversalDataFormat _get_data()
             {
                 return this->data;
             }
-            
-
-        protected:
-            UniversalDataFormat data;
     };
 
 
     /**
+     * @brief Продолжение UniversalDataInterface, которое позволяет конвертировать 
+     * хранимые универсальные интерфейсы в их конкретные реализации и извлекать
+     * объекты-оригиналы.
+     * 
      * @tparam SubjectType тип изначального объекта данных
      * @tparam UniversalDataFormat универсальный тип данных 
+     * 
+     * @warning Внимание! Установка значения параметров data и msg - Ваша обязанность!
+     * Лучше всего это делать в конструкторе, так как этот класс подразумевался
+     * как постоянный контейнер, хранящий объект-оригинал и его вырежние в 
+     * универсальном формате
      */
     template<typename SubjectType, typename UniversalDataFormat>
     class DataInterface : public UniversalDataInterface<UniversalDataFormat>
@@ -78,9 +124,12 @@ namespace useful_di
 
 
         protected:
-        SubjectType msg;
+        SubjectType msg; // Объект-оригинал
 
 
+        /**
+         * @brief Позволяет кастомизировать работу публичного метода get_msg()
+         */
         virtual SubjectType _get_msg()
         {
             return this->msg;

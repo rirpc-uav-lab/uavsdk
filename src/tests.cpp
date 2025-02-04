@@ -26,8 +26,16 @@ int main()
         // std::cout << telem_data.get_data() << "\n";
 
         auto registry = telem_data.get_msg();
-        auto gps_info = std::dynamic_pointer_cast<mavsdk::Telemetry::GpsInfo>(registry->at(fcu_tel_collector::TelemetryDataTypeId::GpsInfoData));
-        std::cout << gps_info->num_satellites <<  std::endl;
+        auto gps_info = std::dynamic_pointer_cast<fcu_tel_collector::GpsInfoData>(registry->at(fcu_tel_collector::TelemetryDataTypeId::GpsInfoData));
+        
+        if (gps_info)
+        {
+            std::cout << gps_info->get_msg().num_satellites <<  std::endl;
+        }
+        else
+        {
+            std::cout << "Error! gps_info pointer is invalid.\n";
+        }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
