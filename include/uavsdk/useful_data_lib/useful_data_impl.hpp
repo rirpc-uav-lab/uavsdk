@@ -77,7 +77,7 @@ namespace useful_di
      * ввода данных по уже существующему ключу, перезаписывает данные.
      */
     template <typename Id, typename ConcreteIdFactory, typename UniversalDataFormat>
-    class RegistryDataStorage : public DataStorageInterface<Id, ConcreteIdFactory, UniversalDataFormat>
+    class RegistryDataStorage : public DataStorageInterface<Id, UniversalDataFormat>
     {
     public:
         RegistryDataStorage()
@@ -97,6 +97,7 @@ namespace useful_di
 
     protected:
         std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>> data_storage;
+        std::shared_ptr<IdFactoryInterface<Id>> _id_factory;
 
         Id _get_id_for_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& data) override
         {
@@ -148,6 +149,10 @@ namespace useful_di
             return this->data_storage.size();
         }
     };
+
+
+    // template <typename ConcreteIdFactory, typename UniversalDataFormat>
+    // class DescriptedUniMap : public DataStorageInterface<std::string, ConcreteIdFactory, UniversalDataFormat>
 
 
     template <typename Id, typename ConcreteIdFactory>

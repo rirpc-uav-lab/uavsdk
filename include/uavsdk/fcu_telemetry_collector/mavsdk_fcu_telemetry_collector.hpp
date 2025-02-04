@@ -807,7 +807,7 @@ namespace fcu_tel_collector /// fcu_telemetry_collector_mavsdk
         }
 
 
-        std::shared_ptr<useful_di::DataStorageInterface<fcu_tel_collector::TelemetryDataTypeId, fcu_tel_collector::IdFactoryTelemetryData, nlohmann::json>> _get_msg() override
+        std::shared_ptr<useful_di::DataStorageInterface<fcu_tel_collector::TelemetryDataTypeId, nlohmann::json>> _get_msg() override
         { 
             this->decorated_composite->add_data(this->distance_sensor_observer_p->get_data());
             this->decorated_composite->add_data(this->flight_mode_observer_p->get_data());

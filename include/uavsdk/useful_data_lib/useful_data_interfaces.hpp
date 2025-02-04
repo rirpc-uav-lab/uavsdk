@@ -155,7 +155,7 @@ namespace useful_di
      * @tparam UniversalDataFormat универсальный тип данных 
      * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
      */
-    template <typename Id, typename IdFactoryType, typename UniversalDataFormat>
+    template <typename Id, typename UniversalDataFormat>
     class DataStorageInterface
     {
     public:
@@ -188,7 +188,6 @@ namespace useful_di
 
 
     protected:
-        std::shared_ptr<IdFactoryType> _id_factory;
         virtual Id _get_id_for_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data) = 0;
         virtual Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data) = 0;
         virtual void _remove_data(const Id& data_identifier) = 0;
@@ -204,9 +203,9 @@ namespace useful_di
      * @tparam SubjectTypes множество типов изначальных объектов данных, которые могут использоваться в контейтере, индексируемом перечислением, которое создает этот класс
      */
     template <typename UniversalDataFormat, typename Id, typename IdFactoryType, typename StorageType>
-    class DataCompositeInterface : public DataInterface<std::shared_ptr<DataStorageInterface<Id, IdFactoryType, UniversalDataFormat>>, UniversalDataFormat>
+    class DataCompositeInterface : public DataInterface<std::shared_ptr<DataStorageInterface<Id, UniversalDataFormat>>, UniversalDataFormat>
     {
-        static_assert(std::is_base_of<DataStorageInterface<Id, IdFactoryType, UniversalDataFormat>, StorageType>::value, "DataCompositeInterface: provided StorageType is not derived from DataStorageInterface");
+        static_assert(std::is_base_of<DataStorageInterface<Id, UniversalDataFormat>, StorageType>::value, "DataCompositeInterface: provided StorageType is not derived from DataStorageInterface");
     protected:
         // std::shared_ptr<DataStorageInterface<Msg, UniversalDataFormat, Id>> data_storage;
     
