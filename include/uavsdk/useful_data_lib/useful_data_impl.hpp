@@ -48,7 +48,7 @@ namespace useful_di
         public:
             TypedDataObject(std::string name) : DataObjectJson<SubjectType>(name)
             { 
-                this->type = utils::cppext::get_type<SubjectType>(); 
+                this->type = utils::cppext::get_type<SubjectType>(); // Так и должно быть! ___type нужен, чтобы можно было определять тип указателя, а type нужен, чтобы в json засунуть информацию об объекте-оригинале
             }
 
             // TypedDataObject& operator=(TypedDataObject other) 
@@ -335,6 +335,7 @@ namespace useful_di
     };
 
 
+    
     class DataCompositeJsonMap : public useful_di::DataCompositeInterface<nlohmann::json, std::string, UniMapStr>
     {
         void ___set_type() override
@@ -350,24 +351,35 @@ namespace useful_di
         }
 
 
+        void add_data(std::string key, std::shared_ptr<UniversalDataInterface<nlohmann::json>> data)
+        {
+            std::dynamic_pointer_cast<UniMapStr>(this->msg)->add_data(key, data);
+        }
+
+
+        std::vector<std::string> get_storage_keys()
+        {
+            return std::dynamic_pointer_cast<UniMapStr>(this->msg)->get_present_keys();
+        }
+
+
         protected:
         nlohmann::json _get_data() override
         {
             // int counter = 0;
             nlohmann::json new_data;
 
-            for (typename std::map<std::string, std::shared_ptr<useful_di::UniversalDataInterface<nlohmann::json>>>::iterator iter = std::dynamic_pointer_cast<UniMapStr>(this->msg)->begin(); iter != std::dynamic_pointer_cast<UniMapStr>(this->msg)->end(); iter++)
+            std::vector<std::string> keys = std::dynamic_pointer_cast<UniMapStr>(this->msg)->get_present_keys();
+
+            for (const std::string& key : keys)
             {
-                auto type = iter->second->___get_type();
-                // if (type == utils::cppext::get_type<ABC>())
-                // {
-                auto data = std::dynamic_pointer_cast<useful_di::UniversalDataInterface<nlohmann::json>>(iter->second);
-                // std::cout << "DataCompositeJson::_get_data(): " << data << "\n";
+                auto data = std::dynamic_pointer_cast<useful_di::UniversalDataInterface<nlohmann::json>>(this->msg->at(key));
+
                 if (data)
                 {
                     nlohmann::json json_data = data->get_data();
 
-                    new_data[json_data["name"]] = json_data;
+                    new_data[key] = json_data;
                 }
                 else
                 {

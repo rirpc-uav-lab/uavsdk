@@ -143,17 +143,33 @@ bool test_data_composite_json_map()
         auto battery_data = std::dynamic_pointer_cast<fcu_tel_collector::BatteryData>(registry->at(fcu_tel_collector::TelemetryDataTypeId::BatteryData));
         auto health_data = std::dynamic_pointer_cast<fcu_tel_collector::FcuHealthData>(registry->at(fcu_tel_collector::TelemetryDataTypeId::FcuHealthData));
 
-        data_container.add_data(gps_info);
+        data_container.add_data("gps_info", gps_info);
         data_container.add_data(battery_data);
         data_container.add_data(health_data);
 
-        std::cout << data_container.get_data() << "\n";
+        // std::cout << data_container.get_data() << "\n";
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         i++;
     }
 
-    std::cout << data_container.get_data() << "\n";
+    nlohmann::json data = data_container.get_data();
+
+    std::vector<std::string> keys = data_container.get_storage_keys();
+
     success_flag = true;
+    
+    if (keys.size() < 5) success_flag = false;
+
+    unsigned int init_counter = 0;
+
+    for (const auto& key : keys)
+    {
+        if (data.at(key).at("initialized") == true) init_counter++;
+    }
+
+    if (init_counter < 10) success_flag = false;
+
+    std::cout << "Results: \n\tkeys.size(): " << keys.size() << "\n\tinit_counter: " << init_counter << "\n";
 
     return success_flag;
 }

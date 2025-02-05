@@ -8,49 +8,39 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-# find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(MAVSDK REQUIRED)
 
-find_package(backward_ros REQUIRED)
+# find_package(backward_ros REQUIRED)
 
-include(FetchContent)
+# include(FetchContent)
 
-# Also requires one of: libbfd (gnu binutils), libdwarf, libdw (elfutils)
-FetchContent_Declare(Backward    #Note: For some reason I ran into issues when the target here is called backwards with a small b at the beginning
-    GIT_REPOSITORY https://github.com/bombela/backward-cpp
-    GIT_TAG master  # or a version tag, such as v1.6
-)
-FetchContent_MakeAvailable(Backward)
-
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+# # Also requires one of: libbfd (gnu binutils), libdwarf, libdw (elfutils)
+# FetchContent_Declare(Backward    #Note: For some reason I ran into issues when the target here is called backwards with a small b at the beginning
+#     GIT_REPOSITORY https://github.com/bombela/backward-cpp
+#     GIT_TAG master  # or a version tag, such as v1.6
+# )
+# FetchContent_MakeAvailable(Backward)
 
 
 set(UTILS_LIB_SOURCES include/uavsdk/utils/conversion_functions.hpp include/uavsdk/utils/cpp_custom_extras.hpp)
 add_library(utils_lib SHARED ${UTILS_LIB_SOURCES})
 set_target_properties(utils_lib PROPERTIES LINKER_LANGUAGE CXX)
 
-set(DACOLLINTER_LIB_SOURCES include/uavsdk/uav_control_interfaces/data_collector_interfaces.hpp include/uavsdk/uav_control_interfaces/data_collector_implementations.hpp)
-add_library(data_collector_lib SHARED ${DACOLLINTER_LIB_SOURCES})
-set_target_properties(data_collector_lib PROPERTIES LINKER_LANGUAGE CXX)
+set(USEF_DATA_LIB 
+include/uavsdk/useful_data_lib/useful_data_interfaces.hpp
+include/uavsdk/useful_data_lib/useful_data_impl.hpp
+)
+add_library(useful_data_lib SHARED ${USEF_DATA_LIB})
+set_target_properties(useful_data_lib PROPERTIES LINKER_LANGUAGE CXX)
 
 set(MAVSDK_FCUTELCOLLIB_SOURCES include/uavsdk/fcu_telemetry_collector/mavsdk_fcu_telemetry_collector.hpp)
 add_library(mavsdk_fcu_tel_collector_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
 set_target_properties(mavsdk_fcu_tel_collector_lib PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(mavsdk_fcu_tel_collector_lib MAVSDK::mavsdk data_collector_lib utils_lib)
-
-set(USEF_DATA_LIB 
-  include/uavsdk/useful_data_lib/useful_data_interfaces.hpp
-  include/uavsdk/useful_data_lib/useful_data_impl.hpp
-  )
-add_library(useful_data_lib SHARED ${USEF_DATA_LIB})
-set_target_properties(useful_data_lib PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(mavsdk_fcu_tel_collector_lib MAVSDK::mavsdk useful_data_lib utils_lib)
 
 add_executable(tests src/tests.cpp)
-target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib backward_object)
+target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib)# backward_object)
 
 # add_executable(inheritance_tests src/inheritance_tests.cpp)
 # target_link_libraries(inheritance_tests useful_data_lib backward_object)
@@ -85,18 +75,18 @@ install(
     INCLUDES DESTINATION include
 )
 
-ament_export_targets(data_collector_lib HAS_LIBRARY_TARGET)
+ament_export_targets(useful_data_lib HAS_LIBRARY_TARGET)
 
 install(
-    TARGETS data_collector_lib
-    EXPORT data_collector_lib
+    TARGETS useful_data_lib
+    EXPORT useful_data_lib
     LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
     ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
     RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
     INCLUDES DESTINATION include
 )
 
-ament_export_targets(mavsdk_fcu_tel_collector_lib HAS_LIBRARY_TARGET)
+ament_export_targets(useful_data_lib HAS_LIBRARY_TARGET)
 
 install(
     TARGETS mavsdk_fcu_tel_collector_lib
@@ -106,7 +96,6 @@ install(
     RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
     INCLUDES DESTINATION include
 )
-
 
 
 if(BUILD_TESTING)
