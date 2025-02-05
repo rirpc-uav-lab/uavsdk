@@ -103,6 +103,11 @@ bool test_unimap_container()
     {
         std::cout << key << "\n";
     }
+
+    std::cout << "Size before removal: " << data_container.size() << "\n";
+    data_container.remove_data(keys.at(0));
+    std::cout << "Size after removal: " << data_container.size() << "\n";
+
     success_flag = true;
 
     return success_flag;
