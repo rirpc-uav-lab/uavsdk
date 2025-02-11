@@ -37,13 +37,13 @@ namespace uavsdk
                 {
                     if (states.at(0) == "check_offboard")
                     {
-                        if (std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->external_resource->telem->get_msg()->at(uavsdk::fcu_tel_collector::TelemetryDataTypeId::LandedStateData))->get_msg() != mavsdk::Telemetry::LandedState::OnGround)
+                        if (std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->external_resource->telem->get_msg()->at("landed_state"))->get_msg() != mavsdk::Telemetry::LandedState::OnGround)
                         {   
                             // this->action
                             this->stop(uavsdk::command_manager::ExecutionResult::FAILED);
                         }
 
-                        if (std::dynamic_pointer_cast<fcu_tel_collector::FlightModeData>(this->external_resource->telem->get_msg()->at(uavsdk::fcu_tel_collector::TelemetryDataTypeId::FlightModeData))->get_msg() == mavsdk::Telemetry::FlightMode::Offboard)
+                        if (std::dynamic_pointer_cast<fcu_tel_collector::FlightModeData>(this->external_resource->telem->get_msg()->at("flight_mode"))->get_msg() == mavsdk::Telemetry::FlightMode::Offboard)
                         {
                             int i = 20;
                             auto res = this->external_resource->action->hold();
@@ -143,7 +143,7 @@ namespace uavsdk
                         #warning Будет ли дрон при take_off прям точно долетать до нужной точки по высоте?
                         if (current_position < target_alt-1) 
                         {
-                            current_position = std::dynamic_pointer_cast<fcu_tel_collector::PositionData>(this->external_resource->telem->get_msg()->at(uavsdk::fcu_tel_collector::TelemetryDataTypeId::UavPositionData))->get_msg().relative_altitude_m;
+                            current_position = std::dynamic_pointer_cast<fcu_tel_collector::PositionData>(this->external_resource->telem->get_msg()->at("uav_position"))->get_msg().relative_altitude_m;
                             // current_position = telemetry->position().relative_altitude_m;
                             std::cout << "TAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFF\n";
                             std::this_thread::sleep_for(100ms);                    
