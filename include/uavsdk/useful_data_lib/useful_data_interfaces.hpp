@@ -155,11 +155,11 @@ namespace useful_di
      * @tparam UniversalDataFormat универсальный тип данных 
      * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
      */
-    template <typename Id, typename UniversalDataFormat>
+    template <typename Id>
     class DataStorageInterface
     {
         public:
-            Id add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
+            Id add_data(const std::shared_ptr<TypeInterface>& _data)
             {
                 return this->_add_data(_data);
             }
@@ -169,7 +169,7 @@ namespace useful_di
                 this->_remove_data(data_identifier);
             }
 
-            std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> at(const Id& data_identifier)
+            std::shared_ptr<TypeInterface> at(const Id& data_identifier)
             {
                 return this->_at(data_identifier);
             }
@@ -181,30 +181,30 @@ namespace useful_di
             }
             
             
-            void modify_data(const Id& data_identifier, const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
+            void modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data)
             {
                 this->_modify_data(data_identifier, _data);
             }
 
 
         protected:
-            // virtual Id _get_id_for_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data) = 0;
-            virtual Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data) = 0;
+            // virtual Id _get_id_for_data(const std::shared_ptr<TypeInterface>& _data) = 0;
+            virtual Id _add_data(const std::shared_ptr<TypeInterface>& _data) = 0;
             virtual void _remove_data(const Id& data_identifier) = 0;
-            virtual std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> _at(const Id& data_identifier) = 0;
+            virtual std::shared_ptr<TypeInterface> _at(const Id& data_identifier) = 0;
             virtual size_t _size() = 0;
-            virtual void _modify_data(const Id& data_identifier, const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data) = 0;
+            virtual void _modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
     };
 
 
-    template <typename KeyT, typename UniversalDataFormat>
-    class MapLikeDataStorageInterface : public DataStorageInterface<KeyT, UniversalDataFormat>
+    template <typename KeyT>
+    class MapLikeDataStorageInterface : public DataStorageInterface<KeyT>
     {
         protected:
-        std::map<KeyT, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>> data_storage;
+        std::map<KeyT, std::shared_ptr<TypeInterface>> data_storage;
 
 
-        virtual void _add_data(const KeyT _key, const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data) = 0;
+        virtual void _add_data(const KeyT _key, const std::shared_ptr<TypeInterface>& _data) = 0;
     };
 
 
@@ -214,9 +214,9 @@ namespace useful_di
      * @tparam SubjectTypes множество типов изначальных объектов данных, которые могут использоваться в контейтере, индексируемом перечислением, которое создает этот класс
      */
     template <typename UniversalDataFormat, typename Id, typename StorageType>
-    class DataCompositeInterface : public DataInterface<std::shared_ptr<DataStorageInterface<Id, UniversalDataFormat>>, UniversalDataFormat>
+    class DataCompositeInterface : public DataInterface<std::shared_ptr<DataStorageInterface<Id>>, UniversalDataFormat>
     {
-        static_assert(std::is_base_of<DataStorageInterface<Id, UniversalDataFormat>, StorageType>::value, "DataCompositeInterface: provided StorageType is not derived from DataStorageInterface");
+        static_assert(std::is_base_of<DataStorageInterface<Id>, StorageType>::value, "DataCompositeInterface: provided StorageType is not derived from DataStorageInterface");
     protected:
         // std::shared_ptr<DataStorageInterface<Msg, UniversalDataFormat, Id>> data_storage;
     
@@ -226,7 +226,7 @@ namespace useful_di
             this->msg = std::make_shared<StorageType>();
         }
 
-        virtual void add_data(std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> data) = 0;
+        virtual void add_data(std::shared_ptr<TypeInterface> data) = 0;
     };
 
 

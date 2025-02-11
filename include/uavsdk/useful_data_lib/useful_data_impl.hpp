@@ -80,7 +80,7 @@ namespace useful_di
      * ввода данных по уже существующему ключу, перезаписывает данные.
      */
     template <typename Id, typename ConcreteIdFactory, typename UniversalDataFormat>
-    class RegistryDataStorage : public DataStorageInterface<Id, UniversalDataFormat>
+    class RegistryDataStorage : public DataStorageInterface<Id>
     {
     public:
         RegistryDataStorage()
@@ -155,7 +155,7 @@ namespace useful_di
 
 
 
-    class UniMapStr : public useful_di::MapLikeDataStorageInterface<std::string, nlohmann::json>
+    class UniMapStr : public useful_di::MapLikeDataStorageInterface<std::string>
     {
         public:
             std::vector<std::string> get_present_keys()
@@ -164,21 +164,21 @@ namespace useful_di
             }
 
 
-            std::string add_data(const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& _data) 
+            std::string add_data(const std::shared_ptr<TypeInterface>& _data) 
             {
                 this->_add_data(_data);
             }
 
 
-            void add_data(const std::string _key, const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& _data)
+            void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data)
             {
                 this->_add_data(_key, _data);
             }
 
 
         #warning Developer warning. Next two methods should be in the interface:
-        std::map<std::string, std::shared_ptr<UniversalDataInterface<nlohmann::json>>>::iterator begin() { return this->data_storage.begin(); }
-        std::map<std::string, std::shared_ptr<UniversalDataInterface<nlohmann::json>>>::iterator end() { return this->data_storage.end(); }
+        std::map<std::string, std::shared_ptr<TypeInterface>>::iterator begin() { return this->data_storage.begin(); }
+        std::map<std::string, std::shared_ptr<TypeInterface>>::iterator end() { return this->data_storage.end(); }
 
 
         private:
@@ -193,7 +193,7 @@ namespace useful_di
         protected:
             std::vector<std::string> keys;
             // Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
-            virtual std::string _add_data(const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& _data) override
+            virtual std::string _add_data(const std::shared_ptr<TypeInterface>& _data) override
             {
 
                 std::mt19937 generator(std::random_device{}()); // Seed with real randomness
@@ -203,7 +203,7 @@ namespace useful_di
                 if (not this->data_storage.count(_key))
                 {
                     this->keys.push_back(_key);
-                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<UniversalDataInterface<nlohmann::json>>>(std::move(_key), std::dynamic_pointer_cast<UniversalDataInterface<nlohmann::json>>(_data)));
+                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
                 }
                 else 
                 {
@@ -216,14 +216,14 @@ namespace useful_di
             }
 
 
-            virtual void _add_data(const std::string _key, const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& _data) override
+            virtual void _add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
             {
                 if (not this->data_storage.count(_key))
                 {
                     std::string tmp_key = _key; 
                     this->keys.push_back(_key);
 
-                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<UniversalDataInterface<nlohmann::json>>>(std::move(tmp_key), std::dynamic_pointer_cast<UniversalDataInterface<nlohmann::json>>(_data)));
+                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(tmp_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
                 }
                 else 
                 {
@@ -246,14 +246,14 @@ namespace useful_di
             }
 
 
-            std::shared_ptr<UniversalDataInterface<nlohmann::json>> _at(const std::string& data_identifier) override
+            std::shared_ptr<TypeInterface> _at(const std::string& data_identifier) override
             {
                 return this->data_storage.at(data_identifier);
             }
 
 
 
-            void _modify_data(const std::string& data_identifier, const std::shared_ptr<UniversalDataInterface<nlohmann::json>>& new_data) override
+            void _modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& new_data) override
             {
                 if (this->data_storage.count(data_identifier))
                 {
@@ -277,8 +277,7 @@ namespace useful_di
     // class DescriptedUniMap : public DataStorageInterface<std::string, UniversalDataFormat>
 
 
-    template <typename Id, typename ConcreteIdFactory>
-    class DataCompositeJson : public useful_di::DataCompositeInterface<nlohmann::json, Id, RegistryDataStorage<Id, ConcreteIdFactory, nlohmann::json>>
+    class DataCompositeJson : public useful_di::DataCompositeInterface<nlohmann::json, std::string, UniMapStr>
     {
         void ___set_type() override
         {
@@ -287,9 +286,15 @@ namespace useful_di
 
 
         public: 
-        void add_data(std::shared_ptr<UniversalDataInterface<nlohmann::json>> data) override
+        void add_data(std::shared_ptr<TypeInterface> data) override
         {
             this->msg->add_data(data);
+        }
+
+
+        void add_data(std::string key, std::shared_ptr<TypeInterface> data)
+        {
+            std::dynamic_pointer_cast<UniMapStr>(this->msg)->add_data(key, data);
         }
 
 
@@ -299,7 +304,7 @@ namespace useful_di
             // int counter = 0;
             nlohmann::json new_data;
 
-            for (typename std::map<Id, std::shared_ptr<useful_di::UniversalDataInterface<nlohmann::json>>>::iterator iter = std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory, nlohmann::json>>(this->msg)->begin(); iter != std::dynamic_pointer_cast<RegistryDataStorage<Id, ConcreteIdFactory, nlohmann::json>>(this->msg)->end(); iter++)
+            for (typename std::map<std::string, std::shared_ptr<TypeInterface>>::iterator iter = std::dynamic_pointer_cast<UniMapStr>(this->msg)->begin(); iter != std::dynamic_pointer_cast<UniMapStr>(this->msg)->end(); iter++)
             {
                 auto type = iter->second->___get_type();
                 // if (type == utils::cppext::get_type<ABC>())
@@ -317,16 +322,6 @@ namespace useful_di
                 {
                     std::cerr << "Warning! Shared pointer is nullptr" << "\n";
                 }
-                // }
-                // else if (type == utils::cppext::get_type<BCA>())
-                // {
-                //     auto data = std::dynamic_pointer_cast<BCA>(iter->second);
-                //     new_data["BCA"] = data->get_data();
-                // }
-                // else 
-                // {
-                //     throw std::runtime_error("Unknown type");
-                // }
             }
 
             this->data = new_data;
@@ -345,13 +340,13 @@ namespace useful_di
 
 
         public: 
-        void add_data(std::shared_ptr<UniversalDataInterface<nlohmann::json>> data) override
+        void add_data(std::shared_ptr<TypeInterface> data) override
         {
             this->msg->add_data(data);
         }
 
 
-        void add_data(std::string key, std::shared_ptr<UniversalDataInterface<nlohmann::json>> data)
+        void add_data(std::string key, std::shared_ptr<TypeInterface> data)
         {
             std::dynamic_pointer_cast<UniMapStr>(this->msg)->add_data(key, data);
         }

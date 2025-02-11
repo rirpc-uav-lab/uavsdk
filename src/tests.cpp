@@ -1,11 +1,12 @@
 #include <uavsdk/fcu_telemetry_collector/mavsdk_fcu_telemetry_collector.hpp>
+#include <uavsdk/useful_data_lib/useful_data_impl.hpp>
 #include <iostream>
 
 
 bool test_multitype_data_composite()
 {
     bool success_flag = false;
-    using namespace fcu_tel_collector;
+    using namespace uavsdk;
     using namespace mavsdk;
 
     Mavsdk mavsdk{Mavsdk::Configuration{Mavsdk::ComponentType::CompanionComputer}};
@@ -21,16 +22,24 @@ bool test_multitype_data_composite()
     std::shared_ptr<Telemetry> telemetry = std::make_shared<Telemetry>(system.value());
 
 
-    TelemetryDataComposite telem_data(telemetry);
+    fcu_tel_collector::TelemetryDataComposite telem_data(telemetry);
     int i = 0;
 
+    auto registry = std::dynamic_pointer_cast<useful_di::UniMapStr>(telem_data.get_msg());
+    for (auto it = registry->begin(); it != registry->end(); it++)
+    {
+        std::cout << it->first << "\n";
+    }
     while (i < 30)
     {
         // std::cout << telem_data.get_data() << "\n";
 
-        auto registry = telem_data.get_msg();
-        auto gps_info = std::dynamic_pointer_cast<fcu_tel_collector::GpsInfoData>(registry->at(fcu_tel_collector::TelemetryDataTypeId::GpsInfoData));
+        auto registry = std::dynamic_pointer_cast<useful_di::UniMapStr>(telem_data.get_msg());
+        auto gps_info = std::dynamic_pointer_cast<fcu_tel_collector::GpsInfoData>(registry->at("gps_info"));
         
+
+
+
         if (gps_info)
         {
             std::cout << gps_info->get_msg().num_satellites <<  std::endl;
@@ -52,7 +61,7 @@ bool test_multitype_data_composite()
 bool test_unimap_container()
 {
     bool success_flag = false;
-    using namespace fcu_tel_collector;
+    using namespace uavsdk;
     using namespace mavsdk;
 
     Mavsdk mavsdk{Mavsdk::Configuration{Mavsdk::ComponentType::CompanionComputer}};
@@ -68,7 +77,7 @@ bool test_unimap_container()
     std::shared_ptr<Telemetry> telemetry = std::make_shared<Telemetry>(system.value());
 
 
-    TelemetryDataComposite telem_data(telemetry);
+    fcu_tel_collector::TelemetryDataComposite telem_data(telemetry);
     int i = 0;
 
     useful_di::UniMapStr data_container;
@@ -78,8 +87,8 @@ bool test_unimap_container()
         // std::cout << telem_data.get_data() << "\n";
 
         auto registry = telem_data.get_msg();
-        auto gps_info = std::dynamic_pointer_cast<fcu_tel_collector::GpsInfoData>(registry->at(fcu_tel_collector::TelemetryDataTypeId::GpsInfoData));
-        auto battery_data = std::dynamic_pointer_cast<fcu_tel_collector::BatteryData>(registry->at(fcu_tel_collector::TelemetryDataTypeId::BatteryData));
+        auto gps_info = std::dynamic_pointer_cast<fcu_tel_collector::GpsInfoData>(registry->at("gps_info"));
+        auto battery_data = std::dynamic_pointer_cast<fcu_tel_collector::BatteryData>(registry->at("battery_info"));
 
         if (gps_info)
         {
@@ -117,7 +126,7 @@ bool test_unimap_container()
 bool test_data_composite_json_map()
 {
     bool success_flag = false;
-    using namespace fcu_tel_collector;
+    using namespace uavsdk;
     using namespace mavsdk;
 
     Mavsdk mavsdk{Mavsdk::Configuration{Mavsdk::ComponentType::CompanionComputer}};
@@ -133,7 +142,7 @@ bool test_data_composite_json_map()
     std::shared_ptr<Telemetry> telemetry = std::make_shared<Telemetry>(system.value());
 
 
-    TelemetryDataComposite telem_data(telemetry);
+    fcu_tel_collector::TelemetryDataComposite telem_data(telemetry);
     int i = 0;
 
     // useful_di::UniMapStr data_container;
@@ -144,9 +153,9 @@ bool test_data_composite_json_map()
         // std::cout << telem_data.get_data() << "\n";
 
         auto registry = telem_data.get_msg();
-        auto gps_info = std::dynamic_pointer_cast<fcu_tel_collector::GpsInfoData>(registry->at(fcu_tel_collector::TelemetryDataTypeId::GpsInfoData));
-        auto battery_data = std::dynamic_pointer_cast<fcu_tel_collector::BatteryData>(registry->at(fcu_tel_collector::TelemetryDataTypeId::BatteryData));
-        auto health_data = std::dynamic_pointer_cast<fcu_tel_collector::FcuHealthData>(registry->at(fcu_tel_collector::TelemetryDataTypeId::FcuHealthData));
+        auto gps_info = std::dynamic_pointer_cast<fcu_tel_collector::GpsInfoData>(registry->at("gps_info"));
+        auto battery_data = std::dynamic_pointer_cast<fcu_tel_collector::BatteryData>(registry->at("battery_info"));
+        auto health_data = std::dynamic_pointer_cast<fcu_tel_collector::FcuHealthData>(registry->at("fcu_health"));
 
         data_container.add_data("gps_info", gps_info);
         data_container.add_data(battery_data);
