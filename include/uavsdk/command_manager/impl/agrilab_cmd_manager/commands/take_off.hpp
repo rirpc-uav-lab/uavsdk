@@ -26,7 +26,7 @@ namespace uavsdk
                 {
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
-                    this->set_id("take_off");
+                    this->set_id("take_off"); // path_following
 
                     states = {"check_offboard", "check_setpoint", "wait_for_health", "arm", "start_takeoff", "check_position"};
                 }

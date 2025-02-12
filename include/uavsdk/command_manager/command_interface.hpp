@@ -52,7 +52,23 @@ namespace uavsdk
              */
             std::future<ExecutionResult> get_result_future()
             {
-                return this->result_promise.get_future();
+                std::scoped_lock lock(promise_mutex);
+                try
+                {
+                    return this->result_promise.get_future();
+                }
+                catch (std::exception e)
+                {
+                    std::string msg = "Tried to get command result future more than one time: " + std::string(e.what()) + "\n";
+                    throw std::runtime_error(msg);
+                }
+            }
+
+
+            void set_tick_rate(int rate_ms)
+            {
+                std::scoped_lock(tick_rate_mutex);
+                this->tick_rate_ms = rate_ms;
             }
 
 
@@ -64,6 +80,7 @@ namespace uavsdk
              */
             StartExecutionResult execute()
             {
+                std::scoped_lock(command_mutex);
                 if (execution_thread)
                 {
                     return StartExecutionResult::ALREADY_RUNNING;
@@ -96,6 +113,7 @@ namespace uavsdk
                 catch (std::exception& e)
                 {
                     std::cout << "BaseCommandInterface: FAILED TO DESTROY COMMAND: " << e.what() << "\n";
+                    throw std::runtime_error(std::string("BaseCommandInterface: FAILED TO DESTROY COMMAND: " + std::string(e.what())));
                 }
                 this->result_promise.set_value(result);
             }
@@ -120,7 +138,10 @@ namespace uavsdk
             std::promise<ExecutionResult> result_promise;
             std::shared_ptr<std::stop_source> stopper;
             std::shared_ptr<std::jthread> execution_thread;
+            
             std::mutex command_mutex;
+            std::mutex promise_mutex;
+            std::mutex tick_rate_mutex;
             // Id id;
             
 
@@ -131,14 +152,11 @@ namespace uavsdk
              */
             void _loop()
             {
-                while (true)
+                while (not stopper->stop_requested())
                 {
-                    if (stopper->stop_requested())
-                    {
-                        this->handle_stop();
-                    }
                     _tick();
                 }
+                this->handle_stop();
             }
 
 
@@ -149,6 +167,7 @@ namespace uavsdk
              */
             void _tick()
             {
+                std::scoped_lock(tick_rate_mutex);
                 this->logic_tick();
                 std::this_thread::sleep_for(std::chrono::milliseconds(this->tick_rate_ms));
             }
