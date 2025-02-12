@@ -24,6 +24,13 @@ namespace uavsdk
         };
 
 
+        enum CommandImplementationChoice
+        {
+            SINGLE_THREADED,
+            MULTI_THREADED,
+        };
+
+
         /**
          * @brief Interface for command implementations.
          *
@@ -40,7 +47,6 @@ namespace uavsdk
             public:
             BaseCommandInterface()
             {
-                stopper = std::make_shared<std::stop_source>();
                 tick_rate_ms = 100;
             }
 
@@ -50,9 +56,8 @@ namespace uavsdk
              *
              * The future will be completed with either SUCCESS or FAILED when the command finishes.
              */
-            std::future<ExecutionResult> get_result_future()
+            virtual std::future<ExecutionResult> get_result_future()
             {
-                std::scoped_lock lock(promise_mutex);
                 try
                 {
                     return this->result_promise.get_future();
@@ -65,60 +70,17 @@ namespace uavsdk
             }
 
 
-            void set_tick_rate(int rate_ms)
+            virtual void set_tick_rate(unsigned int rate_ms)
             {
-                std::scoped_lock(tick_rate_mutex);
                 this->tick_rate_ms = rate_ms;
             }
 
 
-            /**
-             * @brief Starts executing the command.
-             *
-             * If a command is already running (exists in execution_thread), returns ALREADY_RUNNING.
-             * Otherwise, starts a new thread and returns STARTED.
-             */
-            StartExecutionResult execute()
-            {
-                std::scoped_lock(command_mutex);
-                if (execution_thread)
-                {
-                    return StartExecutionResult::ALREADY_RUNNING;
-                }
-                else
-                {
-                    execution_thread = std::make_shared<std::jthread>(std::bind(&BaseCommandInterface::_loop, this));
-                    return StartExecutionResult::STARTED;
-                }
-            }
-
-
-            /**
-             * @brief Stops the currently executing command. 
-             *
-             * @param result execution result
-             * 
-             * Initiates a stop request and waits for the command to terminate.
-             * Sets the result to FAILED upon completion by default.
-             */
-            void stop(ExecutionResult result=ExecutionResult::FAILED)
-            {
-                try 
-                {std::scoped_lock lock(command_mutex);
-                    stopper->request_stop();
-                    execution_thread->join();
-                    this->execution_thread = nullptr;
-                    std::cout << "BaseCommandInterface: DESTROYED COMMAND\n";
-                }
-                catch (std::exception& e)
-                {
-                    std::cout << "BaseCommandInterface: FAILED TO DESTROY COMMAND: " << e.what() << "\n";
-                    throw std::runtime_error(std::string("BaseCommandInterface: FAILED TO DESTROY COMMAND: " + std::string(e.what())));
-                }
-                this->result_promise.set_value(result);
-            }
-
             protected:
+            std::promise<ExecutionResult> result_promise;
+            unsigned int tick_rate_ms;
+
+
             /**
              * @brief Pure virtual method to be implemented by child classes.
              *
@@ -133,17 +95,106 @@ namespace uavsdk
              */
             virtual void handle_stop() = 0;
 
+
+            /**
+             * @brief Periodically executes core logic of the command.
+             *
+             * Calls logic_tick() and waits for the next tick based on tick_rate_ms.
+             */
+            void _tick()
+            {
+                this->logic_tick();
+                std::this_thread::sleep_for(std::chrono::milliseconds(this->tick_rate_ms));
+            }
+        };
+
+
+        class SingleProccessCommandInterface : public BaseCommandInterface
+        {
+            public:
+            void tick()
+            {
+                if (not stop_requested)
+                {
+                    this->_tick();
+                }
+                else
+                {
+                    this->handle_stop();
+                }
+            }
+
             private:
-            unsigned int tick_rate_ms;
-            std::promise<ExecutionResult> result_promise;
+            bool stop_requested = false;
+            // unsigned int tick_rate_ms;
+            // std::promise<ExecutionResult> result_promise;
+        };
+
+
+        class MultithreadedCommand : public BaseCommandInterface
+        {
+            public:
+            MultithreadedCommand()
+            {
+                stopper = std::make_shared<std::stop_source>();
+            }
+
+
+            void set_tick_rate(unsigned int rate_ms) override
+            {
+                std::scoped_lock lock(tick_rate_mutex);
+                this->tick_rate_ms = rate_ms;
+            }
+
+
+            /**
+             * @brief Gets a future representing the command's execution result.
+             *
+             * The future will be completed with either SUCCESS or FAILED when the command finishes.
+             */
+            std::future<ExecutionResult> get_result_future() override
+            {
+                std::scoped_lock lock(promise_mutex);
+                try
+                {
+                    return this->result_promise.get_future();
+                }
+                catch (std::exception e)
+                {
+                    std::string msg = "Tried to get command result future more than one time: " + std::string(e.what()) + "\n";
+                    throw std::runtime_error(msg);
+                }
+            }
+
+
+            /**
+             * @brief Starts executing the command.
+             *
+             * If a command is already running (exists in execution_thread), returns ALREADY_RUNNING.
+             * Otherwise, starts a new thread and returns STARTED.
+             */
+            StartExecutionResult execute()
+            {
+                std::scoped_lock lock(command_mutex);
+                if (execution_thread)
+                {
+                    return StartExecutionResult::ALREADY_RUNNING;
+                }
+                else
+                {
+                    execution_thread = std::make_shared<std::jthread>(std::bind(&MultithreadedCommand::_loop, this));
+                    return StartExecutionResult::STARTED;
+                }
+            }
+
+
+            private:
             std::shared_ptr<std::stop_source> stopper;
             std::shared_ptr<std::jthread> execution_thread;
-            
+
             std::mutex command_mutex;
             std::mutex promise_mutex;
             std::mutex tick_rate_mutex;
-            // Id id;
-            
 
             /**
              * @brief Main loop for command execution.
@@ -154,28 +205,16 @@ namespace uavsdk
             {
                 while (not stopper->stop_requested())
                 {
+                    std::scoped_lock lock(tick_rate_mutex);
                     _tick();
                 }
                 this->handle_stop();
-            }
-
-
-            /**
-             * @brief Periodically executes core logic of the command.
-             *
-             * Calls logic_tick() and waits for the next tick based on tick_rate_ms.
-             */
-            void _tick()
-            {
-                std::scoped_lock(tick_rate_mutex);
-                this->logic_tick();
-                std::this_thread::sleep_for(std::chrono::milliseconds(this->tick_rate_ms));
             }
         };
 
 
         template <typename Id>
-        class CommandInterfaceWithId : public BaseCommandInterface
+        class CommandInterfaceWithId : public SingleProccessCommandInterface
         {
             public:
 

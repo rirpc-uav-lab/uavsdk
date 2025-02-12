@@ -4,7 +4,7 @@
   <name>uavsdk</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="yyootttaa@gmail.com">leev</maintainer>
+  <maintainer email="yyootttaa@gmail.com">Andrey Leshchev-Romanenko</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
