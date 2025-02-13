@@ -11,16 +11,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(ament_cmake REQUIRED)
 find_package(MAVSDK REQUIRED)
 
-# find_package(backward_ros REQUIRED)
+find_package(backward_ros REQUIRED)
 
-# include(FetchContent)
+include(FetchContent)
 
-# # Also requires one of: libbfd (gnu binutils), libdwarf, libdw (elfutils)
-# FetchContent_Declare(Backward    #Note: For some reason I ran into issues when the target here is called backwards with a small b at the beginning
-#     GIT_REPOSITORY https://github.com/bombela/backward-cpp
-#     GIT_TAG master  # or a version tag, such as v1.6
-# )
-# FetchContent_MakeAvailable(Backward)
+# Also requires one of: libbfd (gnu binutils), libdwarf, libdw (elfutils)
+FetchContent_Declare(Backward    #Note: For some reason I ran into issues when the target here is called backwards with a small b at the beginning
+    GIT_REPOSITORY https://github.com/bombela/backward-cpp
+    GIT_TAG master  # or a version tag, such as v1.6
+)
+FetchContent_MakeAvailable(Backward)
 
 
 set(UTILS_LIB_SOURCES include/uavsdk/utils/conversion_functions.hpp include/uavsdk/utils/cpp_custom_extras.hpp)
@@ -39,8 +39,41 @@ add_library(mavsdk_fcu_tel_collector_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
 set_target_properties(mavsdk_fcu_tel_collector_lib PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(mavsdk_fcu_tel_collector_lib MAVSDK::mavsdk useful_data_lib utils_lib)
 
+set(DATA_ADAPTERS_LIB_ROS2
+include/uavsdk/data_adpters/ros2/geometry_msgs/pose.hpp
+include/uavsdk/data_adpters/ros2/geometry_msgs/point32.hpp
+include/uavsdk/data_adpters/ros2/geometry_msgs/quaternion.hpp
+)
+add_library(data_adpters_lib_ros2 SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
+set_target_properties(data_adpters_lib_ros2 PROPERTIES LINKER_LANGUAGE CXX)
+
+
+set(CMD_MANAGING_LIB 
+include/uavsdk/command_manager/command_interface.hpp 
+include/uavsdk/command_manager/manager.hpp
+)
+add_library(cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
+set_target_properties(cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
+
+
+set(AGRILAB_CMD_MANAGING_LIB
+include/uavsdk/command_manager/impl/agrilab_cmd_manager/cmd_manager.hpp
+include/uavsdk/command_manager/impl/agrilab_cmd_manager/command_data.hpp
+include/uavsdk/command_manager/impl/agrilab_cmd_manager/external_resource.hpp
+include/uavsdk/command_manager/impl/agrilab_cmd_manager/commands/take_off.hpp
+)
+add_library(agrilab_cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
+set_target_properties(agrilab_cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(agrilab_cmd_managing_lib cmd_managing_lib data_adpters_lib_ros2) # backward_object)
+
+
+
 add_executable(tests src/tests.cpp)
 target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib)# backward_object)
+
+add_executable(command_tests src/command_tests.cpp)
+target_link_libraries(command_tests MAVSDK::mavsdk mavsdk_fcu_tel_collector_lib agrilab_cmd_managing_lib)# backward_object)
+
 
 # add_executable(inheritance_tests src/inheritance_tests.cpp)
 # target_link_libraries(inheritance_tests useful_data_lib backward_object)
@@ -48,6 +81,7 @@ target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_
 
 install(TARGETS
   tests
+  command_tests
   # inheritance_tests
   DESTINATION lib/${PROJECT_NAME}
 )

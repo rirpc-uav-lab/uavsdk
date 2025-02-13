@@ -24,6 +24,7 @@ namespace uavsdk
         class DistanceSensorData : public useful_di::TypedDataObject<mavsdk::Telemetry::DistanceSensor>
         {
             public:
+            bool initialized = false;
             DistanceSensorData(mavsdk::Telemetry::DistanceSensor msg, std::string message_name) : useful_di::TypedDataObject<mavsdk::Telemetry::DistanceSensor>(message_name)
             {
                 this->___set_type();
@@ -37,6 +38,7 @@ namespace uavsdk
                 this->data["orientation.roll_deg"] = msg.orientation.roll_deg;
                 this->data["orientation.yaw_deg"] = msg.orientation.yaw_deg;
                 this->data["initialized"] = true;
+                this->initialized = true;
             }
 
             DistanceSensorData(std::string message_name) : useful_di::TypedDataObject<mavsdk::Telemetry::DistanceSensor>(message_name)
@@ -59,6 +61,7 @@ namespace uavsdk
         class FlightModeData : public useful_di::TypedDataObject<mavsdk::Telemetry::FlightMode>
         {
             public:
+            bool initialized = false;
             FlightModeData(mavsdk::Telemetry::FlightMode msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::FlightMode>(message_name)
             {
                 this->___set_type();
@@ -67,6 +70,7 @@ namespace uavsdk
                 data = nlohmann::json();
                 data["flight_mode"] = utils::conversions::mavsdk_ext::convert_flight_mode_to_str(msg);
                 this->data["initialized"] = true;
+                this->initialized = true;
             }
             
             FlightModeData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::FlightMode>(message_name)
@@ -89,6 +93,7 @@ namespace uavsdk
         class AttitudeEulerData : public useful_di::TypedDataObject<mavsdk::Telemetry::EulerAngle>
         {
             public:
+            bool initialized = false;
             AttitudeEulerData(mavsdk::Telemetry::EulerAngle msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::EulerAngle>(message_name)
             {
                 this->___set_type();
@@ -99,6 +104,7 @@ namespace uavsdk
                 data["roll_deg"] = msg.roll_deg;
                 data["yaw_deg"] = msg.yaw_deg;
                 this->data["initialized"] = true;
+                this->initialized = true;
             }
 
             AttitudeEulerData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::EulerAngle>(message_name)
@@ -120,6 +126,7 @@ namespace uavsdk
         class PositionData : public useful_di::TypedDataObject<mavsdk::Telemetry::Position>
         {
             public:
+            bool initialized = false;
             PositionData(mavsdk::Telemetry::Position msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::Position>(message_name)
             {
                 this->___set_type();
@@ -131,6 +138,7 @@ namespace uavsdk
                 data["longitude_deg"] = msg.longitude_deg;
                 data["relative_altitude_m"] = msg.relative_altitude_m;
                 this->data["initialized"] = true;
+                this->initialized = true;
             }
 
             PositionData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Position>(message_name)
@@ -153,6 +161,7 @@ namespace uavsdk
         class HeadingData : public useful_di::TypedDataObject<mavsdk::Telemetry::Heading>
         {
             public:
+            bool initialized = false;
             HeadingData(mavsdk::Telemetry::Heading msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::Heading>(message_name)
             {
                 this->___set_type();
@@ -161,6 +170,7 @@ namespace uavsdk
                 data = nlohmann::json();
                 data["heading_deg"] = msg.heading_deg;
                 this->data["initialized"] = true;
+                this->initialized = true;
             }
 
             HeadingData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Heading>(message_name)
@@ -183,6 +193,7 @@ namespace uavsdk
         class FcuHealthData : public useful_di::TypedDataObject<mavsdk::Telemetry::Health>
         {
             public:
+            bool initialized = false;
             FcuHealthData(mavsdk::Telemetry::Health msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::Health>(message_name)
             {
                 this->___set_type();
@@ -197,6 +208,7 @@ namespace uavsdk
                 data["is_local_position_ok"] = msg.is_local_position_ok;
                 data["is_magnetometer_calibration_ok"] = msg.is_magnetometer_calibration_ok;
                 this->data["initialized"] = true;
+                this->initialized = true;
             }
 
             FcuHealthData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Health>(message_name)
@@ -219,6 +231,7 @@ namespace uavsdk
         class GpsInfoData : public useful_di::TypedDataObject<mavsdk::Telemetry::GpsInfo>
         {
             public:
+            bool initialized = false;
             GpsInfoData(mavsdk::Telemetry::GpsInfo msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::GpsInfo>(message_name)
             {
                 this->___set_type();
@@ -228,6 +241,7 @@ namespace uavsdk
                 data["fix_type"] = utils::conversions::mavsdk_ext::convert_fix_type_to_str(msg.fix_type);
                 data["num_satellites"] = msg.num_satellites;
                 this->data["initialized"] = true;
+                this->initialized = true;
             }
             
             GpsInfoData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::GpsInfo>(message_name)
@@ -250,6 +264,7 @@ namespace uavsdk
         class BatteryData : public useful_di::TypedDataObject<mavsdk::Telemetry::Battery>
         {
             public:
+            bool initialized = false;
             BatteryData(mavsdk::Telemetry::Battery msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::Battery>(message_name)
             {
                 this->___set_type();
@@ -263,6 +278,7 @@ namespace uavsdk
                 data["temperature_degc"] = msg.temperature_degc;
                 data["voltage_v"] = msg.voltage_v;
                 this->data["initialized"] = true;
+                this->initialized = true;
             }
 
             BatteryData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::Battery>(message_name)
@@ -285,6 +301,7 @@ namespace uavsdk
         class LandedStateData : public useful_di::TypedDataObject<mavsdk::Telemetry::LandedState>
         {
             public:
+            bool initialized = false;
             LandedStateData(mavsdk::Telemetry::LandedState msg, std::string message_name) : TypedDataObject<mavsdk::Telemetry::LandedState>(message_name)
             {
                 this->___set_type();
@@ -319,6 +336,7 @@ namespace uavsdk
                 
                 this->data["initialized"] = true;
 
+                this->initialized = true;
             }
 
             LandedStateData(std::string message_name) : TypedDataObject<mavsdk::Telemetry::LandedState>(message_name)
@@ -863,7 +881,32 @@ namespace uavsdk
                 this->decorated_composite->add_data(data);
             }
 
-            
+            // bool all_data_initialized()
+            // {
+            //     bool init = true; 
+            //     std::shared_ptr<useful_di::UniMapStr> storage = std::dynamic_pointer_cast<useful_di::UniMapStr>(this->decorated_composite->get_msg());
+            //     int i = 0;
+
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<DistanceSensorData>(this->distance_sensor_observer_p->get_data())->get_name(), this->distance_sensor_observer_p->get_data());
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<FlightModeData>(this->flight_mode_observer_p->get_data())->get_name(), this->flight_mode_observer_p->get_data());
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<AttitudeEulerData>(this->attitude_euler_observer_p->get_data())->get_name(), this->attitude_euler_observer_p->get_data());
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<PositionData>(this->home_position_observer_p->get_data())->get_name(), this->home_position_observer_p->get_data());
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<PositionData>(this->uav_position_observer_p->get_data())->get_name(), this->uav_position_observer_p->get_data());
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<HeadingData>(this->uav_heading_observer_p->get_data())->get_name(), this->uav_heading_observer_p->get_data());
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<FcuHealthData>(this->fcu_health_observer_p->get_data())->get_name(), this->fcu_health_observer_p->get_data());
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<GpsInfoData>(this->gps_info_observer_p->get_data())->get_name(), this->gps_info_observer_p->get_data());
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<BatteryData>(this->battery_observer_p->get_data())->get_name(), this->battery_observer_p->get_data());
+            //     this->decorated_composite->add_data(std::dynamic_pointer_cast<LandedStateData>(this->landed_state_observer_p->get_data())->get_name(), this->landed_state_observer_p->get_data());
+
+            //     for (auto it = storage->begin(); it != storage->end(); it++)
+            //     {
+            //         bool _init = std::dynamic_pointer_cast<useful_di::UniversalDataInterface<nlohmann::json>>(it->second)->get_data()["initialized"];
+            //         init = init and _init;
+            //         std::cout << "\nall_data_initialized: " << it->second->___get_type() << " = " << _init << "\n";
+            //     }
+
+            //     return init;
+            // }
 
             void add_data(std::string key, std::shared_ptr<TypeInterface> data)
             {
@@ -874,8 +917,18 @@ namespace uavsdk
             {
                 mavsdk::Telemetry::Health health = std::dynamic_pointer_cast<FcuHealthData>(this->get_msg()->at("fcu_health"))->get_msg();
                 bool all_ok = health.is_accelerometer_calibration_ok and health.is_armable and health.is_global_position_ok and health.is_gyrometer_calibration_ok and health.is_home_position_ok and health.is_local_position_ok and health.is_magnetometer_calibration_ok;
+
+                // std::cout << "health.is_accelerometer_calibration_ok: " << health.is_accelerometer_calibration_ok << "\n"; 
+                // std::cout << "health.is_armable: " << health.is_armable << "\n"; 
+                // std::cout << "health.is_global_position_ok: " << health.is_global_position_ok << "\n"; 
+                // std::cout << "health.is_gyrometer_calibration_ok: " << health.is_gyrometer_calibration_ok << "\n"; 
+                // std::cout << "health.is_home_position_ok: " << health.is_home_position_ok << "\n"; 
+                // std::cout << "health.is_local_position_ok: " << health.is_local_position_ok << "\n"; 
+                // std::cout << "health.is_magnetometer_calibration_ok: " << health.is_magnetometer_calibration_ok << "\n"; 
+                
                 return all_ok;
             }
+
 
         private:
             std::shared_ptr<useful_di::DataCompositeJson> decorated_composite;
@@ -913,7 +966,13 @@ namespace uavsdk
 
             nlohmann::json _get_data() override
             {
-                std::cout << "TelemetryDataComposite: " << std::dynamic_pointer_cast<DistanceSensorData>(this->distance_sensor_observer_p->get_data())->get_name() << "\n";
+                // while (not this->all_data_initialized())
+                // {
+                //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                //     std::cout << "\n\n\nDATA NOT READY!!!\n\n\n";
+                //     std::cout << "ready: " << this->all_data_initialized() << "\n";
+                // }
+                // std::cout << "TelemetryDataComposite: " << std::dynamic_pointer_cast<DistanceSensorData>(this->distance_sensor_observer_p->get_data())->get_name() << "\n";
                 this->decorated_composite->add_data(std::dynamic_pointer_cast<DistanceSensorData>(this->distance_sensor_observer_p->get_data())->get_name(), this->distance_sensor_observer_p->get_data());
                 this->decorated_composite->add_data(std::dynamic_pointer_cast<FlightModeData>(this->flight_mode_observer_p->get_data())->get_name(), this->flight_mode_observer_p->get_data());
                 this->decorated_composite->add_data(std::dynamic_pointer_cast<AttitudeEulerData>(this->attitude_euler_observer_p->get_data())->get_name(), this->attitude_euler_observer_p->get_data());
@@ -930,7 +989,13 @@ namespace uavsdk
 
             std::shared_ptr<useful_di::DataStorageInterface<std::string>> _get_msg() override
             { 
-                std::cout << "TelemetryDataComposite: " << std::dynamic_pointer_cast<DistanceSensorData>(this->distance_sensor_observer_p->get_data())->get_name() << "\n";
+                // while (not this->all_data_initialized())
+                // {
+                //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                //     std::cout << "\n\n\nDATA NOT READY!!!\n\n\n";
+                //     std::cout << "ready: " << this->all_data_initialized() << "\n";
+                // }
+                // std::cout << "TelemetryDataComposite: " << std::dynamic_pointer_cast<DistanceSensorData>(this->distance_sensor_observer_p->get_data())->get_name() << "\n";
                 this->decorated_composite->add_data(std::dynamic_pointer_cast<DistanceSensorData>(this->distance_sensor_observer_p->get_data())->get_name(), this->distance_sensor_observer_p->get_data());
                 this->decorated_composite->add_data(std::dynamic_pointer_cast<FlightModeData>(this->flight_mode_observer_p->get_data())->get_name(), this->flight_mode_observer_p->get_data());
                 this->decorated_composite->add_data(std::dynamic_pointer_cast<AttitudeEulerData>(this->attitude_euler_observer_p->get_data())->get_name(), this->attitude_euler_observer_p->get_data());

@@ -47,7 +47,7 @@ namespace uavsdk
             public:
             BaseCommandInterface()
             {
-                tick_rate_ms = 100;
+                tick_rate_ms = 10;
             }
 
 
@@ -56,11 +56,12 @@ namespace uavsdk
              *
              * The future will be completed with either SUCCESS or FAILED when the command finishes.
              */
-            virtual std::future<ExecutionResult> get_result_future()
+            virtual std::shared_future<uavsdk::command_manager::ExecutionResult> get_result_future()
             {
                 try
                 {
-                    return this->result_promise.get_future();
+                    res_future = this->result_promise.get_future();
+                    return res_future.share();
                 }
                 catch (std::exception e)
                 {
@@ -78,6 +79,7 @@ namespace uavsdk
 
             protected:
             std::promise<ExecutionResult> result_promise;
+            std::future<ExecutionResult> res_future;
             unsigned int tick_rate_ms;
 
 
@@ -114,15 +116,51 @@ namespace uavsdk
             public:
             void tick()
             {
+                // std::cout <<"\nSingleProccessCommandInterface::tick()\n";
                 if (not stop_requested)
                 {
                     this->_tick();
+                    // std::cout <<"\nSingleProccessCommandInterface::tick() -- not stop requested\n";
                 }
                 else
                 {
+                    // std::cout <<"\nSingleProccessCommandInterface::tick() -- stop requested\n";
                     this->handle_stop();
                 }
             }
+            
+            
+            void stop(ExecutionResult result=ExecutionResult::FAILED, std::string debug="")
+            {
+
+                std::string res;
+                
+                if (result == ExecutionResult::FAILED) res = "failed";
+                else res = "success";
+                
+                std::cout <<"\nSingleProccessCommandInterface::stop() with result: " + res + "\n";
+                this->result_promise.set_value(result);
+                stop_requested = true;
+
+                if (debug != "")
+                {
+                    std::cout << "stop debug: " << debug << "\n";
+                }
+                // try 
+                // {std::scoped_lock lock(command_mutex);
+                //     stopper->request_stop();
+                //     execution_thread->join();
+                //     this->execution_thread = nullptr;
+                //     std::cout << "BaseCommandInterface: DESTROYED COMMAND\n";
+                // }
+                // catch (std::exception& e)
+                // {
+                //     std::cout << "BaseCommandInterface: FAILED TO DESTROY COMMAND: " << e.what() << "\n";
+                // }
+                // this->handle_stop();
+
+            }
+
 
             private:
             bool stop_requested = false;
@@ -152,12 +190,13 @@ namespace uavsdk
              *
              * The future will be completed with either SUCCESS or FAILED when the command finishes.
              */
-            std::future<ExecutionResult> get_result_future() override
+            std::shared_future<uavsdk::command_manager::ExecutionResult>  get_result_future() override
             {
                 std::scoped_lock lock(promise_mutex);
                 try
                 {
-                    return this->result_promise.get_future();
+                    res_future = this->result_promise.get_future();
+                    return res_future.share();
                 }
                 catch (std::exception e)
                 {

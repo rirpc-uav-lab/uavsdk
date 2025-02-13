@@ -14,7 +14,7 @@ namespace uavsdk
                 class Pose
                 {
                     public:
-                    Point32 pose;
+                    Point32 position;
                     Quaternion orientation;
                 };
             };

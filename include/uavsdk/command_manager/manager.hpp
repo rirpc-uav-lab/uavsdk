@@ -5,121 +5,149 @@
 
 #include <uavsdk/command_manager/command_interface.hpp>
 
-class CommandExecutorInterface
+
+
+namespace uavsdk
 {
-    public: 
-    void set_command(std::shared_ptr<uavsdk::command_manager::BaseCommandInterface> _command)
+    namespace command_manager
     {
-        this->current_command = _command;
-        
-    }
-
-    virtual std::pair<uavsdk::command_manager::StartExecutionResult, std::future<uavsdk::command_manager::ExecutionResult>> start_execution() = 0;
-
-    virtual void stop_execution() = 0;
-
-
-    protected:
-    std::shared_ptr<uavsdk::command_manager::BaseCommandInterface> current_command;
-};
-
-
-template<typename Id>
-class CommandWithIdExecutorInterface : public CommandExecutorInterface
-{
-    public:
-    Id get_current_command_id()
-    {
-        return current_command_id;
-    }
-
-    protected:
-    Id current_command_id;
-};
-
-
-template <typename Id> 
-class CommandExecutor : public CommandWithIdExecutorInterface<Id>
-{
-    public:
-    std::pair<uavsdk::command_manager::StartExecutionResult, std::future<uavsdk::command_manager::ExecutionResult>> start_execution() override
-    {
-        bool _command_executing;
+        class CommandExecutorInterface
         {
-            std::scoped_lock lock(command_mutex);
-            _command_executing = this->command_executing;
-        }
-
-        if (not _command_executing)
-        {
+            public: 
+            void set_command(std::shared_ptr<uavsdk::command_manager::BaseCommandInterface> _command)
             {
-                std::scoped_lock lock(command_mutex);
-                command_executing = true;
+                this->current_command = _command;
+                
+            }
+        
+            virtual uavsdk::command_manager::StartExecutionResult start_execution() = 0;
+        
+            virtual void stop_execution() = 0;
+        
+        
+            protected:
+            std::shared_ptr<uavsdk::command_manager::BaseCommandInterface> current_command;
+        };
+        
+        
+        template<typename Id>
+        class CommandWithIdExecutorInterface : public CommandExecutorInterface
+        {
+            public:
+            Id get_current_command_id()
+            {
+                return current_command_id;
+            }
+        
+            protected:
+            Id current_command_id;
+        };
+        
+        
+        
+        template <typename Id> 
+        class CommandExecutor : public CommandWithIdExecutorInterface<Id>
+        {
+            public:
+            uavsdk::command_manager::StartExecutionResult start_execution() override
+            {
+                bool _command_executing;
+                {
+                    std::scoped_lock lock(command_mutex);
+                    _command_executing = this->command_executing;
+                }
+        
+                if (not _command_executing)
+                {
+                    {
+                        std::scoped_lock lock(command_mutex);
+                        command_executing = true;
+                    }
+        
+                    this->_set_current_command_id(std::dynamic_pointer_cast<uavsdk::command_manager::CommandInterfaceWithId<Id>>(this->current_command)->get_id());
+        
+                    this->executor_thread = std::make_shared<std::thread>(std::bind(&CommandExecutor::_loop, this));
+                    this->executor_thread->detach();
+        
+                    return uavsdk::command_manager::StartExecutionResult::STARTED;
+                } 
+                else
+                {
+                    return uavsdk::command_manager::StartExecutionResult::ALREADY_RUNNING;
+                }
             }
 
-            this->executor_thread = std::make_shared<std::thread>(std::bind(&CommandExecutor::_loop, this));
-            this->executor_thread->detach();
 
-            return std::make_pair<uavsdk::command_manager::StartExecutionResult, std::future<uavsdk::command_manager::ExecutionResult>>(uavsdk::command_manager::StartExecutionResult::STARTED, this->current_command->get_result_future());
-        } 
-        else
-        {
-            return std::make_pair<uavsdk::command_manager::StartExecutionResult, std::future<uavsdk::command_manager::ExecutionResult>>(uavsdk::command_manager::StartExecutionResult::ALREADY_RUNNING, std::future<uavsdk::command_manager::ExecutionResult>());
-        }
-    }
-
-
-    void stop()
-    {
-        bool _command_executing;
-
-        {
-            std::scoped_lock lock(command_mutex);
-            _command_executing = this->command_executing;
-        }
-
-        if (not _command_executing)
-        {
-            return;
-        }
-        else
-        {
-            std::scoped_lock lock(command_mutex);
-            this->command_executing = false;
-        }
-        this->executor_thread = nullptr;
-    }
-
-
-    private:
-    std::mutex command_mutex;
-    bool command_executing = false;
-    std::shared_ptr<std::thread> executor_thread; 
-
-    void _loop()
-    {
-        bool _command_executing;
-
-        {
-            std::scoped_lock lock(command_mutex);
-            _command_executing = this->command_executing;
-        }
+            std::shared_future<uavsdk::command_manager::ExecutionResult> get_result_future()
+            {
+                return this->current_command->get_result_future();
+            } 
         
-        while (_command_executing)
-        {
-            this->_executor_tick();
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            std::scoped_lock lock(command_mutex);
-            _command_executing = this->command_executing;
-        }
+        
+            void stop_execution() override
+            {
+                bool _command_executing;
+        
+                {
+                    std::scoped_lock lock(command_mutex);
+                    _command_executing = this->command_executing;
+                }
+        
+                if (not _command_executing)
+                {
+                    return;
+                }
+                else
+                {
+                    std::scoped_lock lock(command_mutex);
+                    this->command_executing = false;
+                }
+                this->executor_thread = nullptr;
+                this->_set_current_command_id_to_idle();
+            }
+        
+        
+            protected:
+            void _set_current_command_id(Id id)
+            {
+                this->current_command_id = id;
+            }
+        
+        
+            virtual void _set_current_command_id_to_idle() = 0;
+        
+        
+            private:
+            std::mutex command_mutex;
+            bool command_executing = false;
+            std::shared_ptr<std::thread> executor_thread; 
+        
+            void _loop()
+            {
+                bool _command_executing;
+        
+                {
+                    std::scoped_lock lock(command_mutex);
+                    _command_executing = this->command_executing;
+                }
+                
+                while (_command_executing)
+                {
+                    this->_executor_tick();
+        
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    std::scoped_lock lock(command_mutex);
+                    _command_executing = this->command_executing;
+                }
+            }
+        
+            void _executor_tick()
+            {
+                std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command)->tick();
+            }
+        };
     }
-
-    void _executor_tick()
-    {
-        std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command)->tick();
-    }
-};
+}
 
 
 
