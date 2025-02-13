@@ -2,6 +2,8 @@
 #include <memory>
 #include <map>
 
+#include <uavsdk/utils/cpp_custom_extras.hpp>
+
 namespace useful_di
 {
 
@@ -45,7 +47,10 @@ namespace useful_di
          * не уверены, финальная ли она, сделайте реализацию этого метода
          * виртуальной, чтобы ее можно было переопределить
          */
-        virtual void ___set_type() = 0;
+        virtual void ___set_type()
+        {
+            this->___type = typeid(*this).name();
+        };
     };
 
 

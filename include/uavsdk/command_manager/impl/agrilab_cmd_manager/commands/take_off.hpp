@@ -23,16 +23,116 @@ namespace uavsdk
     {
         namespace commands
         {
-            class TakeOff : public uavsdk::command_manager::CommandInterface<std::string, uavsdk::agrilab::CmdExternalResources, uavsdk::agrilab::TakeOffData>
+            class CheckOffboard : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string, uavsdk::agrilab::CmdExternalResources, void>
             {
                 public:
-                TakeOff(std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<TakeOffData> data)
+                CheckOffboard(std::shared_ptr<CmdExternalResources> ext_res)
+                {
+                    this->set_external_resource(ext_res);
+                    this->set_id("check_offboard");
+                }
+
+                protected:
+                void logic_tick() override
+                {
+                    auto landed_state = std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->external_resource->telem->get_msg()->at("landed_state"));
+
+                    if (not landed_state->initialized)
+                    {
+                        return;
+                    }
+
+                    if (landed_state->get_msg() != mavsdk::Telemetry::LandedState::OnGround)
+                    {   
+                        std::cout << "TakeOff: not on ground!";
+                        std::cout << landed_state->get_data() << "\n\n";
+                        // this->action
+                        this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "72");
+                    }
+
+                    auto flight_mode = std::dynamic_pointer_cast<fcu_tel_collector::FlightModeData>(this->external_resource->telem->get_msg()->at("flight_mode"));
+
+                    if (not flight_mode->initialized)
+                    {
+                        return;
+                    }
+
+                    auto msg = flight_mode->get_msg();
+                    std::cout << "current_flight_mode = " << utils::conversions::mavsdk_ext::convert_flight_mode_to_str(msg) << "\n";
+
+                    if (flight_mode->get_msg() == mavsdk::Telemetry::FlightMode::Offboard)
+                    {
+                        int i = 20;
+                        auto res = this->external_resource->action->hold();
+                        // auto res = action->hold();
+                        while (res != mavsdk::Action::Result::Success and i--)
+                        {
+                            std::this_thread::sleep_for(50ms);
+                            res = this->external_resource->action->hold();
+                        }
+                        if (i <= 0) this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "92");
+                    }
+
+                    return;
+                }
+
+
+                void handle_stop() override
+                {
+                    auto res = this->external_resource->action->hold();
+                    while (res != mavsdk::Action::Result::Success)
+                    {
+                        res = this->external_resource->action->hold();
+                    }
+                }
+            };
+
+
+            class CheckSetpoint : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string, uavsdk::agrilab::CmdExternalResources, uavsdk::agrilab::TakeOffData>
+            {
+                protected:
+                void logic_tick() override
+                {
+                    mission_item = uavsdk::data_adapters::ros2::geometry_msgs::Pose();
+                    // mission_item = geometry_msgs::msg::Pose();
+                    if (this->command_data->height_pose.size() > 0) 
+                    {
+                        auto pose_setpoint = this->command_data->height_pose.at(0);
+                        mission_item.position.x = pose_setpoint.position.x; 
+                        mission_item.position.y = pose_setpoint.position.y; 
+                        mission_item.position.z = pose_setpoint.position.z; 
+                        mission_item.orientation.x = pose_setpoint.orientation.x; 
+                        mission_item.orientation.y = pose_setpoint.orientation.y; 
+                        mission_item.orientation.z = pose_setpoint.orientation.z; 
+                        mission_item.orientation.w = pose_setpoint.orientation.w;
+                        
+                        if (!mission_item.position.z > 0)
+                        {
+                            this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "118");
+                        }
+                        #warning какую высоту максимальную можно задать при take_off или мне её Димон отправляет???? СЕЙЧАС 30 МЕТРОВ
+                        if (!(z_coor <= 30))
+                        {
+                            this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "123");
+                        }
+                    }
+                    else this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "126");
+                    states.erase(states.begin());
+                    return;
+                }
+            }
+
+            class TakeOff : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string, uavsdk::agrilab::CmdExternalResources, uavsdk::agrilab::TakeOffData>
+            {
+                public:
+                TakeOff(std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<TakeOffData> data, std::shared_ptr<useful_di::UniMapStr> blackboard_init)
                 {
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
+                    this->init_blackboard(blackboard_init);
                     this->set_id("take_off"); // path_following
 
-                    states = {"check_offboard", "check_setpoint", "wait_for_health", "arm", "start_takeoff", "check_position"};
+                    states = {"wait_for_health", "arm", "start_takeoff", "check_position"};
                 }
 
 
@@ -56,82 +156,8 @@ namespace uavsdk
                     //     }
                     // }
 
-                    if (states.at(0) == "check_offboard")
-                    {
-                        std::cout << this->get_id() << ": " << states.at(0) << "\n";
-                        auto landed_state = std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->external_resource->telem->get_msg()->at("landed_state"));
-
-                        if (not landed_state->initialized)
-                        {
-                            return;
-                        }
-
-                        if (landed_state->get_msg() != mavsdk::Telemetry::LandedState::OnGround)
-                        {   
-                            std::cout << "TakeOff: not on ground!";
-                            std::cout << landed_state->get_data() << "\n\n";
-                            // this->action
-                            this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "72");
-                        }
-
-                        auto flight_mode = std::dynamic_pointer_cast<fcu_tel_collector::FlightModeData>(this->external_resource->telem->get_msg()->at("flight_mode"));
-
-                        if (not flight_mode->initialized)
-                        {
-                            return;
-                        }
-
-                        auto msg = flight_mode->get_msg();
-                        std::cout << "current_flight_mode = " << utils::conversions::mavsdk_ext::convert_flight_mode_to_str(msg) << "\n";
-
-                        if (flight_mode->get_msg() == mavsdk::Telemetry::FlightMode::Offboard)
-                        {
-                            int i = 20;
-                            auto res = this->external_resource->action->hold();
-                            // auto res = action->hold();
-                            while (res != mavsdk::Action::Result::Success and i--)
-                            {
-                                std::this_thread::sleep_for(50ms);
-                                res = this->external_resource->action->hold();
-                            }
-                            if (i <= 0) this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "92");
-                        }
-
-                        states.erase(states.begin());
-                        return;
-                    }
-
-
                     else if (states.at(0) == "check_setpoint")
-                    {
-                        std::cout << this->get_id() << ": " << states.at(0) << "\n";
-                        mission_item = uavsdk::data_adapters::ros2::geometry_msgs::Pose();
-                        // mission_item = geometry_msgs::msg::Pose();
-                        if (this->command_data->height_pose.size() > 0) 
-                        {
-                            auto pose_setpoint = this->command_data->height_pose.at(0);
-                            mission_item.position.x = pose_setpoint.position.x; 
-                            mission_item.position.y = pose_setpoint.position.y; 
-                            mission_item.position.z = pose_setpoint.position.z; 
-                            mission_item.orientation.x = pose_setpoint.orientation.x; 
-                            mission_item.orientation.y = pose_setpoint.orientation.y; 
-                            mission_item.orientation.z = pose_setpoint.orientation.z; 
-                            mission_item.orientation.w = pose_setpoint.orientation.w;
-                            
-                            if (!mission_item.position.z > 0)
-                            {
-                                this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "118");
-                            }
-                            #warning какую высоту максимальную можно задать при take_off или мне её Димон отправляет???? СЕЙЧАС 30 МЕТРОВ
-                            if (!(z_coor <= 30))
-                            {
-                                this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "123");
-                            }
-                        }
-                        else this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "126");
-                        states.erase(states.begin());
-                        return;
-                    }
+                    {}
 
                     else if (states.at(0) == "wait_for_health")
                     {

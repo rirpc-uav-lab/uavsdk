@@ -47,7 +47,7 @@ namespace uavsdk
             public:
             BaseCommandInterface()
             {
-                tick_rate_ms = 10;
+                // tick_rate_ms = 10;
             }
 
 
@@ -71,16 +71,15 @@ namespace uavsdk
             }
 
 
-            virtual void set_tick_rate(unsigned int rate_ms)
-            {
-                this->tick_rate_ms = rate_ms;
-            }
+            // virtual void set_tick_rate(unsigned int rate_ms)
+            // {
+            //     this->tick_rate_ms = rate_ms;
+            // }
 
 
             protected:
             std::promise<ExecutionResult> result_promise;
             std::future<ExecutionResult> res_future;
-            unsigned int tick_rate_ms;
 
 
             /**
@@ -106,9 +105,9 @@ namespace uavsdk
             void _tick()
             {
                 this->logic_tick();
-                std::this_thread::sleep_for(std::chrono::milliseconds(this->tick_rate_ms));
             }
         };
+
 
 
         class SingleProccessCommandInterface : public BaseCommandInterface
@@ -169,91 +168,138 @@ namespace uavsdk
         };
 
 
-        class MultithreadedCommand : public BaseCommandInterface
+        class StagedCommandInterface : public SingleProccessCommandInterface
         {
             public:
-            MultithreadedCommand()
+            virtual void add_stage(std::shared_ptr<SingleProccessCommandInterface> new_stage)
             {
-                stopper = std::make_shared<std::stop_source>();
+                stages.push_back(new_stage);
             }
 
+            protected:
+            std::vector<std::shared_ptr<SingleProccessCommandInterface>> stages;
+            std::shared_future<ExecutionResult> current_stage_res_future;
 
-            void set_tick_rate(unsigned int rate_ms) override
+
+            virtual void logic_tick() override
             {
-                std::scoped_lock lock(tick_rate_mutex);
-                this->tick_rate_ms = rate_ms;
-            }
-
-
-            /**
-             * @brief Gets a future representing the command's execution result.
-             *
-             * The future will be completed with either SUCCESS or FAILED when the command finishes.
-             */
-            std::shared_future<uavsdk::command_manager::ExecutionResult>  get_result_future() override
-            {
-                std::scoped_lock lock(promise_mutex);
-                try
+                if (!stages.empty())
                 {
-                    res_future = this->result_promise.get_future();
-                    return res_future.share();
-                }
-                catch (std::exception e)
-                {
-                    std::string msg = "Tried to get command result future more than one time: " + std::string(e.what()) + "\n";
-                    throw std::runtime_error(msg);
-                }
-            }
+                    if (!current_stage_res_future.valid())
+                    {
+                        current_stage_res_future = this->stages.at(0)->get_result_future();
+                    }
 
-
-            /**
-             * @brief Starts executing the command.
-             *
-             * If a command is already running (exists in execution_thread), returns ALREADY_RUNNING.
-             * Otherwise, starts a new thread and returns STARTED.
-             */
-            StartExecutionResult execute()
-            {
-                std::scoped_lock lock(command_mutex);
-                if (execution_thread)
-                {
-                    return StartExecutionResult::ALREADY_RUNNING;
+                    if (current_stage_res_future.wait_for(10ms) != std::future_status::ready)
+                    {
+                        this->stages.at(0)->tick();
+                    }
+                    else 
+                    {
+                        ExecutionResult stage_status = current_stage_res_future.get();
+                        if (stage_status == ExecutionResult::SUCCESS)
+                        {
+                            stages.erase(stages.begin());
+                        }
+                        else
+                        {
+                            this->stop(ExecutionResult::FAILED);
+                        }
+                    }
                 }
                 else
                 {
-                    execution_thread = std::make_shared<std::jthread>(std::bind(&MultithreadedCommand::_loop, this));
-                    return StartExecutionResult::STARTED;
+                    this->stop(ExecutionResult::SUCCESS);
                 }
-            }
-
-
-            private:
-            std::shared_ptr<std::stop_source> stopper;
-            std::shared_ptr<std::jthread> execution_thread;
-
-            std::mutex command_mutex;
-            std::mutex promise_mutex;
-            std::mutex tick_rate_mutex;
-
-            /**
-             * @brief Main loop for command execution.
-             *
-             * Monitors the stopper and calls periodic logic tick.
-             */
-            void _loop()
-            {
-                while (not stopper->stop_requested())
-                {
-                    std::scoped_lock lock(tick_rate_mutex);
-                    _tick();
-                }
-                this->handle_stop();
             }
         };
 
 
+        // class MultithreadedCommand : public BaseCommandInterface
+        // {
+        //     public:
+        //     MultithreadedCommand()
+        //     {
+        //         stopper = std::make_shared<std::stop_source>();
+        //     }
+
+
+        //     void set_tick_rate(unsigned int rate_ms) override
+        //     {
+        //         std::scoped_lock lock(tick_rate_mutex);
+        //         this->tick_rate_ms = rate_ms;
+        //     }
+
+
+        //     /**
+        //      * @brief Gets a future representing the command's execution result.
+        //      *
+        //      * The future will be completed with either SUCCESS or FAILED when the command finishes.
+        //      */
+        //     std::shared_future<uavsdk::command_manager::ExecutionResult>  get_result_future() override
+        //     {
+        //         std::scoped_lock lock(promise_mutex);
+        //         try
+        //         {
+        //             res_future = this->result_promise.get_future();
+        //             return res_future.share();
+        //         }
+        //         catch (std::exception e)
+        //         {
+        //             std::string msg = "Tried to get command result future more than one time: " + std::string(e.what()) + "\n";
+        //             throw std::runtime_error(msg);
+        //         }
+        //     }
+
+
+        //     /**
+        //      * @brief Starts executing the command.
+        //      *
+        //      * If a command is already running (exists in execution_thread), returns ALREADY_RUNNING.
+        //      * Otherwise, starts a new thread and returns STARTED.
+        //      */
+        //     StartExecutionResult execute()
+        //     {
+        //         std::scoped_lock lock(command_mutex);
+        //         if (execution_thread)
+        //         {
+        //             return StartExecutionResult::ALREADY_RUNNING;
+        //         }
+        //         else
+        //         {
+        //             execution_thread = std::make_shared<std::jthread>(std::bind(&MultithreadedCommand::_loop, this));
+        //             return StartExecutionResult::STARTED;
+        //         }
+        //     }
+
+
+        //     private:
+        //     std::shared_ptr<std::stop_source> stopper;
+        //     std::shared_ptr<std::jthread> execution_thread;
+
+        //     std::mutex command_mutex;
+        //     std::mutex promise_mutex;
+        //     std::mutex tick_rate_mutex;
+
+        //     /**
+        //      * @brief Main loop for command execution.
+        //      *
+        //      * Monitors the stopper and calls periodic logic tick.
+        //      */
+        //     void _loop()
+        //     {
+        //         while (not stopper->stop_requested())
+        //         {
+        //             std::scoped_lock lock(tick_rate_mutex);
+        //             _tick();
+        //         }
+        //         this->handle_stop();
+        //     }
+        // };
+
+
         template <typename Id>
-        class CommandInterfaceWithId : public SingleProccessCommandInterface
+        class CommandInterfaceWithId : public StagedCommandInterface
         {
             public:
 
@@ -294,6 +340,10 @@ namespace uavsdk
         class CommandInterface : public CommandInterfaceWithId<Id>
         {
             public:
+            // std::shared_ptr<useful_di::UniMapStr> get_blackboard_pointer()
+            // {
+            //     return blackboard;
+            // }
             void set_external_resource(std::shared_ptr<ExternalResource> new_ext)
             {
                 external_resource = new_ext;
@@ -320,6 +370,56 @@ namespace uavsdk
             protected:
             std::shared_ptr<ExternalResource> external_resource;
             std::shared_ptr<CommandData> command_data;
+        };
+
+
+        template <typename Id, typename ExternalResource, typename CommandData>
+        class CommandInterfaceWithBlackboard : public CommandInterface<Id, ExternalResource, CommandData>
+        {
+            public:
+            void add_data_to_bb(std::string key, std::shared_ptr<useful_di::TypeInterface> data)
+            {
+                std::scoped_lock(bb_mutex);
+                blackboard->add_data(key, data);
+            }
+
+
+            std::vector<std::string> get_keys_from_blackboard()
+            {
+                std::scoped_lock(bb_mutex);
+                return blackboard->get_present_keys();
+            }
+
+
+            void remove_data_from_blackboard(std::string key)
+            {
+                std::scoped_lock(bb_mutex);
+                blackboard->remove_data(key);
+            }
+
+
+            void modify_data_on_blackboard(std::string key, std::shared_ptr<TypeInterface> new_data)
+            {
+                std::scoped_lock(bb_mutex);
+                blackboard->modify_data(key, new_data);
+            }
+
+
+            size_t blackboard_size()
+            {
+                return blackboard->size();
+            }
+
+
+            protected:
+            std::shared_ptr<useful_di::UniMapStr> blackboard; // shared_resource
+            std::mutex bb_mutex; // blackboard mutex
+
+
+            void init_blackboard(std::shared_ptr<useful_di::UniMapStr> init_bb)
+            {
+                this->blackboard = init_bb;
+            }
         };
     };
 };
