@@ -1,6 +1,28 @@
 #include <uavsdk/fcu_telemetry_collector/mavsdk_fcu_telemetry_collector.hpp>
 #include <uavsdk/useful_data_lib/useful_data_impl.hpp>
+#include <uavsdk/data_adapters/cxx/cxx.hpp>
 #include <iostream>
+
+
+
+bool test_type_deduction()
+{
+    bool success_flag = false;
+    
+    uavsdk::data_adapters::cxx::BasicDataAdapter<int> int_data(10);
+
+    std::cout << "BasicDataAdapter: " << int_data.get_data() << "\n";
+    int_data.set_data(15);
+    std::cout << "BasicDataAdapter: " << int_data.get_data() << "\n";
+
+    std::cout << "BasicDataAdapter type " << int_data.___get_type() << "\n";
+    std::cout << "utils::cppext::get_type<uavsdk::data_adapters::cxx::BasicDataAdapter<int>>() " << utils::cppext::get_type<uavsdk::data_adapters::cxx::BasicDataAdapter<int>>() << "\n";
+    
+    success_flag = int_data.___get_type() == utils::cppext::get_type<uavsdk::data_adapters::cxx::BasicDataAdapter<int>>();
+
+
+    return success_flag;
+}
 
 
 bool test_multitype_data_composite()
@@ -193,6 +215,7 @@ bool test_data_composite_json_map()
 int main()
 {
     int i = 0;
+    std::cout << "Res " << ++i << " = " << test_type_deduction() << "\n";
     std::cout << "Res " << ++i << " = " << test_multitype_data_composite() << "\n";
     std::cout << "Res " << ++i << " = " << test_unimap_container() << "\n";
     std::cout << "Res " << ++i << " = " << test_data_composite_json_map() << "\n";

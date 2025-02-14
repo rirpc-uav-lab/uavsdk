@@ -144,7 +144,7 @@ namespace uavsdk
             void _executor_tick()
             {
                 std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command)->tick();
-                std::this_thread::sleep_for(100ms);
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
         };
     }

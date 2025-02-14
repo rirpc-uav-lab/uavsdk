@@ -40,6 +40,7 @@ set_target_properties(mavsdk_fcu_tel_collector_lib PROPERTIES LINKER_LANGUAGE CX
 target_link_libraries(mavsdk_fcu_tel_collector_lib MAVSDK::mavsdk useful_data_lib utils_lib)
 
 set(DATA_ADAPTERS_LIB_ROS2
+include/uavsdk/data_adpters/cxx/cxx.hpp
 include/uavsdk/data_adpters/ros2/geometry_msgs/pose.hpp
 include/uavsdk/data_adpters/ros2/geometry_msgs/point32.hpp
 include/uavsdk/data_adpters/ros2/geometry_msgs/quaternion.hpp
@@ -69,7 +70,7 @@ target_link_libraries(agrilab_cmd_managing_lib cmd_managing_lib data_adpters_lib
 
 
 add_executable(tests src/tests.cpp)
-target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib)# backward_object)
+target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib data_adpters_lib_ros2)# backward_object)
 
 add_executable(command_tests src/command_tests.cpp)
 target_link_libraries(command_tests MAVSDK::mavsdk mavsdk_fcu_tel_collector_lib agrilab_cmd_managing_lib)# backward_object)

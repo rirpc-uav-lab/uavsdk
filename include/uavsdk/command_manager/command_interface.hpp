@@ -183,32 +183,41 @@ namespace uavsdk
 
             virtual void logic_tick() override
             {
+                // std::cout << "StagedCommandInterface::logic_tick()\n";
                 if (!stages.empty())
                 {
+                    std::cout <<"\t!stages.empty()\n";
                     if (!current_stage_res_future.valid())
                     {
+                        std::cout <<"\t\t!current_stage_res_future.valid()\n";
                         current_stage_res_future = this->stages.at(0)->get_result_future();
                     }
 
-                    if (current_stage_res_future.wait_for(10ms) != std::future_status::ready)
+                    if (current_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready)
                     {
+                        std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready\n";
                         this->stages.at(0)->tick();
                     }
                     else 
                     {
+                        std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready\n";
                         ExecutionResult stage_status = current_stage_res_future.get();
                         if (stage_status == ExecutionResult::SUCCESS)
                         {
+                            std::cout <<"\t\t\tstages.erase()\n";
                             stages.erase(stages.begin());
+                            current_stage_res_future = std::shared_future<ExecutionResult>();
                         }
                         else
                         {
+                            std::cout <<"\t\t\texecution failed.\n";
                             this->stop(ExecutionResult::FAILED);
                         }
                     }
                 }
                 else
                 {
+                    std::cout <<"\tstages.empty()\n";
                     this->stop(ExecutionResult::SUCCESS);
                 }
             }
@@ -377,6 +386,11 @@ namespace uavsdk
         class CommandInterfaceWithBlackboard : public CommandInterface<Id, ExternalResource, CommandData>
         {
             public:
+            CommandInterfaceWithBlackboard(std::shared_ptr<useful_di::UniMapStr> _blackboard)
+            {
+                init_blackboard(_blackboard);
+            }
+
             void add_data_to_bb(std::string key, std::shared_ptr<useful_di::TypeInterface> data)
             {
                 std::scoped_lock(bb_mutex);
@@ -398,10 +412,27 @@ namespace uavsdk
             }
 
 
-            void modify_data_on_blackboard(std::string key, std::shared_ptr<TypeInterface> new_data)
+            void modify_data_on_blackboard(std::string key, std::shared_ptr<useful_di::TypeInterface> new_data)
             {
                 std::scoped_lock(bb_mutex);
                 blackboard->modify_data(key, new_data);
+            }
+
+
+            template <typename T>
+            std::shared_ptr<T> bb_at(std::string key)
+            {
+                std::shared_ptr<useful_di::TypeInterface> data = this->blackboard->at(key);
+                
+                if (data->___get_type() == utils::cppext::get_type<T>())
+                {
+                    return std::dynamic_pointer_cast<T>(data);
+                }
+                else
+                {
+                    std::string msg = "CommandInterfaceWithBlackboard::at<T>(std::string key) error: tried conversion of type " + data->___get_type() + " to " + utils::cppext::get_type<T>() + "\n";
+                    throw std::runtime_error(msg);
+                }
             }
 
 
@@ -412,6 +443,13 @@ namespace uavsdk
 
 
             protected:
+            std::shared_ptr<useful_di::UniMapStr> get_bb_p()
+            {
+                return blackboard;
+            }
+
+
+            private:
             std::shared_ptr<useful_di::UniMapStr> blackboard; // shared_resource
             std::mutex bb_mutex; // blackboard mutex
 

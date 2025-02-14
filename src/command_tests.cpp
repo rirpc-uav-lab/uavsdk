@@ -43,7 +43,9 @@ int main()
     pose.position.z = 15;
     command_data->height_pose.push_back(pose); 
 
-    auto take_off_cmd = std::make_shared<uavsdk::agrilab::commands::TakeOff>(external_resource, command_data);
+    std::shared_ptr<useful_di::UniMapStr> blackboard_init =  std::make_shared<useful_di::UniMapStr>();
+
+    auto take_off_cmd = std::make_shared<uavsdk::agrilab::commands::TakeOff>(external_resource, command_data, blackboard_init);
     
     executor.set_command(take_off_cmd);
 
