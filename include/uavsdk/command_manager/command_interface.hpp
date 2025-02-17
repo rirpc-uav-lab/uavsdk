@@ -137,24 +137,24 @@ namespace uavsdk
                 if (result == ExecutionResult::FAILED) res = "failed";
                 else res = "success";
                 
-                std::cout <<"\nSingleProccessCommandInterface::stop() with result: " + res + "\n";
+                // std::cout <<"\nSingleProccessCommandInterface::stop() with result: " + res + "\n";
                 this->result_promise.set_value(result);
                 stop_requested = true;
 
                 if (debug != "")
                 {
-                    std::cout << "stop debug: " << debug << "\n";
+                    // std::cout << "stop debug: " << debug << "\n";
                 }
                 // try 
                 // {std::scoped_lock lock(command_mutex);
                 //     stopper->request_stop();
                 //     execution_thread->join();
                 //     this->execution_thread = nullptr;
-                //     std::cout << "BaseCommandInterface: DESTROYED COMMAND\n";
+                    // std::cout << "BaseCommandInterface: DESTROYED COMMAND\n";
                 // }
                 // catch (std::exception& e)
                 // {
-                //     std::cout << "BaseCommandInterface: FAILED TO DESTROY COMMAND: " << e.what() << "\n";
+                    // std::cout << "BaseCommandInterface: FAILED TO DESTROY COMMAND: " << e.what() << "\n";
                 // }
                 // this->handle_stop();
 
@@ -186,38 +186,38 @@ namespace uavsdk
                 // std::cout << "StagedCommandInterface::logic_tick()\n";
                 if (!stages.empty())
                 {
-                    std::cout <<"\t!stages.empty()\n";
+                    // std::cout <<"\t!stages.empty()\n";
                     if (!current_stage_res_future.valid())
                     {
-                        std::cout <<"\t\t!current_stage_res_future.valid()\n";
+                        // std::cout <<"\t\t!current_stage_res_future.valid()\n";
                         current_stage_res_future = this->stages.at(0)->get_result_future();
                     }
 
                     if (current_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready)
                     {
-                        std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready\n";
+                        // std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready\n";
                         this->stages.at(0)->tick();
                     }
                     else 
                     {
-                        std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready\n";
+                        // std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready\n";
                         ExecutionResult stage_status = current_stage_res_future.get();
                         if (stage_status == ExecutionResult::SUCCESS)
                         {
-                            std::cout <<"\t\t\tstages.erase()\n";
+                            // std::cout <<"\t\t\tstages.erase()\n";
                             stages.erase(stages.begin());
                             current_stage_res_future = std::shared_future<ExecutionResult>();
                         }
                         else
                         {
-                            std::cout <<"\t\t\texecution failed.\n";
+                            // std::cout <<"\t\t\texecution failed.\n";
                             this->stop(ExecutionResult::FAILED);
                         }
                     }
                 }
                 else
                 {
-                    std::cout <<"\tstages.empty()\n";
+                    // std::cout <<"\tstages.empty()\n";
                     this->stop(ExecutionResult::SUCCESS);
                 }
             }
@@ -393,28 +393,28 @@ namespace uavsdk
 
             void add_data_to_bb(std::string key, std::shared_ptr<useful_di::TypeInterface> data)
             {
-                std::scoped_lock(bb_mutex);
+                std::scoped_lock llock(bb_mutex);
                 blackboard->add_data(key, data);
             }
 
 
             std::vector<std::string> get_keys_from_blackboard()
             {
-                std::scoped_lock(bb_mutex);
+                std::scoped_lock llock(bb_mutex);
                 return blackboard->get_present_keys();
             }
 
 
             void remove_data_from_blackboard(std::string key)
             {
-                std::scoped_lock(bb_mutex);
+                std::scoped_lock llock(bb_mutex);
                 blackboard->remove_data(key);
             }
 
 
             void modify_data_on_blackboard(std::string key, std::shared_ptr<useful_di::TypeInterface> new_data)
             {
-                std::scoped_lock(bb_mutex);
+                std::scoped_lock llock(bb_mutex);
                 blackboard->modify_data(key, new_data);
             }
 

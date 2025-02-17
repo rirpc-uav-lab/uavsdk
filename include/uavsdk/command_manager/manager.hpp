@@ -51,7 +51,7 @@ namespace uavsdk
             public:
             uavsdk::command_manager::StartExecutionResult start_execution() override
             {
-                bool _command_executing;
+                bool _command_executing = false;
                 {
                     std::scoped_lock lock(command_mutex);
                     _command_executing = this->command_executing;
@@ -59,6 +59,7 @@ namespace uavsdk
         
                 if (not _command_executing)
                 {
+                    // std::cout << "start_execution::not _command_executing\n";
                     {
                         std::scoped_lock lock(command_mutex);
                         command_executing = true;
@@ -73,6 +74,7 @@ namespace uavsdk
                 } 
                 else
                 {
+                    // std::cout << "start_execution::_command_executing\n";
                     return uavsdk::command_manager::StartExecutionResult::ALREADY_RUNNING;
                 }
             }
@@ -95,10 +97,12 @@ namespace uavsdk
         
                 if (not _command_executing)
                 {
+                    // std::cout << "stop_execution::not _command_executing\n";
                     return;
                 }
                 else
                 {
+                    // std::cout << "stop_execution::_command_executing\n";
                     std::scoped_lock lock(command_mutex);
                     this->command_executing = false;
                 }
@@ -176,7 +180,7 @@ namespace uavsdk
 //     public:
 //     void doSomething()
 //     {
-//         std::cout << "default action"<< std::endl;
+        // std::cout << "default action"<< std::endl;
 //     }
 // };
 

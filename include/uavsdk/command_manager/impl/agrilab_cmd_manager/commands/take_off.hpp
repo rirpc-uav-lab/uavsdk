@@ -36,7 +36,7 @@ namespace uavsdk
                 protected:
                 void logic_tick() override
                 {
-                    std::cout << this->get_id() << "::tick()\n";
+                    // std::cout << this->get_id() << "::tick()\n";
                     auto landed_state = std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->external_resource->telem->get_msg()->at("landed_state"));
 
                     if (not landed_state->initialized)
@@ -46,8 +46,8 @@ namespace uavsdk
 
                     if (landed_state->get_msg() != mavsdk::Telemetry::LandedState::OnGround)
                     {   
-                        std::cout << "TakeOff: not on ground!";
-                        std::cout << landed_state->get_data() << "\n\n";
+                        // std::cout << "TakeOff: not on ground!";
+                        // std::cout << landed_state->get_data() << "\n\n";
                         // this->action
                         this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "72");
                         return;
@@ -61,7 +61,7 @@ namespace uavsdk
                     }
 
                     auto msg = flight_mode->get_msg();
-                    std::cout << "current_flight_mode = " << utils::conversions::mavsdk_ext::convert_flight_mode_to_str(msg) << "\n";
+                    // std::cout << "current_flight_mode = " << utils::conversions::mavsdk_ext::convert_flight_mode_to_str(msg) << "\n";
 
                     if (flight_mode->get_msg() == mavsdk::Telemetry::FlightMode::Offboard)
                     {
@@ -107,7 +107,7 @@ namespace uavsdk
                 protected:
                 void logic_tick() override
                 {
-                    std::cout << this->get_id() << "::tick()\n";
+                    // std::cout << this->get_id() << "::tick()\n";
                     //  mission_item uavsdk::data_adapters::ros2::geometry_msgs::Pose();
                     uavsdk::data_adapters::ros2::geometry_msgs::Pose mission_item = this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<uavsdk::data_adapters::ros2::geometry_msgs::Pose>>("mission_item")->get_data(); 
                     //  mission_item = uavsdk::data_adapters::ros2::geometry_msgs::Pose();
@@ -174,10 +174,10 @@ namespace uavsdk
                 protected:
                 void logic_tick() override
                 {
-                    std::cout << this->get_id() << "::tick()\n";
+                    // std::cout << this->get_id() << "::tick()\n";
                     if (!this->external_resource->telem->health_all_ok())
                     {
-                        std::cout << "Waiting for system to be ready\n";
+                        // std::cout << "Waiting for system to be ready\n";
                         // std::this_thread::sleep_for(std::chrono::seconds(1));
                     }
                     else 
@@ -213,10 +213,10 @@ namespace uavsdk
                 protected:
                 void logic_tick() override
                 {
-                    std::cout << this->get_id() << "::tick()\n";
-                    std::cout << "System ready\n";
+                    // std::cout << this->get_id() << "::tick()\n";
+                    // std::cout << "System ready\n";
 
-                    std::cout << "Arming...\n";
+                    // std::cout << "Arming...\n";
                     const mavsdk::Action::Result arm_result = this->external_resource->action->arm();
                     if (arm_result != mavsdk::Action::Result::Success) 
                     {
@@ -257,7 +257,7 @@ namespace uavsdk
                 protected:
                 void logic_tick() override
                 {
-                    std::cout << this->get_id() << "::tick()\n";
+                    // std::cout << this->get_id() << "::tick()\n";
                     // float z_coor = std::dynamic_pointer_cast<uavsdk::fcu_tel_collector::PositionData>(this->external_resource->telem->get_msg()->at("uav_position"))->get_msg().relative_altitude_m;
 
                     // this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<float>>("z_coor")->set_data(z_coor);
@@ -308,7 +308,7 @@ namespace uavsdk
                 protected:
                 void logic_tick() override
                 {
-                    std::cout << this->get_id() << "::tick()\n";
+                    // std::cout << this->get_id() << "::tick()\n";
                     #warning Будет ли дрон при take_off прям точно долетать до нужной точки по высоте?
                     
                     auto current_uav_position = std::dynamic_pointer_cast<fcu_tel_collector::PositionData>(this->external_resource->telem->get_msg()->at("uav_position"));
