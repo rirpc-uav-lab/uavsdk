@@ -186,31 +186,31 @@ namespace uavsdk
                 // std::cout << "StagedCommandInterface::logic_tick()\n";
                 if (!stages.empty())
                 {
-                    std::cout <<"\t!stages.empty()\n";
+                    // std::cout <<"\t!stages.empty()\n";
                     if (!current_stage_res_future.valid())
                     {
-                        std::cout <<"\t\t!current_stage_res_future.valid()\n";
+                        // std::cout <<"\t\t!current_stage_res_future.valid()\n";
                         current_stage_res_future = this->stages.at(0)->get_result_future();
                     }
 
                     if (current_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready)
                     {
-                        std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready\n";
+                        // std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready\n";
                         this->stages.at(0)->tick();
                     }
                     else 
                     {
-                        std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready\n";
+                        // std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready\n";
                         ExecutionResult stage_status = current_stage_res_future.get();
                         if (stage_status == ExecutionResult::SUCCESS)
                         {
-                            std::cout <<"\t\t\tstages.erase()\n";
+                            // std::cout <<"\t\t\tstages.erase()\n";
                             stages.erase(stages.begin());
                             current_stage_res_future = std::shared_future<ExecutionResult>();
                         }
                         else
                         {
-                            std::cout <<"\t\t\texecution failed.\n";
+                            // std::cout <<"\t\t\texecution failed.\n";
                             this->stop(ExecutionResult::FAILED);
                         }
                     }

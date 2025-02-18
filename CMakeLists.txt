@@ -62,6 +62,7 @@ include/uavsdk/command_manager/impl/agrilab_cmd_manager/cmd_manager.hpp
 include/uavsdk/command_manager/impl/agrilab_cmd_manager/command_data.hpp
 include/uavsdk/command_manager/impl/agrilab_cmd_manager/external_resource.hpp
 include/uavsdk/command_manager/impl/agrilab_cmd_manager/commands/take_off.hpp
+include/uavsdk/command_manager/impl/agrilab_cmd_manager/commands/land.hpp
 )
 add_library(agrilab_cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
 set_target_properties(agrilab_cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
