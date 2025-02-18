@@ -17,7 +17,7 @@ int main()
 {
     using namespace uavsdk;
     using namespace mavsdk;
-    std::cout << "Success!\n";
+    // std::cout << "Success!\n";
 
     Mavsdk mavsdk{Mavsdk::Configuration{Mavsdk::ComponentType::GroundStation}};
     ConnectionResult connection_result = mavsdk.add_any_connection("udp://:14540");
@@ -36,7 +36,7 @@ int main()
     std::shared_ptr<fcu_tel_collector::TelemetryDataComposite> telem_data = std::make_shared<fcu_tel_collector::TelemetryDataComposite>(telemetry);
 
     uavsdk::agrilab::commands::Executor executor;
-    std::cout << "Success!\n";
+    // std::cout << "Success!\n";
 
 
     auto pid = std::make_shared<position_reg::PID>();
@@ -63,15 +63,17 @@ int main()
     executor.set_command(take_off_cmd);
 
     uavsdk::command_manager::StartExecutionResult res = executor.start_execution();
-    std::shared_future<uavsdk::command_manager::ExecutionResult> res_future = executor.get_result_future();
+    // std::shared_future<std::shared_ptr<useful_di::TypeInterface>> res_future = executor.get_result_future();
+    
+    std::shared_future<uavsdk::command_manager::ExecutionResult> res_future = executor.get_execution_result_future();
 
-    std::cout << "Success!\n";
+    // std::cout << "Success!\n";
     if (res == uavsdk::command_manager::StartExecutionResult::STARTED)
     {
         auto status = res_future.wait_for(std::chrono::milliseconds(10));
         while (!(status == std::future_status::ready))
         {
-            std::cout << "B_flag\n";
+            // std::cout << "B_flag\n";
             status = res_future.wait_for(std::chrono::milliseconds(10));
         // std::cout << "Waiting.\n";
             // std::cout << "Future is valid " << res_future.valid() << "\n";
@@ -143,7 +145,8 @@ int main()
 
 
     uavsdk::command_manager::StartExecutionResult res_pf = executor.start_execution();
-    std::shared_future<uavsdk::command_manager::ExecutionResult> res_future_pf = executor.get_result_future();
+    // std::shared_future<uavsdk::command_manager::ExecutionResult> res_future_pf = executor.get_result_future();
+    std::shared_future<uavsdk::command_manager::ExecutionResult> res_future_pf = executor.get_execution_result_future();
 
     if (res_pf == uavsdk::command_manager::StartExecutionResult::STARTED)
     {

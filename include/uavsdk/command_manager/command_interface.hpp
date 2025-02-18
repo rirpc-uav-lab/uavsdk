@@ -4,7 +4,10 @@
 #include <memory>
 #include <future>
 #include <iostream>
+#include <string>
 #include <functional>
+
+#include <uavsdk/useful_data_lib/useful_data_interfaces.hpp>
 
 namespace uavsdk
 {
@@ -19,8 +22,9 @@ namespace uavsdk
 
         enum ExecutionResult
         {
-            SUCCESS = 0,
-            FAILED = 1,
+            RUNNING,
+            SUCCESS,
+            FAILED,
         };
 
 
@@ -42,7 +46,7 @@ namespace uavsdk
          * - void logic_tick()
          * - void handle_stop()
          */
-        class BaseCommandInterface
+        class BaseCommandInterface : public useful_di::TypeInterface
         {
             public:
             BaseCommandInterface()
@@ -56,7 +60,7 @@ namespace uavsdk
              *
              * The future will be completed with either SUCCESS or FAILED when the command finishes.
              */
-            virtual std::shared_future<uavsdk::command_manager::ExecutionResult> get_result_future()
+            virtual std::shared_future<std::shared_ptr<useful_di::TypeInterface>> get_result_future()
             {
                 try
                 {
@@ -71,15 +75,9 @@ namespace uavsdk
             }
 
 
-            // virtual void set_tick_rate(unsigned int rate_ms)
-            // {
-            //     this->tick_rate_ms = rate_ms;
-            // }
-
-
             protected:
-            std::promise<ExecutionResult> result_promise;
-            std::future<ExecutionResult> res_future;
+            std::promise<std::shared_ptr<useful_di::TypeInterface>> result_promise;
+            std::future<std::shared_ptr<useful_di::TypeInterface>> res_future;
 
 
             /**
@@ -87,7 +85,7 @@ namespace uavsdk
              *
              * Contains the core logic of command execution, called periodically.
              */
-            virtual void logic_tick() = 0;
+            virtual ExecutionResult logic_tick() = 0;
 
             /**
              * @brief Pure virtual method to be implemented by child classes.
@@ -102,9 +100,17 @@ namespace uavsdk
              *
              * Calls logic_tick() and waits for the next tick based on tick_rate_ms.
              */
-            void _tick()
+            ExecutionResult _tick()
             {
-                this->logic_tick();
+                auto res = this->logic_tick();
+                std::string msg;
+                
+                if (res == uavsdk::command_manager::ExecutionResult::FAILED) msg = "FAILED";
+                if (res == uavsdk::command_manager::ExecutionResult::SUCCESS) msg = "SUCCESS";
+                if (res == uavsdk::command_manager::ExecutionResult::RUNNING) msg = "RUNNING";
+
+                std::cout << this->___get_type() << ": tick() res = " << msg << "\n";
+                return res;
             }
         };
 
@@ -113,12 +119,12 @@ namespace uavsdk
         class SingleProccessCommandInterface : public BaseCommandInterface
         {
             public:
-            void tick()
+            ExecutionResult tick()
             {
                 // std::cout <<"\nSingleProccessCommandInterface::tick()\n";
                 if (not stop_requested)
                 {
-                    this->_tick();
+                    return this->_tick();
                     // std::cout <<"\nSingleProccessCommandInterface::tick() -- not stop requested\n";
                 }
                 else
@@ -129,21 +135,20 @@ namespace uavsdk
             }
             
             
-            void stop(ExecutionResult result=ExecutionResult::FAILED, std::string debug="")
+            void stop(std::string debug="")
             {
-
-                std::string res;
+                // std::string res;
                 
-                if (result == ExecutionResult::FAILED) res = "failed";
-                else res = "success";
+                // if (result == ExecutionResult::FAILED) res = "failed";
+                // else res = "success";
                 
                 // std::cout <<"\nSingleProccessCommandInterface::stop() with result: " + res + "\n";
-                this->result_promise.set_value(result);
+                // this->result_promise.set_value(result);
                 stop_requested = true;
 
                 if (debug != "")
                 {
-                    // std::cout << "stop debug: " << debug << "\n";
+                    std::cout << "stop debug: " << debug << "\n";
                 }
                 // try 
                 // {std::scoped_lock lock(command_mutex);
@@ -178,133 +183,35 @@ namespace uavsdk
 
             protected:
             std::vector<std::shared_ptr<SingleProccessCommandInterface>> stages;
-            std::shared_future<ExecutionResult> current_stage_res_future;
+            std::shared_future<std::shared_ptr<useful_di::TypeInterface>> current_stage_res_future;
 
 
-            virtual void logic_tick() override
+            virtual ExecutionResult logic_tick() override
             {
                 // std::cout << "StagedCommandInterface::logic_tick()\n";
                 if (!stages.empty())
                 {
-                    // std::cout <<"\t!stages.empty()\n";
-                    if (!current_stage_res_future.valid())
-                    {
-                        // std::cout <<"\t\t!current_stage_res_future.valid()\n";
-                        current_stage_res_future = this->stages.at(0)->get_result_future();
-                    }
 
-                    if (current_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready)
+                    ExecutionResult subres = this->stages.at(0)->tick();
+
+                    if (subres == ExecutionResult::SUCCESS)
                     {
-                        // std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready\n";
-                        this->stages.at(0)->tick();
+                        this->stages.erase(this->stages.begin());
+                        return ExecutionResult::RUNNING;
                     }
-                    else 
+                    else
                     {
-                        // std::cout <<"\t\tcurrent_stage_res_future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready\n";
-                        ExecutionResult stage_status = current_stage_res_future.get();
-                        if (stage_status == ExecutionResult::SUCCESS)
-                        {
-                            // std::cout <<"\t\t\tstages.erase()\n";
-                            stages.erase(stages.begin());
-                            current_stage_res_future = std::shared_future<ExecutionResult>();
-                        }
-                        else
-                        {
-                            // std::cout <<"\t\t\texecution failed.\n";
-                            this->stop(ExecutionResult::FAILED);
-                        }
+                        return subres;
                     }
                 }
                 else
                 {
                     // std::cout <<"\tstages.empty()\n";
-                    this->stop(ExecutionResult::SUCCESS);
+                    this->stop();
+                    return ExecutionResult::SUCCESS;
                 }
             }
         };
-
-
-        // class MultithreadedCommand : public BaseCommandInterface
-        // {
-        //     public:
-        //     MultithreadedCommand()
-        //     {
-        //         stopper = std::make_shared<std::stop_source>();
-        //     }
-
-
-        //     void set_tick_rate(unsigned int rate_ms) override
-        //     {
-        //         std::scoped_lock lock(tick_rate_mutex);
-        //         this->tick_rate_ms = rate_ms;
-        //     }
-
-
-        //     /**
-        //      * @brief Gets a future representing the command's execution result.
-        //      *
-        //      * The future will be completed with either SUCCESS or FAILED when the command finishes.
-        //      */
-        //     std::shared_future<uavsdk::command_manager::ExecutionResult>  get_result_future() override
-        //     {
-        //         std::scoped_lock lock(promise_mutex);
-        //         try
-        //         {
-        //             res_future = this->result_promise.get_future();
-        //             return res_future.share();
-        //         }
-        //         catch (std::exception e)
-        //         {
-        //             std::string msg = "Tried to get command result future more than one time: " + std::string(e.what()) + "\n";
-        //             throw std::runtime_error(msg);
-        //         }
-        //     }
-
-
-        //     /**
-        //      * @brief Starts executing the command.
-        //      *
-        //      * If a command is already running (exists in execution_thread), returns ALREADY_RUNNING.
-        //      * Otherwise, starts a new thread and returns STARTED.
-        //      */
-        //     StartExecutionResult execute()
-        //     {
-        //         std::scoped_lock lock(command_mutex);
-        //         if (execution_thread)
-        //         {
-        //             return StartExecutionResult::ALREADY_RUNNING;
-        //         }
-        //         else
-        //         {
-        //             execution_thread = std::make_shared<std::jthread>(std::bind(&MultithreadedCommand::_loop, this));
-        //             return StartExecutionResult::STARTED;
-        //         }
-        //     }
-
-
-        //     private:
-        //     std::shared_ptr<std::stop_source> stopper;
-        //     std::shared_ptr<std::jthread> execution_thread;
-
-        //     std::mutex command_mutex;
-        //     std::mutex promise_mutex;
-        //     std::mutex tick_rate_mutex;
-
-        //     /**
-        //      * @brief Main loop for command execution.
-        //      *
-        //      * Monitors the stopper and calls periodic logic tick.
-        //      */
-        //     void _loop()
-        //     {
-        //         while (not stopper->stop_requested())
-        //         {
-        //             std::scoped_lock lock(tick_rate_mutex);
-        //             _tick();
-        //         }
-        //         this->handle_stop();
-        //     }
-        // };
 
 
         template <typename Id>

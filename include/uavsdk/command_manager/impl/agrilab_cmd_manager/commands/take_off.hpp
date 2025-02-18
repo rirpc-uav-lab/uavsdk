@@ -31,17 +31,19 @@ namespace uavsdk
                 {
                     this->set_external_resource(ext_res);
                     this->set_id("check_offboard");
+
+                    this->___set_type();
                 }
 
                 protected:
-                void logic_tick() override
+                uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
                     // std::cout << this->get_id() << "::tick()\n";
                     auto landed_state = std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->external_resource->telem->get_msg()->at("landed_state"));
 
                     if (not landed_state->initialized)
                     {
-                        return;
+                        return uavsdk::command_manager::ExecutionResult::RUNNING;
                     }
 
                     if (landed_state->get_msg() != mavsdk::Telemetry::LandedState::OnGround)
@@ -49,15 +51,15 @@ namespace uavsdk
                         // std::cout << "TakeOff: not on ground!";
                         // std::cout << landed_state->get_data() << "\n\n";
                         // this->action
-                        this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "72");
-                        return;
+                        this->stop("72");
+                        return uavsdk::command_manager::ExecutionResult::FAILED;
                     }
 
                     auto flight_mode = std::dynamic_pointer_cast<fcu_tel_collector::FlightModeData>(this->external_resource->telem->get_msg()->at("flight_mode"));
 
                     if (not flight_mode->initialized)
                     {
-                        return;
+                        return uavsdk::command_manager::ExecutionResult::RUNNING;
                     }
 
                     auto msg = flight_mode->get_msg();
@@ -73,12 +75,12 @@ namespace uavsdk
                             std::this_thread::sleep_for(50ms);
                             res = this->external_resource->action->hold();
                         }
-                        if (i <= 0) this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "92");
-                        return;
+                        if (i <= 0) this->stop("92");
+                        return uavsdk::command_manager::ExecutionResult::FAILED;
                     }
 
-                    this->stop(uavsdk::command_manager::ExecutionResult::SUCCESS);
-                    return;
+                    this->stop();
+                    return uavsdk::command_manager::ExecutionResult::SUCCESS;
                 }
 
 
@@ -101,11 +103,12 @@ namespace uavsdk
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
                     this->set_id("check_setpoint");
+                    this->___set_type();
                 }
 
 
                 protected:
-                void logic_tick() override
+                uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
                     // std::cout << this->get_id() << "::tick()\n";
                     //  mission_item uavsdk::data_adapters::ros2::geometry_msgs::Pose();
@@ -129,23 +132,23 @@ namespace uavsdk
 
                         if (!(this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<uavsdk::data_adapters::ros2::geometry_msgs::Pose>>("mission_item")->get_data().position.z > 0))
                         {
-                            this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "118");
-                            return;
+                            this->stop("118");
+                            return uavsdk::command_manager::ExecutionResult::FAILED;
                         }
                         #warning какую высоту максимальную можно задать при take_off или мне её Димон отправляет???? СЕЙЧАС 30 МЕТРОВ
                         if (!(this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<uavsdk::data_adapters::ros2::geometry_msgs::Pose>>("mission_item")->get_data().position.z <= 30))
                         {
-                            this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "123");
-                            return;
+                            this->stop("123");
+                            return uavsdk::command_manager::ExecutionResult::FAILED;
                     }
                     }
                     else
                     {
-                        this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "126");
-                        return;
+                        this->stop("126");
+                        return uavsdk::command_manager::ExecutionResult::FAILED;
                     }
-                    this->stop(uavsdk::command_manager::ExecutionResult::SUCCESS);
-                    return;
+                    this->stop();
+                    return uavsdk::command_manager::ExecutionResult::SUCCESS;
                 }
 
 
@@ -168,22 +171,24 @@ namespace uavsdk
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
                     this->set_id("wait_for_health");
+                    this->___set_type();
                 }
 
 
                 protected:
-                void logic_tick() override
+                uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
                     // std::cout << this->get_id() << "::tick()\n";
                     if (!this->external_resource->telem->health_all_ok())
                     {
                         // std::cout << "Waiting for system to be ready\n";
                         // std::this_thread::sleep_for(std::chrono::seconds(1));
+                        return uavsdk::command_manager::ExecutionResult::RUNNING;
                     }
                     else 
                     {
-                        this->stop(uavsdk::command_manager::ExecutionResult::SUCCESS);
-                        return;
+                        this->stop();
+                        return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
 
@@ -207,11 +212,12 @@ namespace uavsdk
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
                     this->set_id("arm");
+                    this->___set_type();
                 }
 
 
                 protected:
-                void logic_tick() override
+                uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
                     // std::cout << this->get_id() << "::tick()\n";
                     // std::cout << "System ready\n";
@@ -221,13 +227,13 @@ namespace uavsdk
                     if (arm_result != mavsdk::Action::Result::Success) 
                     {
                         std::cerr << "Arming failed: " << arm_result << '\n';
-                        this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "156");
-                        return;
+                        this->stop("156");
+                        return uavsdk::command_manager::ExecutionResult::FAILED;
                     }
                     else
                     {
-                        this->stop(uavsdk::command_manager::ExecutionResult::SUCCESS);
-                        return;
+                        this->stop();
+                        return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
 
@@ -251,11 +257,12 @@ namespace uavsdk
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
                     this->set_id("start_takeoff");
+                    this->___set_type();
                 }
 
 
                 protected:
-                void logic_tick() override
+                uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
                     // std::cout << this->get_id() << "::tick()\n";
                     // float z_coor = std::dynamic_pointer_cast<uavsdk::fcu_tel_collector::PositionData>(this->external_resource->telem->get_msg()->at("uav_position"))->get_msg().relative_altitude_m;
@@ -270,15 +277,15 @@ namespace uavsdk
                     if (takeoff_result != mavsdk::Action::Result::Success) 
                     {
                         std::cerr << "Takeoff failed: " << takeoff_result << '\n';
-                        this->stop(uavsdk::command_manager::ExecutionResult::FAILED, "175");
-                        return;
+                        this->stop("175");
+                        return uavsdk::command_manager::ExecutionResult::FAILED;
                     }
                     else
                     {
                         this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<float>>("target_alt")->set_data(this->external_resource->action->get_takeoff_altitude().second);
                         this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<float>>("current_height")->set_data(0);
-                        this->stop(uavsdk::command_manager::ExecutionResult::SUCCESS);
-                        return;
+                        this->stop();
+                        return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
 
@@ -302,11 +309,12 @@ namespace uavsdk
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
                     this->set_id("check_position");
+                    this->___set_type();
                 }
 
 
                 protected:
-                void logic_tick() override
+                uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
                     // std::cout << this->get_id() << "::tick()\n";
                     #warning Будет ли дрон при take_off прям точно долетать до нужной точки по высоте?
@@ -318,13 +326,14 @@ namespace uavsdk
                         this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<float>>("current_height")->set_data(current_uav_position->get_msg().relative_altitude_m);
                         // current_height = telemetry->position().relative_altitude_m;
                         // std::cout << "TAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFFTAKINGOFF\n";
-                        std::this_thread::sleep_for(std::chrono::milliseconds(100));                    
+                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                        return uavsdk::command_manager::ExecutionResult::RUNNING;                    
                     } 
                     else
                     {
                         // states.erase(states.begin());
-                        this->stop(uavsdk::command_manager::ExecutionResult::SUCCESS, "203");
-                        return;
+                        this->stop("203");
+                        return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
 
@@ -344,6 +353,7 @@ namespace uavsdk
                 public:
                 TakeOff(std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<TakeOffData> data, std::shared_ptr<useful_di::UniMapStr> blackboard_init) : CommandInterfaceWithBlackboard(blackboard_init)
                 {
+                    this->___set_type();
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
                     this->set_id("take_off"); // path_following

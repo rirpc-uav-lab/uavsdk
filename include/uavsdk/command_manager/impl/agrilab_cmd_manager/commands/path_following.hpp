@@ -36,16 +36,17 @@ namespace uavsdk
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
                     this->set_id("check_incoming_mission"); // path_following
+                    this->___set_type();
                 }
 
 
                 protected:
-                void logic_tick() override
+                uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
                     if (this->command_data->global_trajectory_wgs84.empty())
                     {
                         this->stop();
-                        return;
+                        return uavsdk::command_manager::ExecutionResult::RUNNING;
                     }
 
                     double _x = 0;
@@ -70,7 +71,8 @@ namespace uavsdk
                     p.altitude = _z;
                     this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<uavsdk::navigation::coordinates::WGS84Coords>>("startPoint")->set_data(p);
 
-                    this->stop(uavsdk::command_manager::ExecutionResult::SUCCESS);
+                    this->stop();
+                    return uavsdk::command_manager::ExecutionResult::SUCCESS;
                 }
 
 
@@ -89,15 +91,17 @@ namespace uavsdk
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
                     this->set_id("check_start_mission"); // path_following
+                    this->___set_type();
 
                     this->speed_limit = this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<double>>("speed_limit")->get_data();
 
                     this->external_resource->offboard->set_velocity_ned({0.0f, 0.0f, 0.0f, 0.0f});
+                    this->external_resource->offboard->start();
                 }
 
 
                 protected:
-                void logic_tick() override
+                uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
                     using namespace uavsdk::navigation::conversions;
                     using namespace uavsdk::navigation::coordinates;
@@ -204,59 +208,22 @@ namespace uavsdk
                     
                         if (res != mavsdk::Offboard::Result::Success)
                         {
-                            return;
+                            return uavsdk::command_manager::ExecutionResult::RUNNING;
                         }   
                     }
                     this->external_resource->offboard->set_velocity_ned(offboard_movement);
                     
-                    // if (offboard_result != Offboard::Result::Success) 
-                    // {   
-                    //     offboard_status.level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
-
-                    //     offboard_key.key = "offboard_start_status";
-                    //     offboard_key.value = "False";
-
-                    //     Offboard::VelocityNedYaw offboard_movement{};
-                    //     offboard_movement.east_m_s = (float)offboardSpeeds.xEast;
-                    //     offboard_movement.north_m_s = (float)offboardSpeeds.yNorth;
-                    //     offboard_movement.down_m_s = (float)(offboardSpeeds.zUp);
-                    //     offboard_movement.yaw_deg = (float)(yaw);
-
-
-                    //     offboard->set_velocity_ned(offboard_movement);
-
-                    //     offboard_result = offboard->start();
-
-                    //     offboard_status.values.push_back(offboard_key);
-
-                    //     diagnostic_publisher->publish(offboard_status);
-                    // }
-                    // else
-                    // {
-                        // offboard_status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
-
-                        // offboard_key.key = "offboard_start_status";
-                        // offboard_key.value = "True";
-
-                        // offboard_status.values.push_back(offboard_key);
-
-                        // diagnostic_publisher->publish(offboard_status);                           
-                    // }
-
-
+                    std::cout << "point_addres == this->command_data->global_trajectory_wgs84.size() " << bool(point_addres == this->command_data->global_trajectory_wgs84.size()) << "\n"; 
 
                     if(point_addres == this->command_data->global_trajectory_wgs84.size())
                     {
-                        // offboard_result = offboard->stop();
-
-                        this->stop(uavsdk::command_manager::ExecutionResult::SUCCESS);
-                        // if (offboard_result != Offboard::Result::Success) 
-                        // {
-                        //     offboard_key.key = "offboard_stop_status";
-                        //     offboard_key.value = "False";
-                        //     // RCLCPP_ERROR_STREAM(this->get_logger(), "Offboard stop failed: " << offboard_result << '\n');
-                        // }
+                        std::cout << "point address = " << point_addres << "\n";
+                        std::cout << "this->command_data->global_trajectory_wgs84.size() = " << this->command_data->global_trajectory_wgs84.size() << "\n";
+                        this->stop();
+                        return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
+
+                    return uavsdk::command_manager::ExecutionResult::RUNNING;
                 }
 
 
@@ -305,7 +272,7 @@ namespace uavsdk
                 double speed_vec_lenght = 0.0;
                 double pid_orientation_val = 0.0;
         
-                double r = 0.3;
+                double r = 0.5;
                 double x,y,z;
                 double distance_to_goal_point;
         
@@ -338,6 +305,7 @@ namespace uavsdk
                 public:
                 PathFollowing(std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<PathFollowingData> data, std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
                 {
+                    this->___set_type();
                     this->set_external_resource(ext_res);
                     this->set_command_data(data);
                     this->set_id("take_off"); // path_following
