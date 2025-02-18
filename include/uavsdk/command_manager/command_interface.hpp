@@ -221,6 +221,172 @@ namespace uavsdk
         };
 
 
+        // All stages must return SUCCESS execution result
+        class SequentialExecutionStrategy : public IExecutionStrategy
+        {
+            public:
+            ExecutionResult execute_stages(std::vector<std::shared_ptr<SingleProccessCommandInterface>>& stages) override
+            {
+                if (stages.empty())
+                {
+                    throw std::runtime_error("SequentialExecutionStrategy: stages vector is empty.");
+                }
+                else
+                {
+                    ExecutionResult result = stages.at(stage_index)->tick();
+                    if (result == ExecutionResult::SUCCESS)
+                    {
+                        stage_index++;
+                        if (stage_index == stages.size())
+                        {
+                            stage_index = 0;
+                            return ExecutionResult::SUCCESS;
+                        }
+                        return ExecutionResult::RUNNING;
+                    }
+                    
+                    if (result == ExecutionResult::FAILED)
+                    {
+                        stage_index = 0;
+                    }
+
+                    return result;
+                }
+            }
+
+            private:
+            size_t stage_index = 0;
+        };
+
+
+        class FallbackExecutionStrategy : public IExecutionStrategy
+        {
+            public:
+            ExecutionResult execute_stages(std::vector<std::shared_ptr<SingleProccessCommandInterface>>& stages) override
+            {
+                if (stages.empty())
+                {
+                    throw std::runtime_error("SequentialExecutionStrategy: stages vector is empty.");
+                }
+                else
+                {
+                    ExecutionResult result = stages.at(stage_index)->tick();
+                    if (result == ExecutionResult::FAILED)
+                    {
+                        stage_index++;
+
+                        if (stage_index == stages.size())
+                        {
+                            stage_index = 0;
+                            return ExecutionResult::FAILED;
+                        }
+                        return ExecutionResult::RUNNING;
+                    }
+
+                    if (result == ExecutionResult::SUCCESS)
+                    {
+                        stage_index = 0;
+                    }
+
+                    return result;
+                }
+            }
+
+            private:
+            size_t stage_index = 0;
+        };
+
+
+        class ParallelStrictExecutionStrategy : public IExecutionStrategy
+        {
+            public:
+            ExecutionResult execute_stages(std::vector<std::shared_ptr<SingleProccessCommandInterface>>& stages) override
+            {
+                if (stages.empty())
+                {
+                    throw std::runtime_error("SequentialExecutionStrategy: stages vector is empty.");
+                }
+
+                if (stage_results.empty()) stage_results.resize(stages.size());
+
+                bool all_sucess = true;
+
+                for (size_t i = 0; i < stages.size(); i++)
+                {
+                    if (stage_results.at(i) != ExecutionResult::SUCCESS)
+                    {
+                        stage_results.at(i) = stages.at(i)->tick();
+                    }
+
+                    if (stage_results.at(i) == ExecutionResult::RUNNING)
+                    {
+                        all_sucess = false;
+                    }
+
+                    if (stage_results.at(i) == ExecutionResult::FAILED)
+                    {
+                        for (const auto& stage : stages)
+                        {
+                            stage->stop();
+                        }
+                        return ExecutionResult::FAILED;
+                    }
+                }
+
+                if (all_sucess) return ExecutionResult::SUCCESS;
+                else return ExecutionResult::RUNNING;
+            }
+
+            private:
+            std::vector<ExecutionResult> stage_results;
+        };
+
+
+        class ParallelHopefulExecutionStrategy : public IExecutionStrategy
+        {
+            public:
+            ExecutionResult execute_stages(std::vector<std::shared_ptr<SingleProccessCommandInterface>>& stages) override
+            {
+                if (stages.empty())
+                {
+                    throw std::runtime_error("SequentialExecutionStrategy: stages vector is empty.");
+                }
+
+                if (stage_results.empty()) stage_results.resize(stages.size());
+
+                bool all_failed = true;
+
+                for (size_t i = 0; i < stages.size(); i++)
+                {
+                    if (stage_results.at(i) != ExecutionResult::FAILED)
+                    {
+                        stage_results.at(i) = stages.at(i)->tick();
+                    }
+
+                    if (stage_results.at(i) == ExecutionResult::RUNNING)
+                    {
+                        all_failed = false;
+                    }
+
+                    if (stage_results.at(i) == ExecutionResult::SUCCESS)
+                    {
+                        for (const auto& stage : stages)
+                        {
+                            stage->stop();
+                        }
+                        return ExecutionResult::SUCCESS;
+                    }
+                }
+
+                if (all_failed) return ExecutionResult::FAILED;
+                else return ExecutionResult::RUNNING;
+            }
+
+            private:
+            std::vector<ExecutionResult> stage_results;
+        };
+
+
         class StagedCommandInterface : public SingleProccessCommandInterface
         {
             public:
@@ -228,6 +394,13 @@ namespace uavsdk
             {
                 stages.push_back(new_stage);
             }
+
+
+            void set_execution_strategy(std::shared_ptr<IExecutionStrategy> new_exec_strat)
+            {
+                this->execution_strategy = new_exec_strat;
+            }
+
 
             protected:
             std::shared_ptr<IExecutionStrategy> execution_strategy;
@@ -257,7 +430,7 @@ namespace uavsdk
                 //     this->stop();
                 //     return ExecutionResult::SUCCESS;
                 // }
-                this->execution_strategy->execute_stages(this->stages);
+                return this->execution_strategy->execute_stages(this->stages);
             }
         };
 
@@ -344,6 +517,7 @@ namespace uavsdk
             CommandInterfaceWithBlackboard(std::shared_ptr<useful_di::UniMapStr> _blackboard)
             {
                 init_blackboard(_blackboard);
+                this->execution_strategy = std::make_shared<SequentialExecutionStrategy>();
             }
 
             void add_data_to_bb(std::string key, std::shared_ptr<useful_di::TypeInterface> data)
