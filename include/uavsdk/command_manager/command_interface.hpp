@@ -35,26 +35,96 @@ namespace uavsdk
         };
 
 
-        /**
-         * @brief Interface for command implementations.
-         *
-         * The BaseCommandInterface provides an abstraction layer for implementing commands in the UAVSDK.
-         * It manages thread execution, stopping, and resource management. Commands must implement specific logic through pure virtual methods.
-         * 
-         * Methods that need to be implemented:
-         * 
-         * - void logic_tick()
-         * - void handle_stop()
-         */
-        class BaseCommandInterface : public useful_di::TypeInterface
+        // /**
+        //  * @brief Interface for command implementations.
+        //  *
+        //  * The BaseCommandInterface provides an abstraction layer for implementing commands in the UAVSDK.
+        //  * It manages thread execution, stopping, and resource management. Commands must implement specific logic through pure virtual methods.
+        //  * 
+        //  * Methods that need to be implemented:
+        //  * 
+        //  * - void logic_tick()
+        //  * - void handle_stop()
+        //  */
+        // class BaseCommandInterface : public useful_di::TypeInterface
+        // {
+        //     public:
+        //     BaseCommandInterface()
+        //     {
+        //         // tick_rate_ms = 10;
+        //     }
+
+
+        //     /**
+        //      * @brief Gets a future representing the command's execution result.
+        //      *
+        //      * The future will be completed with either SUCCESS or FAILED when the command finishes.
+        //      */
+        //     virtual std::shared_future<std::shared_ptr<useful_di::TypeInterface>> get_result_future()
+        //     {
+        //         try
+        //         {
+        //             res_future = this->result_promise.get_future();
+        //             return res_future.share();
+        //         }
+        //         catch (std::exception e)
+        //         {
+        //             std::string msg = "Tried to get command result future more than one time: " + std::string(e.what()) + "\n";
+        //             throw std::runtime_error(msg);
+        //         }
+        //     }
+
+
+        //     protected:
+        //     std::promise<std::shared_ptr<useful_di::TypeInterface>> result_promise;
+        //     std::future<std::shared_ptr<useful_di::TypeInterface>> res_future;
+
+
+        //     /**
+        //      * @brief Pure virtual method to be implemented by child classes.
+        //      *
+        //      * Contains the core logic of command execution, called periodically.
+        //      */
+        //     virtual ExecutionResult logic_tick() = 0;
+
+        //     /**
+        //      * @brief Pure virtual method to be implemented by child classes.
+        //      *
+        //      * Handles stopping the command and cleaning up resources.
+        //      */
+        //     virtual void handle_stop() = 0;
+
+
+        //     /**
+        //      * @brief Periodically executes core logic of the command.
+        //      *
+        //      * Calls logic_tick() and waits for the next tick based on tick_rate_ms.
+        //      */
+        //     ExecutionResult _tick()
+        //     {
+        //         auto res = this->logic_tick();
+        //         std::string msg;
+                
+        //         if (res == uavsdk::command_manager::ExecutionResult::FAILED) msg = "FAILED";
+        //         if (res == uavsdk::command_manager::ExecutionResult::SUCCESS) msg = "SUCCESS";
+        //         if (res == uavsdk::command_manager::ExecutionResult::RUNNING) msg = "RUNNING";
+
+        //         std::cout << this->___get_type() << ": tick() res = " << msg << "\n";
+        //         return res;
+        //     }
+        // };
+
+
+        class IExecutable
         {
             public:
-            BaseCommandInterface()
-            {
-                // tick_rate_ms = 10;
-            }
+            virtual ExecutionResult logic_tick() = 0;
+        };
 
 
+        class IResultProvider
+        {
+            public:
             /**
              * @brief Gets a future representing the command's execution result.
              *
@@ -78,23 +148,19 @@ namespace uavsdk
             protected:
             std::promise<std::shared_ptr<useful_di::TypeInterface>> result_promise;
             std::future<std::shared_ptr<useful_di::TypeInterface>> res_future;
+        };
 
 
-            /**
-             * @brief Pure virtual method to be implemented by child classes.
-             *
-             * Contains the core logic of command execution, called periodically.
-             */
-            virtual ExecutionResult logic_tick() = 0;
-
-            /**
-             * @brief Pure virtual method to be implemented by child classes.
-             *
-             * Handles stopping the command and cleaning up resources.
-             */
-            virtual void handle_stop() = 0;
+        class IStoppable 
+        {
+            public:
+            virtual void handle_stop() = 0; 
+        };
 
 
+        class BaseCommandInterface : public IExecutable, public IResultProvider, public IStoppable, public useful_di::TypeInterface
+        {
+            protected:
             /**
              * @brief Periodically executes core logic of the command.
              *
@@ -115,21 +181,17 @@ namespace uavsdk
         };
 
 
-
         class SingleProccessCommandInterface : public BaseCommandInterface
         {
             public:
             ExecutionResult tick()
             {
-                // std::cout <<"\nSingleProccessCommandInterface::tick()\n";
                 if (not stop_requested)
                 {
                     return this->_tick();
-                    // std::cout <<"\nSingleProccessCommandInterface::tick() -- not stop requested\n";
                 }
                 else
                 {
-                    // std::cout <<"\nSingleProccessCommandInterface::tick() -- stop requested\n";
                     this->handle_stop();
                 }
             }
@@ -137,39 +199,25 @@ namespace uavsdk
             
             void stop(std::string debug="")
             {
-                // std::string res;
-                
-                // if (result == ExecutionResult::FAILED) res = "failed";
-                // else res = "success";
-                
-                // std::cout <<"\nSingleProccessCommandInterface::stop() with result: " + res + "\n";
-                // this->result_promise.set_value(result);
                 stop_requested = true;
 
                 if (debug != "")
                 {
                     std::cout << "stop debug: " << debug << "\n";
                 }
-                // try 
-                // {std::scoped_lock lock(command_mutex);
-                //     stopper->request_stop();
-                //     execution_thread->join();
-                //     this->execution_thread = nullptr;
-                    // std::cout << "BaseCommandInterface: DESTROYED COMMAND\n";
-                // }
-                // catch (std::exception& e)
-                // {
-                    // std::cout << "BaseCommandInterface: FAILED TO DESTROY COMMAND: " << e.what() << "\n";
-                // }
-                // this->handle_stop();
-
             }
 
 
             private:
             bool stop_requested = false;
-            // unsigned int tick_rate_ms;
-            // std::promise<ExecutionResult> result_promise;
+        };
+
+
+
+        class IExecutionStrategy
+        {
+            public:
+            virtual ExecutionResult execute_stages(std::vector<std::shared_ptr<SingleProccessCommandInterface>>& stages) = 0;
         };
 
 
@@ -182,34 +230,34 @@ namespace uavsdk
             }
 
             protected:
+            std::shared_ptr<IExecutionStrategy> execution_strategy;
             std::vector<std::shared_ptr<SingleProccessCommandInterface>> stages;
             std::shared_future<std::shared_ptr<useful_di::TypeInterface>> current_stage_res_future;
 
 
             virtual ExecutionResult logic_tick() override
             {
-                // std::cout << "StagedCommandInterface::logic_tick()\n";
-                if (!stages.empty())
-                {
+                // if (!stages.empty())
+                // {
 
-                    ExecutionResult subres = this->stages.at(0)->tick();
+                //     ExecutionResult subres = this->stages.at(0)->tick();
 
-                    if (subres == ExecutionResult::SUCCESS)
-                    {
-                        this->stages.erase(this->stages.begin());
-                        return ExecutionResult::RUNNING;
-                    }
-                    else
-                    {
-                        return subres;
-                    }
-                }
-                else
-                {
-                    // std::cout <<"\tstages.empty()\n";
-                    this->stop();
-                    return ExecutionResult::SUCCESS;
-                }
+                //     if (subres == ExecutionResult::SUCCESS)
+                //     {
+                //         this->stages.erase(this->stages.begin());
+                //         return ExecutionResult::RUNNING;
+                //     }
+                //     else
+                //     {
+                //         return subres;
+                //     }
+                // }
+                // else
+                // {
+                //     this->stop();
+                //     return ExecutionResult::SUCCESS;
+                // }
+                this->execution_strategy->execute_stages(this->stages);
             }
         };
 
