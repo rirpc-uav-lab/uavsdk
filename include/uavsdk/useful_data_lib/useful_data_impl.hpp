@@ -389,20 +389,18 @@ namespace useful_di
 
 
 
-    /**
-     * @tparam UniversalDataFormat универсальный тип данных 
-     * @tparam SubjectType тип изначального объекта данных
-     */
-    template <typename SubjectType, typename UniversalDataFormat>
-    class SingleObserverDataCollector : public DataCollectorInterface<SubjectType, UniversalDataFormat>
+
+    template <typename SubjectType>
+    class SingleObserverDataCollector : public DataCollectorInterface<SubjectType>
     {
     public:
-        void attach_observer(std::shared_ptr<DataObserverInterface<SubjectType, UniversalDataFormat>> observer) override 
+        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "SingleObserverDataCollector: provided SubjectType is not derived from TypeInterface");
+        void attach_observer(std::shared_ptr<DataObserverInterface<SubjectType>> observer) override 
         {
             this->observer = observer;
         }
 
-        void update_data(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> data) override 
+        void update_data(std::shared_ptr<SubjectType> data) override 
         {
 
             // std::cout << "DataSubscriber::update_data: " << data->get_data() << std::endl;
@@ -420,29 +418,92 @@ namespace useful_di
         }
 
     private:
-        std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> data;
-        std::shared_ptr<DataObserverInterface<SubjectType, UniversalDataFormat>> observer;
+        std::shared_ptr<SubjectType> data;
+        std::shared_ptr<DataObserverInterface<SubjectType>> observer;
     };
 
 
-    /**
-     * @tparam SubjectType тип изначального объекта данных
-     * @tparam UniversalDataFormat универсальный тип данных 
-     */
-    template <typename SubjectType, typename UniversalDataFormat>
-    class DataSubscriber : public DataObserverInterface<SubjectType, UniversalDataFormat>
+    template <typename SubjectType>
+    class MultiObserverDataCollector : public DataCollectorInterface<SubjectType>
     {
     public:
+        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "MultiObserverDataCollector: provided SubjectType is not derived from TypeInterface");
+        std::string attach_observer(std::shared_ptr<DataObserverInterface<SubjectType>> observer) override 
+        {
+            // this->observer = observer;
+            auto id = this->observer_map.add_data(observer);
+            return id;
+        }
+
+
+        void remove_observer(std::string id)
+        {
+            std::vector<std::string> keys = this->observer_map.get_present_keys();
+
+            bool id_present = false;
+
+            for (const auto& key : keys)
+            {
+                if (id == key)
+                {
+                    id_present = true;
+                    break;
+                }
+            }
+
+            if (id_present)
+            {
+                this->observer_map.remove_data(id);
+            }
+            else
+            {
+                throw std::runtime_error("MultiObserverDataCollector: Id " + id + " is not present in MultiObserverDataCollector::observers_map.");
+            }
+        }
+
+
+        void update_data(std::shared_ptr<SubjectType> data) override 
+        {
+
+            // std::cout << "DataSubscriber::update_data: " << data->get_data() << std::endl;
+            this->data = data;
+            this->notify_observers();
+        }
+
+
+        void notify_observers() override 
+        {
+            if (this->observer != nullptr)
+            {
+                this->observer->be_notified(this->data);
+            }
+        }
+
+    private:
+        std::shared_ptr<SubjectType> data;
+        // std::vector<std::shared_ptr<DataObserverInterface<SubjectType>>> observer;
+        useful_di::UniMapStr observer_map;
+    };
+
+
+
+    template <typename SubjectType>
+    class DataSubscriber : public DataObserverInterface<SubjectType>
+    {
+    public:
+        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataSubscriber: provided SubjectType is not derived from TypeInterface");
         /**
          * @brief Конструктор объекта DataSubscriber.
          */
-        DataSubscriber(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> input_data) { this->data = input_data; }
+        DataSubscriber(std::shared_ptr<SubjectType> input_data) { this->data = input_data; }
         // DataSubscriber() { this->data = std::make_shared<DataInterface<SubjectType, UniversalDataFormat>>(); }
+
+        
 
         /**
          * @brief Обновляет данные по указателю this->data.
          */
-        void be_notified(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> input_data) override
+        void be_notified(std::shared_ptr<SubjectType> input_data) override
         {
             std::lock_guard<std::mutex> lock(data_mx);
             // std::cout << "\nBefore:  " << input_data->get_data() << std::endl;
@@ -451,7 +512,7 @@ namespace useful_di
         }
 
 
-        std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> get_data() override 
+        std::shared_ptr<SubjectType> get_data() override 
         { 
             std::lock_guard<std::mutex> lock(data_mx);
             return this->data; 
@@ -466,7 +527,7 @@ namespace useful_di
 
 
     protected:
-        std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> data; ///< Указатель на объект, который будет обновляться при изменении состояния субъекта DataCollectorInterface.
+        std::shared_ptr<SubjectType> data; ///< Указатель на объект, который будет обновляться при изменении состояния субъекта DataCollectorInterface.
         std::mutex data_mx;
     };
 };

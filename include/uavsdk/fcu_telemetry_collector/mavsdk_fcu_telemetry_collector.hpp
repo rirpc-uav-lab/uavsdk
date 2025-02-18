@@ -365,13 +365,13 @@ namespace uavsdk
         // ############################################### 
         // ##########  Data Collector Classes   ########## 
         // ############################################### 
-        class DistanceSensorCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::DistanceSensor, nlohmann::json>
+        class DistanceSensorCollector : public useful_di::SingleObserverDataCollector<DistanceSensorData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::DistanceSensorHandle handle;
         public:
-            DistanceSensorCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::DistanceSensor, nlohmann::json>> observer)
+            DistanceSensorCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<DistanceSensorData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -394,13 +394,13 @@ namespace uavsdk
         };
 
 
-        class FlightModeCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::FlightMode, nlohmann::json>
+        class FlightModeCollector : public useful_di::SingleObserverDataCollector<FlightModeData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::FlightModeHandle handle;
         public:
-            FlightModeCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::FlightMode, nlohmann::json>> observer)
+            FlightModeCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<FlightModeData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -423,14 +423,14 @@ namespace uavsdk
         };
 
 
-        class AttitudeEulerCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::EulerAngle, nlohmann::json>
+        class AttitudeEulerCollector : public useful_di::SingleObserverDataCollector<AttitudeEulerData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::AttitudeEulerHandle handle;
             std::shared_ptr<AttitudeEulerData> data_p;
         public:
-            AttitudeEulerCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::EulerAngle, nlohmann::json>> observer)
+            AttitudeEulerCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<AttitudeEulerData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -453,13 +453,13 @@ namespace uavsdk
         };
         
 
-        class HomePositionCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::Position, nlohmann::json>
+        class HomePositionCollector : public useful_di::SingleObserverDataCollector<PositionData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::HomeHandle handle;
         public:
-            HomePositionCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::Position, nlohmann::json>> observer)
+            HomePositionCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<PositionData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -483,13 +483,13 @@ namespace uavsdk
         };
 
 
-        class UavPositionCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::Position, nlohmann::json>
+        class UavPositionCollector : public useful_di::SingleObserverDataCollector<PositionData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::HomeHandle handle;
         public:
-            UavPositionCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::Position, nlohmann::json>> observer)
+            UavPositionCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<PositionData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -513,13 +513,13 @@ namespace uavsdk
         };
 
 
-        class UavHeadingCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::Heading, nlohmann::json>
+        class UavHeadingCollector : public useful_di::SingleObserverDataCollector<HeadingData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::HeadingHandle handle;
         public:
-            UavHeadingCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::Heading, nlohmann::json>> observer)
+            UavHeadingCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<HeadingData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -543,13 +543,13 @@ namespace uavsdk
         };
 
 
-        class FcuHealthCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::Health, nlohmann::json>
+        class FcuHealthCollector : public useful_di::SingleObserverDataCollector<FcuHealthData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::HealthHandle handle;
         public:
-            FcuHealthCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::Health, nlohmann::json>> observer)
+            FcuHealthCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, std::shared_ptr<useful_di::DataObserverInterface<FcuHealthData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -573,14 +573,14 @@ namespace uavsdk
         };
 
 
-        class GpsInfoCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::GpsInfo, nlohmann::json>
+        class GpsInfoCollector : public useful_di::SingleObserverDataCollector<GpsInfoData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::GpsInfoHandle handle;
         public:
             GpsInfoCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, 
-                            std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::GpsInfo, nlohmann::json>> observer)
+                            std::shared_ptr<useful_di::DataObserverInterface<GpsInfoData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -604,14 +604,14 @@ namespace uavsdk
         };
 
 
-        class BatteryCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::Battery, nlohmann::json>
+        class BatteryCollector : public useful_di::SingleObserverDataCollector<BatteryData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::BatteryHandle handle;
         public:
             BatteryCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, 
-                            std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::Battery, nlohmann::json>> observer)
+                            std::shared_ptr<useful_di::DataObserverInterface<BatteryData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -635,14 +635,14 @@ namespace uavsdk
         };
 
 
-        class LandedStateCollector : public useful_di::SingleObserverDataCollector<mavsdk::Telemetry::LandedState, nlohmann::json>
+        class LandedStateCollector : public useful_di::SingleObserverDataCollector<LandedStateData>
         {
         private:
             std::shared_ptr<mavsdk::Telemetry> telemetry;
             mavsdk::Telemetry::LandedStateHandle handle;
         public:
             LandedStateCollector(std::shared_ptr<mavsdk::Telemetry> telemetry_p, 
-                            std::shared_ptr<useful_di::DataObserverInterface<mavsdk::Telemetry::LandedState, nlohmann::json>> observer)
+                            std::shared_ptr<useful_di::DataObserverInterface<LandedStateData>> observer)
             {
                 this->telemetry = telemetry_p;
                 this->attach_observer(observer);
@@ -680,73 +680,73 @@ namespace uavsdk
         // ############################################### 
         // ###########  Data Observer Classes   ########## 
         // ############################################### 
-        class DistanceSensorObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::DistanceSensor, nlohmann::json>
+        class DistanceSensorObserver : public useful_di::DataSubscriber<DistanceSensorData>
         {
         public:
-            DistanceSensorObserver(std::shared_ptr<DistanceSensorData> data) : useful_di::DataSubscriber<mavsdk::Telemetry::DistanceSensor, nlohmann::json>(data) {}
+            DistanceSensorObserver(std::shared_ptr<DistanceSensorData> data) : useful_di::DataSubscriber<DistanceSensorData>(data) {}
         };
 
 
-        class FlightModeObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::FlightMode, nlohmann::json>
+        class FlightModeObserver : public useful_di::DataSubscriber<FlightModeData>
         {
         public:
-            FlightModeObserver(std::shared_ptr<FlightModeData> data) :  useful_di::DataSubscriber<mavsdk::Telemetry::FlightMode, nlohmann::json>(data) {}
+            FlightModeObserver(std::shared_ptr<FlightModeData> data) :  useful_di::DataSubscriber<FlightModeData>(data) {}
         };
 
 
-        class AttitudeEulerObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::EulerAngle, nlohmann::json>
+        class AttitudeEulerObserver : public useful_di::DataSubscriber<AttitudeEulerData>
         {
         public:
-            AttitudeEulerObserver(std::shared_ptr<AttitudeEulerData> data) : useful_di::DataSubscriber<mavsdk::Telemetry::EulerAngle, nlohmann::json>(data) {}
+            AttitudeEulerObserver(std::shared_ptr<AttitudeEulerData> data) : useful_di::DataSubscriber<AttitudeEulerData>(data) {}
         };
 
 
-        class HomePositionObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::Position, nlohmann::json>
+        class HomePositionObserver : public useful_di::DataSubscriber<PositionData>
         {
         public:
-            HomePositionObserver(std::shared_ptr<PositionData> data) : useful_di::DataSubscriber<mavsdk::Telemetry::Position, nlohmann::json>(data) {}
+            HomePositionObserver(std::shared_ptr<PositionData> data) : useful_di::DataSubscriber<PositionData>(data) {}
         };
 
 
-        class UavPositionObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::Position, nlohmann::json>
+        class UavPositionObserver : public useful_di::DataSubscriber<PositionData>
         {
         public:
-            UavPositionObserver(std::shared_ptr<PositionData> data) : useful_di::DataSubscriber<mavsdk::Telemetry::Position, nlohmann::json>(data) {}
+            UavPositionObserver(std::shared_ptr<PositionData> data) : useful_di::DataSubscriber<PositionData>(data) {}
         };
 
 
-        class UavHeadingObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::Heading, nlohmann::json>
+        class UavHeadingObserver : public useful_di::DataSubscriber<HeadingData>
         {
         public:
-            UavHeadingObserver(std::shared_ptr<HeadingData> data) : useful_di::DataSubscriber<mavsdk::Telemetry::Heading, nlohmann::json>(data) {}
+            UavHeadingObserver(std::shared_ptr<HeadingData> data) : useful_di::DataSubscriber<HeadingData>(data) {}
         };
 
 
-        class FcuHealthObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::Health, nlohmann::json>
+        class FcuHealthObserver : public useful_di::DataSubscriber<FcuHealthData>
         {
         public:
-            FcuHealthObserver(std::shared_ptr<FcuHealthData> data) : useful_di::DataSubscriber<mavsdk::Telemetry::Health, nlohmann::json>(data) {}
+            FcuHealthObserver(std::shared_ptr<FcuHealthData> data) : useful_di::DataSubscriber<FcuHealthData>(data) {}
         };
 
 
-        class GpsInfoObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::GpsInfo, nlohmann::json>
+        class GpsInfoObserver : public useful_di::DataSubscriber<GpsInfoData>
         {
         public:
-            GpsInfoObserver(std::shared_ptr<GpsInfoData> data) : useful_di::DataSubscriber<mavsdk::Telemetry::GpsInfo, nlohmann::json>(data) {}
+            GpsInfoObserver(std::shared_ptr<GpsInfoData> data) : useful_di::DataSubscriber<GpsInfoData>(data) {}
         };
 
 
-        class BatteryObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::Battery, nlohmann::json>
+        class BatteryObserver : public useful_di::DataSubscriber<BatteryData>
         {
         public:
-            BatteryObserver(std::shared_ptr<BatteryData> data) : useful_di::DataSubscriber<mavsdk::Telemetry::Battery, nlohmann::json>(data) {}
+            BatteryObserver(std::shared_ptr<BatteryData> data) : useful_di::DataSubscriber<BatteryData>(data) {}
         };
 
 
-        class LandedStateObserver : public useful_di::DataSubscriber<mavsdk::Telemetry::LandedState, nlohmann::json>
+        class LandedStateObserver : public useful_di::DataSubscriber<LandedStateData>
         {
         public:
-            LandedStateObserver(std::shared_ptr<LandedStateData> data) : useful_di::DataSubscriber<mavsdk::Telemetry::LandedState, nlohmann::json>(data) {}
+            LandedStateObserver(std::shared_ptr<LandedStateData> data) : useful_di::DataSubscriber<LandedStateData>(data) {}
         };
 
 

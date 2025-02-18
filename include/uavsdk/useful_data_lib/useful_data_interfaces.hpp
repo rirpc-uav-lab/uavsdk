@@ -236,47 +236,45 @@ namespace useful_di
 
 
 
+    /**
+     * @brief Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface
+     */
+    template <typename SubjectType>
+    class DataObserverInterface : public TypeInterface
+    {
+    public:
+        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataObserverInterface: provided SubjectType is not derived from TypeInterface");
+        /**
+         * @brief метод, который будет вызван, когда DataCollectorInterface<DataType> изменит свое состояние
+         */
+        virtual void be_notified(std::shared_ptr<SubjectType> input_data) = 0;
+        virtual std::shared_ptr<SubjectType> get_data() = 0;
+    };
+
+
+    /**
+     * 
+     * @tparam SubjectType тип изначального объекта данных
+     */
+    template <typename SubjectType>
+    class DataCollectorInterface
+    {
+    public:
+        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataCollectorInterface: provided SubjectType is not derived from TypeInterface");
+        /**
+         * @brief метод для изменения состояния субъекта
+         */
+        virtual void update_data(std::shared_ptr<SubjectType> data) = 0;
 
         /**
-         * @brief Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface
-         * @tparam SubjectType тип изначального объекта данных
-         * @tparam UniversalDataFormat универсальный тип данных 
+         * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта
          */
-        template <typename SubjectType, typename UniversalDataFormat>
-        class DataObserverInterface
-        {
-        public:
-            /**
-             * @brief метод, который будет вызван, когда DataCollectorInterface<DataType> изменит свое состояние
-             */
-            virtual void be_notified(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> input_data) = 0;
-            virtual std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> get_data() = 0;
-        };
+        virtual void attach_observer(std::shared_ptr<DataObserverInterface<SubjectType>> observer) = 0;
 
-
+    protected:
         /**
-         * 
-         * @tparam SubjectType тип изначального объекта данных
-         * @tparam UniversalDataFormat универсальный тип данных 
+         * @brief метод, который уведомляет всех наблюдателей о изменении состояния субъекта, и передает им текущее состояние
          */
-        template <typename SubjectType, typename UniversalDataFormat>
-        class DataCollectorInterface
-        {
-        public:
-            /**
-             * @brief метод для изменения состояния субъекта
-             */
-            virtual void update_data(std::shared_ptr<useful_di::UniversalDataInterface<UniversalDataFormat>> data) = 0;
-
-            /**
-             * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта
-             */
-            virtual void attach_observer(std::shared_ptr<DataObserverInterface<SubjectType, UniversalDataFormat>> observer) = 0;
-
-        protected:
-            /**
-             * @brief метод, который уведомляет всех наблюдателей о изменении состояния субъекта, и передает им текущее состояние
-             */
-            virtual void notify_observers() = 0;
-        };
+        virtual void notify_observers() = 0;
+    };
 };

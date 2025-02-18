@@ -12,6 +12,10 @@ find_package(ament_cmake REQUIRED)
 find_package(MAVSDK REQUIRED)
 
 find_package(backward_ros REQUIRED)
+find_package(position_reg REQUIRED)
+# set(COLCON_VARS serial other_deps...)
+
+include_directories(include)
 
 include(FetchContent)
 
@@ -66,15 +70,114 @@ include/uavsdk/command_manager/impl/agrilab_cmd_manager/commands/land.hpp
 )
 add_library(agrilab_cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
 set_target_properties(agrilab_cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(agrilab_cmd_managing_lib cmd_managing_lib data_adpters_lib_ros2) # backward_object)
+target_link_libraries(agrilab_cmd_managing_lib cmd_managing_lib data_adpters_lib_ros2 position_reg::position_reg) # backward_object)
 
 
+
+include_directories(include)
+
+install(
+    TARGETS utils_lib
+    EXPORT utils_lib
+    LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
+install(TARGETS utils_lib
+DESTINATION lib/${PROJECT_NAME}/)
+
+ament_export_targets(utils_lib HAS_LIBRARY_TARGET)
+
+
+
+install(
+    TARGETS useful_data_lib
+    EXPORT useful_data_lib
+    LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
+install(TARGETS useful_data_lib
+DESTINATION lib/${PROJECT_NAME}/)
+
+ament_export_targets(useful_data_lib HAS_LIBRARY_TARGET)
+
+
+
+install(
+    TARGETS mavsdk_fcu_tel_collector_lib
+    EXPORT mavsdk_fcu_tel_collector_lib
+    LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
+install(TARGETS mavsdk_fcu_tel_collector_lib
+DESTINATION lib/${PROJECT_NAME}/)
+
+ament_export_targets(mavsdk_fcu_tel_collector_lib HAS_LIBRARY_TARGET)
+
+
+
+install(
+    TARGETS data_adpters_lib_ros2
+    EXPORT data_adpters_lib_ros2
+    LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
+install(TARGETS data_adpters_lib_ros2
+DESTINATION lib/${PROJECT_NAME}/)
+
+ament_export_targets(data_adpters_lib_ros2 HAS_LIBRARY_TARGET)
+
+
+
+
+install(
+    TARGETS cmd_managing_lib
+    EXPORT cmd_managing_lib
+    LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
+install(TARGETS cmd_managing_lib
+DESTINATION lib/${PROJECT_NAME}/)
+
+ament_export_targets(cmd_managing_lib HAS_LIBRARY_TARGET)
+
+
+
+install(
+    TARGETS agrilab_cmd_managing_lib
+    EXPORT agrilab_cmd_managing_lib
+    LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
+    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+    RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
+    INCLUDES DESTINATION include
+)
+
+install(TARGETS agrilab_cmd_managing_lib
+DESTINATION lib/${PROJECT_NAME}/)
+
+ament_export_targets(agrilab_cmd_managing_lib HAS_LIBRARY_TARGET)
 
 add_executable(tests src/tests.cpp)
 target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib data_adpters_lib_ros2)# backward_object)
 
 add_executable(command_tests src/command_tests.cpp)
 target_link_libraries(command_tests MAVSDK::mavsdk mavsdk_fcu_tel_collector_lib agrilab_cmd_managing_lib)# backward_object)
+
+
 
 
 # add_executable(inheritance_tests src/inheritance_tests.cpp)
@@ -93,45 +196,6 @@ install(TARGETS
 #   DESTINATION include
 #   )
 
-include_directories(include)
-
-ament_export_targets(utils_lib HAS_LIBRARY_TARGET)
-
-install(
-  DIRECTORY include/${PROJECT_NAME}
-  DESTINATION include
-)
-
-install(
-    TARGETS utils_lib
-    EXPORT utils_lib
-    LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
-    INCLUDES DESTINATION include
-)
-
-ament_export_targets(useful_data_lib HAS_LIBRARY_TARGET)
-
-install(
-    TARGETS useful_data_lib
-    EXPORT useful_data_lib
-    LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
-    INCLUDES DESTINATION include
-)
-
-ament_export_targets(useful_data_lib HAS_LIBRARY_TARGET)
-
-install(
-    TARGETS mavsdk_fcu_tel_collector_lib
-    EXPORT mavsdk_fcu_tel_collector_lib
-    LIBRARY DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    RUNTIME DESTINATION  ${COLCON_GLOBAL_BIN_DESTINATION}
-    INCLUDES DESTINATION include
-)
 
 
 if(BUILD_TESTING)
