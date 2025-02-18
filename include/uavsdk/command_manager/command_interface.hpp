@@ -301,7 +301,28 @@ namespace uavsdk
             void add_data_to_bb(std::string key, std::shared_ptr<useful_di::TypeInterface> data)
             {
                 std::scoped_lock llock(bb_mutex);
-                blackboard->add_data(key, data);
+
+                auto keys = this->blackboard->get_present_keys();
+                
+                bool key_not_in_bb = true;
+                
+                for (const auto& bb_key : keys)
+                {
+                    if (bb_key == key)
+                    {
+                        key_not_in_bb = false;
+                        break;
+                    }
+                }
+                
+                if (key_not_in_bb)
+                {
+                    blackboard->add_data(key, data);
+                }
+                else
+                {
+                    std::runtime_error("Called add_data_to_bb(key, data), but this key is alredy in blackboard");
+                }
             }
 
 

@@ -220,7 +220,8 @@ namespace useful_di
             {
                 if (not this->data_storage.count(_key))
                 {
-                    std::string tmp_key = _key; 
+                    std::string tmp_key = _key;
+                    
                     this->keys.push_back(_key);
 
                     this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(tmp_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
@@ -228,6 +229,8 @@ namespace useful_di
                 else 
                 {
                     // std::cout << "UniMapStr: Warning! Called _add_data(id, data), but this id is alredy in map. Calling modify_data(id, data). \n";
+                    
+                    // std::runtime_error("Called _add_data(id, data), but this id is alredy in map");
                     this->modify_data(_key, _data);
                 }
             }

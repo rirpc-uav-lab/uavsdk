@@ -12,6 +12,7 @@
 
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/commands/take_off.hpp>
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/commands/path_following.hpp>
+#include <uavsdk/command_manager/impl/agrilab_cmd_manager/commands/land.hpp>
 
 int main()
 {
@@ -138,7 +139,18 @@ int main()
     pose.position.z = 20.0;
     path_following_data->global_trajectory_wgs84.push_back(pose);
 
-
+    pose = uavsdk::data_adapters::ros2::geometry_msgs::Pose();
+    pose.position.x = 47.398170327054473;
+    pose.position.y = 8.5456490218639658;
+    pose.position.z = 20.0;
+    path_following_data->global_trajectory_wgs84.push_back(pose);
+    
+    pose = uavsdk::data_adapters::ros2::geometry_msgs::Pose();
+    pose.position.x = 47.3979703;
+    pose.position.y = 8.5472241;
+    pose.position.z = 20.0;
+    path_following_data->global_trajectory_wgs84.push_back(pose);
+    
     auto path_following = std::make_shared<uavsdk::agrilab::commands::PathFollowing>(external_resource, path_following_data, blackboard_init);
     
     executor.set_command(path_following);
@@ -180,6 +192,53 @@ int main()
         }
         status = res_future_pf.wait_for(std::chrono::milliseconds(10));
     }
+
+    executor.stop_execution();
+
+    auto land = std::make_shared<uavsdk::agrilab::commands::Land>(external_resource, blackboard_init);
+    
+    
+    executor.set_command(land);
+
+    uavsdk::command_manager::StartExecutionResult res_land = executor.start_execution();
+    // std::shared_future<uavsdk::command_manager::ExecutionResult> res_future_land = executor.get_result_future();
+    std::shared_future<uavsdk::command_manager::ExecutionResult> res_future_land = executor.get_execution_result_future();
+
+    if (res_land == uavsdk::command_manager::StartExecutionResult::STARTED)
+    {
+        auto status = res_future_land.wait_for(std::chrono::milliseconds(10));
+        while (!(status == std::future_status::ready))
+        {
+            status = res_future_land.wait_for(std::chrono::milliseconds(10));
+            // std::cout << "Waiting.\n";
+            // std::cout << "Future is valid " << res_future_land.valid() << "\n";
+            // if (status == std::future_status::deferred)
+            // {
+            //     std::cout << "Future status: " << "deferred" << "\n\n";
+            // }
+            // else if (status == std::future_status::ready)
+            // {
+            //     std::cout << "Future status: " << "ready" << "\n\n";
+            // }
+            // else if (status == std::future_status::timeout)
+            // {
+            //     std::cout << "Future status: " << "timeout" << "\n\n";
+            // }
+        }
+        auto exres = res_future_land.get();
+        if (exres == uavsdk::command_manager::ExecutionResult::SUCCESS)
+        {
+            std::cout << "Success!\n";
+        }
+        else
+        {
+            std::cout << "Failed!\n";
+        }
+        status = res_future_land.wait_for(std::chrono::milliseconds(10));
+    }
+
+    executor.stop_execution();
+
 
     return 0;
 }

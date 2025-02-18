@@ -75,8 +75,12 @@ namespace uavsdk
                             std::this_thread::sleep_for(50ms);
                             res = this->external_resource->action->hold();
                         }
-                        if (i <= 0) this->stop("92");
-                        return uavsdk::command_manager::ExecutionResult::FAILED;
+                        if (i <= 0)
+                        {
+                            this->stop("92");
+                            return uavsdk::command_manager::ExecutionResult::FAILED;
+                        }
+                        return uavsdk::command_manager::ExecutionResult::RUNNING;
                     }
 
                     this->stop();
