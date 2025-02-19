@@ -7,7 +7,7 @@
 #include <uavsdk/useful_data_lib/useful_data_impl.hpp>
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/cmd_manager.hpp>
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/command_data.hpp>
-#include <uavsdk/command_manager/impl/agrilab_cmd_manager/external_resource.hpp>
+// #include <uavsdk/command_manager/impl/agrilab_cmd_manager/external_resources.hpp>
 #include <uavsdk/data_adapters/ros2/geometry_msgs/pose.hpp>
 
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/commands/take_off.hpp>
@@ -42,12 +42,12 @@ int main()
 
     auto pid = std::make_shared<position_reg::PID>();
     auto reg = std::make_shared<position_reg::PositionReg>();
-    auto external_resource = std::make_shared<uavsdk::agrilab::CmdExternalResources>();
-    external_resource->action = action;
-    external_resource->telem = telem_data;
-    external_resource->offboard = offboard;
-    external_resource->pid = pid;
-    external_resource->reg = reg;
+    auto external_resources = std::make_shared<uavsdk::agrilab::CmdExternalResources>();
+    external_resources->action = action;
+    external_resources->telem = telem_data;
+    external_resources->offboard = offboard;
+    external_resources->pid = pid;
+    external_resources->reg = reg;
     
     auto command_data = std::make_shared<uavsdk::agrilab::TakeOffData>();
     uavsdk::data_adapters::ros2::geometry_msgs::Pose pose;
@@ -56,10 +56,14 @@ int main()
 
     std::shared_ptr<useful_di::UniMapStr> blackboard_init =  std::make_shared<useful_di::UniMapStr>();
 
+    blackboard_init->add_data("external_resources", external_resources);
+    blackboard_init->add_data("command_data", command_data);
+
+
     auto speed_limit = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<double>>(5.0);
     blackboard_init->add_data("speed_limit", speed_limit);
 
-    auto take_off_cmd = std::make_shared<uavsdk::agrilab::commands::TakeOff>(external_resource, command_data, blackboard_init);
+    auto take_off_cmd = std::make_shared<uavsdk::agrilab::commands::TakeOff>(blackboard_init);
     
     executor.set_command(take_off_cmd);
 
@@ -151,7 +155,8 @@ int main()
     pose.position.z = 20.0;
     path_following_data->global_trajectory_wgs84.push_back(pose);
     
-    auto path_following = std::make_shared<uavsdk::agrilab::commands::PathFollowing>(external_resource, path_following_data, blackboard_init);
+    blackboard_init->modify_data("command_data", path_following_data);
+    auto path_following = std::make_shared<uavsdk::agrilab::commands::PathFollowing>(blackboard_init);
     
     executor.set_command(path_following);
 
@@ -195,7 +200,9 @@ int main()
 
     executor.stop_execution();
 
-    auto land = std::make_shared<uavsdk::agrilab::commands::Land>(external_resource, blackboard_init);
+    blackboard_init->remove_data("command_data");
+
+    auto land = std::make_shared<uavsdk::agrilab::commands::Land>(blackboard_init);
     
     
     executor.set_command(land);

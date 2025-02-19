@@ -466,56 +466,57 @@ namespace uavsdk
         };
 
 
-        /**
-         * Protected methods that need to be implemented (pure-virtual):
-         * 
-         * - void logic_tick()
-         * 
-         * - void handle_stop()
-         */
-        template <typename Id, typename ExternalResource, typename CommandData>
-        class CommandInterface : public CommandInterfaceWithId<Id>
-        {
-            public:
-            // std::shared_ptr<useful_di::UniMapStr> get_blackboard_pointer()
-            // {
-            //     return blackboard;
-            // }
-            void set_external_resource(std::shared_ptr<ExternalResource> new_ext)
-            {
-                external_resource = new_ext;
-            }
+        // /**
+        //  * Protected methods that need to be implemented (pure-virtual):
+        //  * 
+        //  * - void logic_tick()
+        //  * 
+        //  * - void handle_stop()
+        //  */
+        // template <typename Id, typename ExternalResource, typename CommandData>
+        // class CommandInterface : public CommandInterfaceWithId<Id>
+        // {
+        //     public:
+        //     // std::shared_ptr<useful_di::UniMapStr> get_blackboard_pointer()
+        //     // {
+        //     //     return blackboard;
+        //     // }
+        //     void set_external_resource(std::shared_ptr<ExternalResource> new_ext)
+        //     {
+        //         external_resource = new_ext;
+        //     }
 
 
-            std::shared_ptr<ExternalResource> get_external_resource()
-            {
-                return external_resource;
-            }
+        //     std::shared_ptr<ExternalResource> get_external_resource()
+        //     {
+        //         return external_resource;
+        //     }
 
 
-            void set_command_data(std::shared_ptr<CommandData> new_cmd_data)
-            {
-                command_data = new_cmd_data;
-            }
+        //     void set_command_data(std::shared_ptr<CommandData> new_cmd_data)
+        //     {
+        //         command_data = new_cmd_data;
+        //     }
 
 
-            std::shared_ptr<CommandData> get_command_data()
-            {
-                return command_data;
-            }
+        //     std::shared_ptr<CommandData> get_command_data()
+        //     {
+        //         return command_data;
+        //     }
 
-            protected:
-            std::shared_ptr<ExternalResource> external_resource;
-            std::shared_ptr<CommandData> command_data;
-        };
+        //     protected:
+        //     std::shared_ptr<ExternalResource> external_resource;
+        //     std::shared_ptr<CommandData> command_data;
+        // };
 
 
-        template <typename Id, typename ExternalResource, typename CommandData>
-        class CommandInterfaceWithBlackboard : public CommandInterface<Id, ExternalResource, CommandData>
+        template <typename Id>
+        class CommandInterfaceWithBlackboard : public CommandInterfaceWithId<Id>
         {
             public:
             CommandInterfaceWithBlackboard(std::shared_ptr<useful_di::UniMapStr> _blackboard)
             {
+
                 init_blackboard(_blackboard);
                 this->execution_strategy = std::make_shared<SequentialExecutionStrategy>();
             }

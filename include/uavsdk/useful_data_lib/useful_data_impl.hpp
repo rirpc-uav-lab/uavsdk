@@ -158,6 +158,11 @@ namespace useful_di
     class UniMapStr : public useful_di::MapLikeDataStorageInterface<std::string>
     {
         public:
+            UniMapStr()
+            {
+                this->___set_type();
+            }
+
             std::vector<std::string> get_present_keys()
             {
                 return this->keys;

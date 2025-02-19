@@ -161,7 +161,7 @@ namespace useful_di
      * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
      */
     template <typename Id>
-    class DataStorageInterface
+    class DataStorageInterface : public TypeInterface
     {
         public:
             Id add_data(const std::shared_ptr<TypeInterface>& _data)

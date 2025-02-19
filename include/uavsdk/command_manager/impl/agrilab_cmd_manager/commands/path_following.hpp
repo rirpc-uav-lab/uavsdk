@@ -28,13 +28,11 @@ namespace uavsdk
         namespace commands
         {
 
-            class CheckIncomingMisson : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string, uavsdk::agrilab::CmdExternalResources, uavsdk::agrilab::PathFollowingData>
+            class CheckIncomingMisson : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
             {
                 public:
-                CheckIncomingMisson (std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<PathFollowingData> data, std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
+                CheckIncomingMisson (std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
                 {
-                    this->set_external_resource(ext_res);
-                    this->set_command_data(data);
                     this->set_id("check_incoming_mission"); // path_following
                     this->___set_type();
                 }
@@ -43,7 +41,7 @@ namespace uavsdk
                 protected:
                 uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
-                    if (this->command_data->global_trajectory_wgs84.empty())
+                    if (this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.empty())
                     {
                         this->stop();
                         return uavsdk::command_manager::ExecutionResult::RUNNING;
@@ -53,16 +51,16 @@ namespace uavsdk
                     double _y = 0;
                     double _z = 0;
 
-                    for (int i = 0; i < this->command_data->global_trajectory_wgs84.size(); i++)
+                    for (int i = 0; i < this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.size(); i++)
                     {
-                        _x += this->command_data->global_trajectory_wgs84.at(i).position.x;
-                        _y += this->command_data->global_trajectory_wgs84.at(i).position.y;
-                        _z += this->command_data->global_trajectory_wgs84.at(i).position.z;
+                        _x += this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.at(i).position.x;
+                        _y += this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.at(i).position.y;
+                        _z += this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.at(i).position.z;
                     }
 
-                    _x = _x / this->command_data->global_trajectory_wgs84.size();
-                    _y = _y / this->command_data->global_trajectory_wgs84.size();
-                    _z = _z / this->command_data->global_trajectory_wgs84.size();
+                    _x = _x / this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.size();
+                    _y = _y / this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.size();
+                    _z = _z / this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.size();
 
                     uavsdk::navigation::coordinates::WGS84Coords p;
                     
@@ -83,20 +81,18 @@ namespace uavsdk
             };
 
 
-            class CheckStartMission : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string, uavsdk::agrilab::CmdExternalResources, uavsdk::agrilab::PathFollowingData>
+            class CheckStartMission : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
             {
                 public:
-                CheckStartMission (std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<PathFollowingData> data, std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
+                CheckStartMission (std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
                 {
-                    this->set_external_resource(ext_res);
-                    this->set_command_data(data);
                     this->set_id("check_start_mission"); // path_following
                     this->___set_type();
 
                     this->speed_limit = this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<double>>("speed_limit")->get_data();
 
-                    this->external_resource->offboard->set_velocity_ned({0.0f, 0.0f, 0.0f, 0.0f});
-                    this->external_resource->offboard->start();
+                    this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->offboard->set_velocity_ned({0.0f, 0.0f, 0.0f, 0.0f});
+                    this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->offboard->start();
                 }
 
 
@@ -108,7 +104,7 @@ namespace uavsdk
 
                     // Получем текущую позицию дрона
 
-                    mavsdk::Telemetry::Position position = std::dynamic_pointer_cast<uavsdk::fcu_tel_collector::PositionData>(std::dynamic_pointer_cast<useful_di::UniMapStr>(this->external_resource->telem->get_msg())->at("uav_position"))->get_msg();
+                    mavsdk::Telemetry::Position position = std::dynamic_pointer_cast<uavsdk::fcu_tel_collector::PositionData>(std::dynamic_pointer_cast<useful_di::UniMapStr>(this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->telem->get_msg())->at("uav_position"))->get_msg();
 
                     wgs84DroneCoords.altitude = (double)position.relative_altitude_m; // высота
                     wgs84DroneCoords.longitude = (double)position.longitude_deg;       // долгота
@@ -126,11 +122,11 @@ namespace uavsdk
                     global_drone_pose.zUp = enuDroneCoords.zUp;
                     
 
-                    if(point_addres == adr && adr != this->command_data->global_trajectory_wgs84.size())
+                    if(point_addres == adr && adr != this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.size())
                     {
-                        wgs84PointCoords.latitude = this->command_data->global_trajectory_wgs84.at(point_addres).position.x;
-                        wgs84PointCoords.longitude = this->command_data->global_trajectory_wgs84.at(point_addres).position.y;
-                        wgs84PointCoords.altitude = this->command_data->global_trajectory_wgs84.at(point_addres).position.z;
+                        wgs84PointCoords.latitude = this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.at(point_addres).position.x;
+                        wgs84PointCoords.longitude = this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.at(point_addres).position.y;
+                        wgs84PointCoords.altitude = this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.at(point_addres).position.z;
 
                         ecefPointCoords = wgs84ToEcef(wgs84PointCoords);
                         enuPointCoords = ecefToEnu(ecefPointCoords, this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<uavsdk::navigation::coordinates::WGS84Coords>>("startPoint")->get_data());
@@ -171,8 +167,8 @@ namespace uavsdk
                     direction_cos.at(2) = speeds.zUp/speed_vec_lenght;
 
                     
-                    double pid_offboardSpeed = this->external_resource->pid->pid(speed_vec_lenght,kp,ki,kd, 0.0001);
-                    // double pid_offboardSpeed = this->external_resource->pid->pid(speed_vec_lenght,kp,ki,kd, this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<double>>("dt")->get_data());
+                    double pid_offboardSpeed = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->pid->pid(speed_vec_lenght,kp,ki,kd, 0.0001);
+                    // double pid_offboardSpeed = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->pid->pid(speed_vec_lenght,kp,ki,kd, this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<double>>("dt")->get_data());
 
                     if (pid_offboardSpeed < speed_limit)
                     {
@@ -188,7 +184,7 @@ namespace uavsdk
                     }
 
 
-                    yaw = this->external_resource->reg->get_yaw_deg(cartesianDroneCoords.xEast, cartesianDroneCoords.yNorth, cartesianGoalPointCoords.xEast, cartesianGoalPointCoords.yNorth) / M_PI * 180.0;
+                    yaw = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->reg->get_yaw_deg(cartesianDroneCoords.xEast, cartesianDroneCoords.yNorth, cartesianGoalPointCoords.xEast, cartesianGoalPointCoords.yNorth) / M_PI * 180.0;
 
                     std::cout << "YAW: " << yaw << "\n";
 
@@ -200,25 +196,23 @@ namespace uavsdk
 
 
                     
-                    auto current_flight_mode = std::dynamic_pointer_cast<uavsdk::fcu_tel_collector::FlightModeData>(std::dynamic_pointer_cast<useful_di::UniMapStr>(this->external_resource->telem->get_msg())->at("flight_mode"))->get_msg();
+                    auto current_flight_mode = std::dynamic_pointer_cast<uavsdk::fcu_tel_collector::FlightModeData>(std::dynamic_pointer_cast<useful_di::UniMapStr>(this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->telem->get_msg())->at("flight_mode"))->get_msg();
                     
                     if (current_flight_mode != mavsdk::Telemetry::FlightMode::Stabilized and current_flight_mode != mavsdk::Telemetry::FlightMode::Posctl and current_flight_mode != mavsdk::Telemetry::FlightMode::Altctl and current_flight_mode != mavsdk::Telemetry::FlightMode::Rattitude and current_flight_mode != mavsdk::Telemetry::FlightMode::Acro and current_flight_mode != mavsdk::Telemetry::FlightMode::Offboard)
                     {
-                        auto res = this->external_resource->offboard->start();
+                        auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->offboard->start();
                     
                         if (res != mavsdk::Offboard::Result::Success)
                         {
                             return uavsdk::command_manager::ExecutionResult::RUNNING;
                         }   
                     }
-                    this->external_resource->offboard->set_velocity_ned(offboard_movement);
+                    this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->offboard->set_velocity_ned(offboard_movement);
                     
-                    std::cout << "point_addres == this->command_data->global_trajectory_wgs84.size() " << bool(point_addres == this->command_data->global_trajectory_wgs84.size()) << "\n"; 
 
-                    if(point_addres == this->command_data->global_trajectory_wgs84.size())
+                    if(point_addres == this->bb_at<uavsdk::agrilab::PathFollowingData>("command_data")->global_trajectory_wgs84.size())
                     {
                         std::cout << "point address = " << point_addres << "\n";
-                        std::cout << "this->command_data->global_trajectory_wgs84.size() = " << this->command_data->global_trajectory_wgs84.size() << "\n";
                         this->stop();
                         return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
@@ -229,11 +223,11 @@ namespace uavsdk
 
                 void handle_stop() override
                 {
-                    auto res = this->external_resource->action->hold();
+                    auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
                     while (res != mavsdk::Action::Result::Success)
                     {
                         std::this_thread::sleep_for(50ms);
-                        res = this->external_resource->action->hold();
+                        res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
                     }
 
                     // mavsdk::Offboard::Result offboard_res = offboard->stop();
@@ -300,21 +294,19 @@ namespace uavsdk
 
 
 
-            class PathFollowing : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string, uavsdk::agrilab::CmdExternalResources, uavsdk::agrilab::PathFollowingData>
+            class PathFollowing : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
             {
                 public:
-                PathFollowing(std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<PathFollowingData> data, std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
+                PathFollowing(std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
                 {
                     this->___set_type();
-                    this->set_external_resource(ext_res);
-                    this->set_command_data(data);
                     this->set_id("take_off"); // path_following
 
                     std::shared_ptr<uavsdk::data_adapters::cxx::BasicDataAdapter<uavsdk::navigation::coordinates::WGS84Coords>> startPoint = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<uavsdk::navigation::coordinates::WGS84Coords>>(uavsdk::navigation::coordinates::WGS84Coords());
                     this->add_data_to_bb("startPoint", startPoint);
 
-                    auto check_incoming = std::make_shared<CheckIncomingMisson>(this->external_resource, this->command_data, this->get_bb_p());
-                    auto mission = std::make_shared<CheckStartMission>(this->external_resource, this->command_data, this->get_bb_p());
+                    auto check_incoming = std::make_shared<CheckIncomingMisson>(this->get_bb_p());
+                    auto mission = std::make_shared<CheckStartMission>(this->get_bb_p());
 
                     this->add_stage(check_incoming);
                     this->add_stage(mission);
@@ -328,11 +320,11 @@ namespace uavsdk
                 {
                     if(states.at(0) == "check_stop_mission")
                     {
-                        auto res = this->external_resource->action->hold();
+                        auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
                         while (res != mavsdk::Action::Result::Success)
                         {
                             std::this_thread::sleep_for(50ms);
-                            res = this->external_resource->action->hold();
+                            res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
                         }
 
                         // result = mission->clear_mission();

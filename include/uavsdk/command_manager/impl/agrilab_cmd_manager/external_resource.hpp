@@ -15,9 +15,14 @@ namespace uavsdk
 {
     namespace agrilab
     {
-        class CmdExternalResources
+        class CmdExternalResources : public useful_di::TypeInterface
         {
             public:
+            CmdExternalResources()
+            {
+                this->___set_type();
+            }
+
             std::shared_ptr<fcu_tel_collector::TelemetryDataComposite> telem;
             std::shared_ptr<mavsdk::Action> action;
             std::shared_ptr<mavsdk::Offboard> offboard;

@@ -22,12 +22,11 @@ namespace uavsdk
     {
         namespace commands
         {
-            class LandStart : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string, uavsdk::agrilab::CmdExternalResources, void>
+            class LandStart : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
             {
                 public:
-                LandStart(std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                LandStart(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
                 {
-                    this->set_external_resource(ext_res);
                     this->set_id("land_start");
                     this->___set_type();
                 }
@@ -36,7 +35,7 @@ namespace uavsdk
                 uavsdk::command_manager::ExecutionResult logic_tick() override
                 {
                     std::cout << this->get_id() << "::tick()\n";
-                    auto landed_state = std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->external_resource->telem->get_msg()->at("landed_state"));
+                    auto landed_state = std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->telem->get_msg()->at("landed_state"));
 
                     if(landed_state->get_msg() == mavsdk::Telemetry::LandedState::OnGround)
                     {
@@ -45,10 +44,10 @@ namespace uavsdk
                     }
                     
                     
-                    mavsdk::Action::Result res = this->external_resource->action->land();
+                    mavsdk::Action::Result res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->land();
                     if(res != mavsdk::Action::Result::Success)
                     {
-                        res = this->external_resource->action->land();
+                        res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->land();
                         return uavsdk::command_manager::ExecutionResult::RUNNING;
                     }
                     
@@ -64,12 +63,11 @@ namespace uavsdk
 
 
             // land check 2791-2813
-            class LandCheck : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string, uavsdk::agrilab::CmdExternalResources, void>
+            class LandCheck : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
             {
                 public:
-                LandCheck(std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                LandCheck(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
                 {
-                    this->set_external_resource(ext_res);
                     this->set_id("land_check");
                     this->___set_type();
                 }
@@ -80,13 +78,13 @@ namespace uavsdk
                     mavsdk::Action::Result res = this->bb_at<uavsdk::data_adapters::cxx::BasicDataAdapter<mavsdk::Action::Result>>("land_state_res")->get_data();
                     if(res == mavsdk::Action::Result::Success)
                     {
-                        auto landed_state = std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->external_resource->telem->get_msg()->at("landed_state"));
+                        auto landed_state = std::dynamic_pointer_cast<fcu_tel_collector::LandedStateData>(this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->telem->get_msg()->at("landed_state"));
                         if(landed_state->get_msg() != mavsdk::Telemetry::LandedState::OnGround)
                         {
-                            auto flight_mode = std::dynamic_pointer_cast<fcu_tel_collector::FlightModeData>(this->external_resource->telem->get_msg()->at("flight_mode"));
+                            auto flight_mode = std::dynamic_pointer_cast<fcu_tel_collector::FlightModeData>(this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->telem->get_msg()->at("flight_mode"));
                             if(flight_mode->get_msg() != mavsdk::Telemetry::FlightMode::Land)
                             {
-                                mavsdk::Action::Result res = this->external_resource->action->land();
+                                mavsdk::Action::Result res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->land();
                                 return uavsdk::command_manager::ExecutionResult::RUNNING;
                             }
                             return uavsdk::command_manager::ExecutionResult::RUNNING;
@@ -113,18 +111,17 @@ namespace uavsdk
             };
 
 
-            class Land : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string, uavsdk::agrilab::CmdExternalResources, void>
+            class Land : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
             {
                 public:
-                Land(std::shared_ptr<CmdExternalResources> ext_res, std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                Land(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
                 {
-                    this->set_external_resource(ext_res);
                     this->set_id("land");
                     this->___set_type();
 
 
-                    auto land_start = std::make_shared<LandStart>(this->external_resource, this->get_bb_p());
-                    auto land_check = std::make_shared<LandCheck>(this->external_resource, this->get_bb_p());
+                    auto land_start = std::make_shared<LandStart>(this->get_bb_p());
+                    auto land_check = std::make_shared<LandCheck>(this->get_bb_p());
 
                     this->add_stage(land_start);
                     this->add_stage(land_check);
