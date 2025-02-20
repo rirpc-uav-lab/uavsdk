@@ -1,0 +1,245 @@
+@startuml
+
+start
+partition "BLOCK CheckLandedState"{
+    if (landed_state == OnGround?) then (да)
+        :Вернуть FAILED;
+        stop
+    else (нет)
+        :Вернуть SUCCESS;
+    endif
+}
+
+partition "BLOCK CheckRTLMission"{
+    :Проверить наличие точек в миссии;
+    :Проверить наличие необходимых параметров;
+    if (Проверки успешны?) then (да)
+        :Вернуть SUCCESS;
+    else (нет)
+        :Вернуть FAILED;
+        stop
+    endif
+}
+
+partition "BLOCK PathFollowingOffboard"{
+    :Выполнить полет;
+}
+
+    ' :;
+partition "BLOCK SearchMarker"{
+    :Записать момент начала поиска;
+    :Записать текущее время;
+    :Создать флаги search_timed_out(false), marker_visible(false);
+    :Перейти в Offboard;
+    :Определить функцию search_for_marker();
+    while (не search_timed_out) is (Да)
+        if (не marker_visible) then (Да)
+            #pink :Искать маркер;
+        else (нет)
+            :Обновить search_start_time;
+            break
+        endif
+    endwhile (val) 
+    
+    if (search_timed_out) then (да)
+        partition "BLOCK Land"{
+            :Завершить режим Offboard;
+            :Перейти в режим Land;
+            :Сесть;
+            #pink :Вернуть FAILED;
+        }
+    endif
+}
+    ' :;
+
+:Создать объекты PID регуляторов позиции, высоты, поворота;
+
+partition "BLOCK HelperFuncs"{
+    :Определить regulate_position_func;
+    :Определить regulate_height_func;
+}
+
+partition "CenterAboveMarker"{
+    while (Маркер не в центре) is (Да)
+        :Обновить current_time;
+        :Обновить marker_visible;
+        :Обновить search_timed_out;
+        if (marker_visible) then (Да)
+            :Обновить search_start_time;
+            :res<vx,vy> = regulate_position_func();
+            :z_speed = regulate_height_func(PLD_SRCH_ALT, 0.0);
+            :Обновить last_pid_time;
+            :Установить скорости относительно СК дрона = vx, vy, vz;
+        else (Нет)
+            if (search_timed_out) then (Да)
+                :BLOCK Land;
+            else (нет)
+                :BLOCK Искать маркер;
+            endif
+        endif
+    endwhile (val) 
+}
+
+partition "BLCOCK OrientationRegulation"{
+    while (marker_visible AND ориентация не выровнена) is (Да)
+        :Обновить search_start_time;
+        :Обновить current_time;
+        :Обновить marker_visible;
+        :Обновить search_timed_out;
+        :alpha = atan2(-y_rad, x_rad);
+        :res<vx,vy> = regulate_position_func();
+        :z_speed = regulate_height_func(PLD_SRCH_ALT, 0.0);
+
+        if (ориентация не выровнена) then (Да)
+            :yaw_speed = 180.0 / M_PI * pid_yaw.pid(alpha_rad, current_time - last_pid_time);
+            :Установить скорости vx, vy, vz, yaw_speed;
+        else (Нет)
+            break
+        endif
+    endwhile (val) 
+}
+
+partition "BLOCK CheckSearchTimeout"{
+    if (search_timed_out) then (Да)
+        :BLOCK Land;
+    endif
+}
+
+partition "BLOCK Landing"{
+    while (current_landed_state != OnGround) is (Да)
+        :Обновить current_time;
+        :Обновить marker_visible;
+        :Обновить search_timed_out;
+        if (marker_visible) then (Да)
+            :Обновить search_start_time;
+            :alpha = atan2(-y_rad, x_rad);
+            :res<vx,vy> = regulate_position_func();
+            :z_speed = regulate_height_func(0.0, PLD_MIN_ALT_SPD);
+            :yaw_speed = 180.0 / M_PI * pid_yaw.pid(alpha_rad, current_time - last_pid_time);
+            :Установить скорости vx, vy, vz, yaw_speed;
+        else (нет)
+            :pid clear();
+            if (search_timed_out) then (Да)
+                :BLOCK Land;
+            endif
+
+            :Определить uav_above_land_guarantee_threshold;
+            if (uav_above_land_guarantee_threshold) then (Да)
+                :Определить uav_lower_than_search_altitude;
+                if (uav_lower_than_search_altitude) then (Да)
+                    :Лететь вверх;
+                else (Нет)
+                    :Лететь вниз;
+                endif
+                :Обновить last_pid_time;
+            else (Нет)
+                :BLOCK Land;
+            endif
+        endif
+    endwhile (val) 
+}
+
+stop
+' :Получить состояние посадки (landed_state);
+' if (landed_state == OnGround?) then (да)
+'     :Вернуть FAILED;
+'     stop
+' else (нет)
+'     :Проверить миссию;
+'     if (land_geo_position доступен?) then (да)
+'         :Добавить mission_items из land_geo_position;
+'     else (нет)
+'         :Добавить mission_items из home_position;
+'     endif
+'     :Загрузить миссию;
+'     while (Загрузка миссии не удалась?)
+'         if (Остановка запрошена?) then (да)
+'             :Удержание;
+'             :Вернуть RES_FAILED;
+'             stop
+'         else (нет)
+'             :Повторить загрузку миссии;
+'         endif
+'     endwhile
+'     :Запустить миссию;
+'     while (Запуск миссии не удался?)
+'         if (Остановка запрошена?) then (да)
+'             :Удержание;
+'             :Вернуть RES_FAILED;
+'             stop
+'         else (нет)
+'             :Повторить запуск миссии;
+'         endif
+'     endwhile
+'     :Ожидание завершения миссии;
+'     while (Миссия не завершена?)
+'         if (Остановка запрошена?) then (да)
+'             :Удержание;
+'             :Вернуть RES_FAILED;
+'             stop
+'         else (нет)
+'             :Продолжить ожидание;
+'         endif
+'     endwhile
+'     :Поиск маркера;
+'     while (Маркер не найден и время не истекло?)
+'         if (Остановка запрошена?) then (да)
+'             :Удержание;
+'             :Вернуть RES_FAILED;
+'             stop
+'         else (нет)
+'             :Продолжить поиск;
+'         endif
+'     endwhile
+'     if (Маркер найден?) then (да)
+'         :Центрирование над маркером;
+'         while (Не центрирован?)
+'             if (Остановка запрошена?) then (да)
+'                 :Удержание;
+'                 :Вернуть RES_FAILED;
+'                 stop
+'             else (нет)
+'                 :Регулировка положения;
+'             endif
+'         endwhile
+'         :Регулировка ориентации;
+'         while (Ориентация не корректна?)
+'             if (Остановка запрошена?) then (да)
+'                 :Удержание;
+'                 :Вернуть RES_FAILED;
+'                 stop
+'             else (нет)
+'                 :Регулировка ориентации;
+'             endif
+'         endwhile
+'         :Посадка;
+'         while (Не приземлился?)
+'             if (Остановка запрошена?) then (да)
+'                 :Удержание;
+'                 :Вернуть RES_FAILED;
+'                 stop
+'             else (нет)
+'                 :Продолжить посадку;
+'             endif
+'         endwhile
+'         :Вернуть RES_SUCCESS;
+'         stop
+'     else (нет)
+'         :Время поиска истекло;
+'         :Посадка;
+'         while (Не приземлился?)
+'             if (Остановка запрошена?) then (да)
+'                 :Удержание;
+'                 :Вернуть RES_FAILED;
+'                 stop
+'             else (нет)
+'                 :Продолжить посадку;
+'             endif
+'         endwhile
+'         :Вернуть RES_SUCCESS;
+'         stop
+'     endif
+' endif
+
+
+@enduml
