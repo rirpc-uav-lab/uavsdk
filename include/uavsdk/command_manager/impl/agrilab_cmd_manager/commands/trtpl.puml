@@ -3,20 +3,27 @@
 start
 partition "BLOCK CheckLandedState"{
     if (landed_state == OnGround?) then (да)
-        :Вернуть FAILED;
+        #pink:Вернуть FAILED;
         stop
     else (нет)
-        :Вернуть SUCCESS;
+        #LimeGreen:Вернуть SUCCESS;
     endif
 }
 
 partition "BLOCK CheckRTLMission"{
-    :Проверить наличие точек в миссии;
-    :Проверить наличие необходимых параметров;
-    if (Проверки успешны?) then (да)
-        :Вернуть SUCCESS;
-    else (нет)
-        :Вернуть FAILED;
+    partition "BLOCK CheckMission"{
+        :mission_not_empty = Проверить наличие точек в миссии в blackboard;
+        if (mission_not_empty) then (Да)
+            #LimeGreen:Вернуть SUCCESS;
+        else (Нет)
+            #pink:Вернуть FAILED;
+        endif
+    }
+    :parameters_ready = Проверить наличие необходимых параметров;
+    if (CheckMission == SUCCESS AND parameters_ready) then (Да)
+        #LimeGreen:Вернуть SUCCESS;
+    else (Нет)
+        #pink:Вернуть FAILED;
         stop
     endif
 }
@@ -25,34 +32,69 @@ partition "BLOCK PathFollowingOffboard"{
     :Выполнить полет;
 }
 
+:Определить и добавить в blackboard search_timed_out = false;
+:Определить и добавить в blackboard marker_visible = true;
+
     ' :;
 partition "BLOCK SearchMarker"{
     :Записать момент начала поиска;
     :Записать текущее время;
     :Создать флаги search_timed_out(false), marker_visible(false);
     :Перейти в Offboard;
-    :Определить функцию search_for_marker();
+
     while (не search_timed_out) is (Да)
         if (не marker_visible) then (Да)
-            #pink :Искать маркер;
+            partition "BLOCK SearchForMarker"{
+                :Получить на вход параметры current_time, marker_visible, search_start_time, search_timed_out;
+                partition "BLOCK UpdateCurrentTime"{
+                    :ready = Проверить наличие current_time в blackboard;
+
+                    if (ready) then (да)
+                        :current_time = this->get_clock()->now().seconds() + this->get_clock()->now().nanoseconds() / double(1e9);
+                        #LimeGreen:Вернуть SUCCESS;
+                    else (нет)
+                        #red :ИСКЛЮЧЕНИЕ;
+                    endif
+                }
+
+                partition "BLOCK UpdateMarkerVisible"{
+                    :ready = Проверить наличие marker_visible в blackboard;
+
+                    if (ready) then (да)
+                        :marker_visible = this->get_clock()->now().seconds() + this->get_clock()->now().nanoseconds() / double(1e9);
+                        #LimeGreen:Вернуть SUCCESS;
+                    else (нет)
+                        #red :ИСКЛЮЧЕНИЕ;
+                    endif
+                }
+
+                if (search_timed_out) then (Да)
+                    partition "BLOCK Land"{
+                        :Завершить режим Offboard;
+                        :Перейти в режим Land;
+                        :Сесть;
+                        ' #pink #LimeGreen:Вернуть SUCCESS;
+                        #Yellow :Вернуть SUCCESS;
+                    }
+                else (Нет)
+                    #red :ИСКАТЬ МАРКЕР;
+                endif
+            }
         else (нет)
-            :Обновить search_start_time;
+            :Обновить search_start_time в blackboard;
             break
         endif
-    endwhile (val) 
+    endwhile (Нет) 
     
     if (search_timed_out) then (да)
-        partition "BLOCK Land"{
-            :Завершить режим Offboard;
-            :Перейти в режим Land;
-            :Сесть;
-            #pink :Вернуть FAILED;
-        }
+        :BLOCK Land;
+        #pink:Вернуть FAILED;
     endif
 }
     ' :;
 
-:Создать объекты PID регуляторов позиции, высоты, поворота;
+:Создать объекты PID регуляторов позиции, высоты, поворота в blackboard;
+:Создать last_pid_time = 0 и dr = sqrt(x_rad ** 2 + y_rad ** 2) в blackboard;
 
 partition "BLOCK HelperFuncs"{
     :Определить regulate_position_func;
@@ -60,14 +102,37 @@ partition "BLOCK HelperFuncs"{
 }
 
 partition "CenterAboveMarker"{
-    while (Маркер не в центре) is (Да)
-        :Обновить current_time;
-        :Обновить marker_visible;
-        :Обновить search_timed_out;
+    :Создать marker_centered = bool(x_rad > (PLD_ACC_RADIUS_DEG * M_PI / 180.0) or y_rad > (PLD_ACC_RADIUS_DEG * M_PI / 180.0)) в blackboard;
+    while (не marker_centered) is (Да)
+        :Обновить current_time в blackboard;
+        :Обновить marker_visible в blackboard;
+        :Обновить search_timed_out в blackboard;
         if (marker_visible) then (Да)
-            :Обновить search_start_time;
-            :res<vx,vy> = regulate_position_func();
-            :z_speed = regulate_height_func(PLD_SRCH_ALT, 0.0);
+            :Обновить search_start_time в blackboard;
+            :Обновить marker_centered в blackboard;
+            ' :res<vx,vy> = regulate_position_func();
+            partition "BLOCK RegulatePositionFunc"{
+                :Получить на вход параметры dr, current_time, last_pid_time, pid из blackboard;
+                :Обновить dr в blackboard;
+                :float alpha = atan2(-y_rad, x_rad);
+
+                :float x_speed = movement_radius * cos(alpha);
+                :float y_speed = movement_radius * sin(alpha);
+
+                :float vr = sqrt(x_speed * x_speed + y_speed * y_speed);
+                if (vr > PLD_MAX_SPD)) then (Да)
+                    :x_speed = PLD_MAX_SPD * cos(alpha);
+                    :y_speed = PLD_MAX_SPD * sin(alpha);
+                endif
+
+                :Записать в blackboard параметры x_speed, y_speed, alpha;
+                #LimeGreen:Вернуть SUCCESS;
+            }
+            ' :z_speed = regulate_height_func(PLD_SRCH_ALT, 0.0);
+            partition "BLOCK RegulateHeightFunc"{
+                :Получить на вход параметры current_time, last_pid_time, pid_z из blackboard;
+                :Получить на вход аргументы goal_height, min_speed из blackboard;
+            }
             :Обновить last_pid_time;
             :Установить скорости относительно СК дрона = vx, vy, vz;
         else (Нет)
@@ -80,7 +145,7 @@ partition "CenterAboveMarker"{
     endwhile (val) 
 }
 
-partition "BLCOCK OrientationRegulation"{
+partition "BLOCK OrientationRegulation"{
     while (marker_visible AND ориентация не выровнена) is (Да)
         :Обновить search_start_time;
         :Обновить current_time;
@@ -142,7 +207,7 @@ partition "BLOCK Landing"{
 stop
 ' :Получить состояние посадки (landed_state);
 ' if (landed_state == OnGround?) then (да)
-'     :Вернуть FAILED;
+'     #pink:Вернуть FAILED;
 '     stop
 ' else (нет)
 '     :Проверить миссию;
