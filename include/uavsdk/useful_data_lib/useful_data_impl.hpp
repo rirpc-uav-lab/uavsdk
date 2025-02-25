@@ -256,6 +256,10 @@ namespace useful_di
 
             std::shared_ptr<TypeInterface> _at(const std::string& data_identifier) override
             {
+                if (not this->data_storage.count(data_identifier))
+                {
+                    std::string msg = "UniMapStr: Error! No such key in blackboard. Key = " + data_identifier + ".\n";
+                }
                 return this->data_storage.at(data_identifier);
             }
 
