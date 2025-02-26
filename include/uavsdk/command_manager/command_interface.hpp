@@ -180,7 +180,7 @@ namespace uavsdk
             }
         };
 
-
+        
         class SingleProccessCommandInterface : public BaseCommandInterface
         {
             public:
@@ -211,8 +211,6 @@ namespace uavsdk
             private:
             bool stop_requested = false;
         };
-
-
 
         class IExecutionStrategy
         {
@@ -581,7 +579,7 @@ namespace uavsdk
                 }
                 else
                 {
-                    std::string msg = "CommandInterfaceWithBlackboard::at<T>(std::string key) error: tried conversion of type " + data->___get_type() + " to " + utils::cppext::get_type<T>() + "\n";
+                    std::string msg = "CommandInterfaceWithBlackboard::at<T>(std::string key) error: tried conversion of data withe key " + key + " from type " + data->___get_type() + " to " + utils::cppext::get_type<T>() + "\n";
                     throw std::runtime_error(msg);
                 }
             }

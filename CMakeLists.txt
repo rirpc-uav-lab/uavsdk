@@ -55,7 +55,9 @@ set_target_properties(data_adpters_lib_ros2 PROPERTIES LINKER_LANGUAGE CXX)
 
 set(CMD_MANAGING_LIB 
 include/uavsdk/command_manager/command_interface.hpp 
-include/uavsdk/command_manager/manager.hpp
+include/uavsdk/command_manager/manager.hpp 
+include/uavsdk/command_manager/conditial_executor.hpp
+include/uavsdk/command_manager/while_not_success.hpp
 )
 add_library(cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
 set_target_properties(cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
@@ -67,6 +69,9 @@ include/uavsdk/command_manager/impl/agrilab_cmd_manager/command_data.hpp
 include/uavsdk/command_manager/impl/agrilab_cmd_manager/external_resource.hpp
 include/uavsdk/command_manager/impl/agrilab_cmd_manager/commands/take_off.hpp
 include/uavsdk/command_manager/impl/agrilab_cmd_manager/commands/land.hpp
+include/uavsdk/command_manager/impl/agrilab_cmd_manager/conditions/marker_search_is_set_up.hpp
+include/uavsdk/command_manager/impl/agrilab_cmd_manager/conditions/marker_visible.hpp
+include/uavsdk/command_manager/impl/agrilab_cmd_manager/conditions/search_timed_out.hpp
 )
 add_library(agrilab_cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
 set_target_properties(agrilab_cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
