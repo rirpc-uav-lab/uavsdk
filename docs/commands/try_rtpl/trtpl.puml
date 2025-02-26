@@ -202,7 +202,7 @@ stop
 
 start
 partition "Condition marker_search_is_set_up"{
-if (marker_search_is_set_up) then (Да)
+if (blackboard->marker_search_is_set_up) then (Да)
     #LimeGreen :Вернуть SUCCESS;
 else (Нет)
     #pink:Вернуть FAILED;
@@ -231,10 +231,17 @@ endif
 stop
 
 start
-partition "BLOCK CheckMarkerCentered"{
+partition "BLOCK UpdateMarkerCentered"{
     |B|
     :marker_centered = bool(blackboard-->x_rad > (blackboard-->PLD_ACC_RADIUS_DEG * M_PI / 180.0) or blackboard-->y_rad > (blackboard-->PLD_ACC_RADIUS_DEG * M_PI / 180.0)) --> blackboard;
     |T|
+    #LimeGreen :Вернуть SUCCESS;
+}
+stop
+
+start
+partition "BLOCK CheckMarkerCentered"{
+    :BLOCK UpdateMarkerCentered;
     if (marker_centered) then (true)
         #LimeGreen :Вернуть SUCCESS;
     else (false)
@@ -339,7 +346,6 @@ partition "BLOCK OrientationRegulation"{
         :Обновить current_time;
         :BLOCK UpdateMarkerVisible;
         :Обновить search_timed_out;
-        :Записать alpha = atan2(-y_rad, x_rad) в blackboard; 
         |T|
         ' :res<vx,vy> = regulate_position_func();
         :BLOCK RegulatePositionFunc();
@@ -389,7 +395,6 @@ partition "BLOCK Landing"{
         if (marker_visible) then (Да)
             |B|
             :Обновить search_start_time;
-            :Записать alpha = atan2(-y_rad, x_rad) в blackboard; 
             |T|
             ' :res<vx,vy> = regulate_position_func();
             :BLOCK RegulatePositionFunc();

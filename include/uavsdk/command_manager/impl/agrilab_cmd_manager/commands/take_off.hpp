@@ -85,16 +85,6 @@ namespace uavsdk
                     this->stop();
                     return uavsdk::command_manager::ExecutionResult::SUCCESS;
                 }
-
-
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
 
@@ -151,16 +141,6 @@ namespace uavsdk
                     this->stop();
                     return uavsdk::command_manager::ExecutionResult::SUCCESS;
                 }
-
-
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
 
@@ -189,16 +169,6 @@ namespace uavsdk
                         this->stop();
                         return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
-                }
-
-
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
                 }
             };
 
@@ -232,16 +202,6 @@ namespace uavsdk
                         this->stop();
                         return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
-                }
-
-                
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
                 }
             };
 
@@ -283,16 +243,6 @@ namespace uavsdk
                         return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
-
-                
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
 
@@ -329,19 +279,9 @@ namespace uavsdk
                         return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
-
-                
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
-            class TakeOff : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class TakeOff : public uavsdk::command_manager::IStoppable, public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
             {
                 public:
                 TakeOff(std::shared_ptr<useful_di::UniMapStr> blackboard_init) : CommandInterfaceWithBlackboard(blackboard_init)

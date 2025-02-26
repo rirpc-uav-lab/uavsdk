@@ -72,16 +72,10 @@ namespace uavsdk
                     this->stop();
                     return uavsdk::command_manager::ExecutionResult::SUCCESS;
                 }
-
-
-                void handle_stop() override
-                {
-
-                }
             };
 
 
-            class CheckStartMission : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class CheckStartMission : public uavsdk::command_manager::IStoppable, public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
             {
                 public:
                 CheckStartMission (std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
@@ -294,7 +288,7 @@ namespace uavsdk
 
 
 
-            class PathFollowing : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class PathFollowing : public uavsdk::command_manager::IStoppable, public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
             {
                 public:
                 PathFollowing(std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)

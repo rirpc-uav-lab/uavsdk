@@ -1,0 +1,10 @@
+@startmindmap
+
+*[#Pink] Decorator Invert
+    *[#SkyBlue] Sequence
+        * Condition search_timed_out
+        *[#Pink] Decorator Invert
+            * BLOCK Land
+
+
+@endmindmap

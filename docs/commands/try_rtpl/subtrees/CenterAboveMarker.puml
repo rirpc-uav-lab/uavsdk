@@ -1,0 +1,41 @@
+@startmindmap
+
+*[#LimeGreen] Parallel (Strict)
+    ' * старт Обновите необходимые данные
+    * BLOCK UpdateMarkerCentered
+    * BLOCK UpdateCurrentTime
+    * BLOCK UpdateMarkerVisible
+    * BLOCK UpdateSearchTimedOut
+    ' * стоп Обновите необходимые данные
+    *[#Khaki] ConditionalExecutor marker_visible
+        ' старт Центроваться над маркером, пока он виден
+        *[#SkyBlue] True: Sequence
+            * BLOCK DeinitMarkerSearch
+            * BLOCK UpdateSearchStartTime
+            *[#DeepSkyBlue] WhileNotSuccess 
+                    ' *[#SkyBlue] Sequence
+                    '     * Condition marker_visible
+                    '     * BLOCK UpdateSearchStartTime
+                *[#SkyBlue] Sequence
+                    * BLOCK RegulatePositionFunc
+                    * BLOCK RegulateHeightFunc
+                    * BLOCK UpdateLastPIDTime
+                    * Установить скорости относительно СК дрона = x_speed, y_speed, z_speed, yaw(0.0)
+                    * BLOCK CheckMarkerCentered
+        ' стоп Центроваться над маркером, пока он виден
+        ' *[#MediumPurple] CheckSearchTimedOut
+        *[#Khaki] False: ConditionalExecutor search_timed_out
+            *[#SkyBlue] True: Sequence
+                * BLOCK DeinitMarkerSearch
+                * BLOCK Land
+            *[#SkyBlue] False: Sequence 
+                * BLOCK UpdateCurrentTime
+                * BLOCK UpdateMarkerVisible
+                *[#Orange] Fallback 
+                    * Condition marker_search_is_set_up
+                    * BLOCK SetupMarkerSearch
+                ' * Condition marker_visible
+                * BLOCK Искать маркер
+                
+
+@endmindmap

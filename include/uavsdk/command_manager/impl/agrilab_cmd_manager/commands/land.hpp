@@ -55,10 +55,6 @@ namespace uavsdk
                     this->add_data_to_bb("land_state_res",std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<mavsdk::Action::Result>>(res));
                     return uavsdk::command_manager::ExecutionResult::SUCCESS;
                 }
-                void handle_stop() override
-                {
-                    
-                };
             };     
 
 
@@ -100,14 +96,7 @@ namespace uavsdk
                         this->stop();
                         return uavsdk::command_manager::ExecutionResult::FAILED;
                     }
-
                 }
-
-
-                void handle_stop() override
-                {
-                    
-                };
             };
 
 
@@ -126,13 +115,6 @@ namespace uavsdk
                     this->add_stage(land_start);
                     this->add_stage(land_check);
                 }
-
-                protected:
-
-                void handle_stop() override
-                {
-                    
-                };
             };     
         };
     };

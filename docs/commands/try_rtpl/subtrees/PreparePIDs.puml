@@ -1,0 +1,9 @@
+@startmindmap
+*[#Orange] Fallback
+    * Проверить, существуют ли пиды
+    *[#SkyBlue] Sequence
+        * pid_regulator::PID pid(PLD_KP, PLD_KI, PLD_KD) -> blackboard
+        * pid_regulator::PID pid_yaw(0.5, 0.0, 0.0) -> blackboard
+        * pid_regulator::PID pid_z(0.3, 0.0, 0.1) -> blackboard
+        * Создать last_pid_time = 0 и dr = sqrt(x_rad ^ 2 + y_rad ^ 2) в blackboard
+@endmindmap
