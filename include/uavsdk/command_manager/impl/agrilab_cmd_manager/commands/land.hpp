@@ -4,7 +4,7 @@
 #include <chrono>
 #include <thread>
 
-#include <uavsdk/command_manager/command_interface.hpp>
+#include <uavsdk/command_manager/command_impl.hpp>
 
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/external_resource.hpp>
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/command_data.hpp>

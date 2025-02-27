@@ -4,6 +4,7 @@
 #include <mutex>
 
 #include <uavsdk/command_manager/command_interface.hpp>
+#include <uavsdk/command_manager/command_impl.hpp>
 
 
 

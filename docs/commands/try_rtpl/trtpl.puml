@@ -402,7 +402,7 @@ partition "BLOCK Landing"{
             :BLOCK RegulateHeightFunc(goal_height=0.0, min_speed=PLD_MIN_ALT_SPD);
             |B|
             :yaw_speed = 180.0 / M_PI * pid_yaw.pid(alpha_rad, current_time - last_pid_time);
-            :Установить скорости x_speed, y_speed, z_speed, -yaw_speed;
+            :Установить скорости x_speed, y_speed, z_speed;
             |T|
         else (нет)
             :pid's clear();
@@ -467,8 +467,6 @@ partition #LightBlue "PROGRAMM"{
 
 
     :BLOCK OrientationRegulation;
-
-    :BLOCK CheckSearchTimeout;
 
     :BLOCK Landing;
 }

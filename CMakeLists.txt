@@ -55,6 +55,8 @@ set_target_properties(data_adpters_lib_ros2 PROPERTIES LINKER_LANGUAGE CXX)
 
 set(CMD_MANAGING_LIB 
 include/uavsdk/command_manager/command_interface.hpp 
+include/uavsdk/command_manager/command_impl.hpp 
+include/uavsdk/command_manager/executors.hpp 
 include/uavsdk/command_manager/manager.hpp
 )
 add_library(cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
