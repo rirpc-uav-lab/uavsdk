@@ -10,19 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(ament_cmake REQUIRED)
 
-find_package(backward_ros REQUIRED)
-
 include_directories(include)
-
-include(FetchContent)
-
-# Also requires one of: libbfd (gnu binutils), libdwarf, libdw (elfutils)
-FetchContent_Declare(Backward    #Note: For some reason I ran into issues when the target here is called backwards with a small b at the beginning
-    GIT_REPOSITORY https://github.com/bombela/backward-cpp
-    GIT_TAG master  # or a version tag, such as v1.6
-)
-FetchContent_MakeAvailable(Backward)
-
 
 set(UTILS_LIB_SOURCES include/uavsdk/utils/conversion_functions.hpp include/uavsdk/utils/cpp_custom_extras.hpp)
 add_library(utils_lib SHARED ${UTILS_LIB_SOURCES})
