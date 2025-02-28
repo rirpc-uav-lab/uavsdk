@@ -9,11 +9,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(ament_cmake REQUIRED)
-find_package(MAVSDK REQUIRED)
 
 find_package(backward_ros REQUIRED)
-find_package(position_reg REQUIRED)
-# set(COLCON_VARS serial other_deps...)
 
 include_directories(include)
 
@@ -38,18 +35,14 @@ include/uavsdk/useful_data_lib/useful_data_impl.hpp
 add_library(useful_data_lib SHARED ${USEF_DATA_LIB})
 set_target_properties(useful_data_lib PROPERTIES LINKER_LANGUAGE CXX)
 
-set(MAVSDK_FCUTELCOLLIB_SOURCES include/uavsdk/fcu_telemetry_collector/mavsdk_fcu_telemetry_collector.hpp)
-add_library(mavsdk_fcu_tel_collector_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
-set_target_properties(mavsdk_fcu_tel_collector_lib PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(mavsdk_fcu_tel_collector_lib MAVSDK::mavsdk useful_data_lib utils_lib)
 
 set(DATA_ADAPTERS_LIB_ROS2
-include/uavsdk/data_adpters/cxx/cxx.hpp
-include/uavsdk/data_adpters/ros2/geometry_msgs/pose.hpp
-include/uavsdk/data_adpters/ros2/geometry_msgs/point32.hpp
-include/uavsdk/data_adpters/ros2/geometry_msgs/quaternion.hpp
+include/uavsdk/data_adapters/cxx/cxx.hpp
+include/uavsdk/data_adapters/ros2/geometry_msgs/pose.hpp
+include/uavsdk/data_adapters/ros2/geometry_msgs/point32.hpp
+include/uavsdk/data_adapters/ros2/geometry_msgs/quaternion.hpp
 )
-add_library(data_adpters_lib_ros2 SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
+add_library(data_adpters_lib_ros2 SHARED ${DATA_ADAPTERS_LIB_ROS2})
 set_target_properties(data_adpters_lib_ros2 PROPERTIES LINKER_LANGUAGE CXX)
 
 
@@ -61,23 +54,9 @@ include/uavsdk/command_manager/while_not_success.hpp
 include/uavsdk/command_manager/executors.hpp 
 include/uavsdk/command_manager/control_nodes.hpp
 )
-add_library(cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
+add_library(cmd_managing_lib SHARED ${CMD_MANAGING_LIB})
 set_target_properties(cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
 
-
-set(AGRILAB_CMD_MANAGING_LIB
-include/uavsdk/command_manager/impl/agrilab_cmd_manager/cmd_manager.hpp
-include/uavsdk/command_manager/impl/agrilab_cmd_manager/command_data.hpp
-include/uavsdk/command_manager/impl/agrilab_cmd_manager/external_resource.hpp
-include/uavsdk/command_manager/impl/agrilab_cmd_manager/commands/take_off.hpp
-include/uavsdk/command_manager/impl/agrilab_cmd_manager/commands/land.hpp
-include/uavsdk/command_manager/impl/agrilab_cmd_manager/conditions/marker_search_is_set_up.hpp
-include/uavsdk/command_manager/impl/agrilab_cmd_manager/conditions/marker_visible.hpp
-include/uavsdk/command_manager/impl/agrilab_cmd_manager/conditions/search_timed_out.hpp
-)
-add_library(agrilab_cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
-set_target_properties(agrilab_cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(agrilab_cmd_managing_lib cmd_managing_lib data_adpters_lib_ros2 position_reg::position_reg) # backward_object)
 
 
 
@@ -115,20 +94,6 @@ ament_export_targets(useful_data_lib HAS_LIBRARY_TARGET)
 
 
 
-install(
-    TARGETS mavsdk_fcu_tel_collector_lib
-    EXPORT mavsdk_fcu_tel_collector_lib
-    LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
-    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
-    INCLUDES DESTINATION include
-)
-
-install(TARGETS mavsdk_fcu_tel_collector_lib
-DESTINATION lib/${PROJECT_NAME}/)
-
-ament_export_targets(mavsdk_fcu_tel_collector_lib HAS_LIBRARY_TARGET)
-
 
 
 install(
@@ -164,25 +129,8 @@ ament_export_targets(cmd_managing_lib HAS_LIBRARY_TARGET)
 
 
 
-install(
-    TARGETS agrilab_cmd_managing_lib
-    EXPORT agrilab_cmd_managing_lib
-    LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
-    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
-    INCLUDES DESTINATION include
-)
-
-install(TARGETS agrilab_cmd_managing_lib
-DESTINATION lib/${PROJECT_NAME}/)
-
-ament_export_targets(agrilab_cmd_managing_lib HAS_LIBRARY_TARGET)
-
-add_executable(tests src/tests.cpp)
-target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib data_adpters_lib_ros2)# backward_object)
-
-add_executable(command_tests src/command_tests.cpp)
-target_link_libraries(command_tests MAVSDK::mavsdk mavsdk_fcu_tel_collector_lib agrilab_cmd_managing_lib)# backward_object)
+# add_executable(tests src/tests.cpp)
+# target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib data_adpters_lib_ros2)# backward_object)
 
 
 
@@ -191,17 +139,16 @@ target_link_libraries(command_tests MAVSDK::mavsdk mavsdk_fcu_tel_collector_lib 
 # target_link_libraries(inheritance_tests useful_data_lib backward_object)
 
 
-install(TARGETS
-  tests
-  command_tests
-  # inheritance_tests
-  DESTINATION lib/${PROJECT_NAME}
-)
+# install(TARGETS
+#   tests
+#   # inheritance_tests
+#   DESTINATION lib/${PROJECT_NAME}
+# )
 
-# install(
-#   DIRECTORY include/${PROJECT_NAME}
-#   DESTINATION include
-#   )
+install(
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+  )
 
 
 
