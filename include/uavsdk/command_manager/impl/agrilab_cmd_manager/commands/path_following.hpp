@@ -5,9 +5,12 @@
 #include <thread>
 #include <vector>
 
-#include <uavsdk/command_manager/command_interface.hpp>
 #include "mavsdk/plugins/action/action.h"
 #include "mavsdk/plugins/offboard/offboard.h"
+
+#include <uavsdk/command_manager/command_interface.hpp>
+#include <uavsdk/command_manager/executors.hpp>
+
 
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/external_resource.hpp>
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/command_data.hpp>
@@ -28,10 +31,10 @@ namespace uavsdk
         namespace commands
         {
 
-            class CheckIncomingMisson : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class CheckIncomingMisson : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                CheckIncomingMisson (std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
+                CheckIncomingMisson (std::shared_ptr<useful_di::UniMapStr> bb_init) : IBlackboard(bb_init)
                 {
                     this->set_id("check_incoming_mission"); // path_following
                     this->___set_type();
@@ -75,10 +78,10 @@ namespace uavsdk
             };
 
 
-            class CheckStartMission : public uavsdk::command_manager::IStoppable, public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class CheckStartMission : public uavsdk::command_manager::IStoppable, public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                CheckStartMission (std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
+                CheckStartMission (std::shared_ptr<useful_di::UniMapStr> bb_init) : IBlackboard(bb_init)
                 {
                     this->set_id("check_start_mission"); // path_following
                     this->___set_type();
@@ -288,13 +291,15 @@ namespace uavsdk
 
 
 
-            class PathFollowing : public uavsdk::command_manager::IStoppable, public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class PathFollowing : public uavsdk::command_manager::IStoppable, public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                PathFollowing(std::shared_ptr<useful_di::UniMapStr> bb_init) : CommandInterfaceWithBlackboard(bb_init)
+                PathFollowing(std::shared_ptr<useful_di::UniMapStr> bb_init) : IBlackboard(bb_init)
                 {
                     this->___set_type();
                     this->set_id("take_off"); // path_following
+                    this->set_execution_strategy(std::make_shared<uavsdk::command_manager::executors::SequentialExecutionStrategy>());
+
 
                     std::shared_ptr<uavsdk::data_adapters::cxx::BasicDataAdapter<uavsdk::navigation::coordinates::WGS84Coords>> startPoint = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<uavsdk::navigation::coordinates::WGS84Coords>>(uavsdk::navigation::coordinates::WGS84Coords());
                     this->add_data_to_bb("startPoint", startPoint);
@@ -309,7 +314,6 @@ namespace uavsdk
 
 
                 protected:
-
                 void handle_stop() override
                 {
                     if(states.at(0) == "check_stop_mission")
@@ -329,12 +333,6 @@ namespace uavsdk
 
                 private:
                 std::vector<std::string> states; // {"check_offboard", "check_setpoint", "wait_for_health", "arm", "start_takeoff", "check_position"}
-
-                float z_coor;
-                float target_alt;
-                float current_position;
-                // geometry_msgs::msg::Pose mission_item;
-
             };
         };
     };

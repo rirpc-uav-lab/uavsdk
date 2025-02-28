@@ -4,7 +4,8 @@
 #include <chrono>
 #include <thread>
 
-#include <uavsdk/command_manager/command_impl.hpp>
+#include <uavsdk/command_manager/command_interface.hpp>
+#include <uavsdk/command_manager/executors.hpp>
 
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/external_resource.hpp>
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/command_data.hpp>
@@ -22,10 +23,10 @@ namespace uavsdk
     {
         namespace commands
         {
-            class LandStart : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class LandStart : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                LandStart(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                LandStart(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
                 {
                     this->set_id("land_start");
                     this->___set_type();
@@ -59,10 +60,10 @@ namespace uavsdk
 
 
             // land check 2791-2813
-            class LandCheck : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class LandCheck : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                LandCheck(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                LandCheck(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
                 {
                     this->set_id("land_check");
                     this->___set_type();
@@ -100,13 +101,14 @@ namespace uavsdk
             };
 
 
-            class Land : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class Land : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                Land(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                Land(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
                 {
                     this->set_id("land");
                     this->___set_type();
+                    this->set_execution_strategy(std::make_shared<uavsdk::command_manager::executors::SequentialExecutionStrategy>());
 
 
                     auto land_start = std::make_shared<LandStart>(this->get_bb_p());

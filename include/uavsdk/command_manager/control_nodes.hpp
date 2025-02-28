@@ -3,8 +3,9 @@
 #include <thread>
 #include <mutex>
 
+#include <uavsdk/useful_data_lib/useful_data_impl.hpp>
+
 #include <uavsdk/command_manager/command_interface.hpp>
-#include <uavsdk/command_manager/command_impl.hpp>
 #include <uavsdk/command_manager/executors.hpp>
 
 
@@ -15,9 +16,71 @@ namespace uavsdk
     {
         namespace ControlNodes
         {
-            class Sequence : public uavsdk::command_manager::StagedCommandInterface, public IIdentification<std::string>
+            class Sequence : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
+                public:
+                Sequence(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
+                {
+                    auto seq = std::make_shared<uavsdk::command_manager::executors::SequentialExecutionStrategy>();
+                    this->set_execution_strategy(seq);
+                    this->set_id("sequence");
+                }
 
+                uavsdk::command_manager::ExecutionResult logic_tick() override
+                {
+                    return this->execution_strategy->execute_stages(this->stages);
+                }
+            };
+
+
+            class Fallback : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
+            {
+                public:
+                Fallback(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
+                {
+                    auto fallb = std::make_shared<uavsdk::command_manager::executors::FallbackExecutionStrategy>();
+                    this->set_execution_strategy(fallb);
+                    this->set_id("fallback");
+                }
+
+                uavsdk::command_manager::ExecutionResult logic_tick() override
+                {
+                    return this->execution_strategy->execute_stages(this->stages);
+                }
+            };
+
+
+            class ParallelStrict : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
+            {
+                public:
+                ParallelStrict(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
+                {
+                    auto par_strict = std::make_shared<uavsdk::command_manager::executors::ParallelStrictExecutionStrategy>();
+                    this->set_execution_strategy(par_strict);
+                    this->set_id("parallel_strict");
+                }
+
+                uavsdk::command_manager::ExecutionResult logic_tick() override
+                {
+                    return this->execution_strategy->execute_stages(this->stages);
+                }
+            };
+
+
+            class ParallelHopeful : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
+            {
+                public:
+                ParallelHopeful(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
+                {
+                    auto par_hopeful = std::make_shared<uavsdk::command_manager::executors::ParallelHopefulExecutionStrategy>();
+                    this->set_execution_strategy(par_hopeful);
+                    this->set_id("parallel_hopeful");
+                }
+
+                uavsdk::command_manager::ExecutionResult logic_tick() override
+                {
+                    return this->execution_strategy->execute_stages(this->stages);
+                }
             };
         }; 
     };
