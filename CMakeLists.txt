@@ -184,7 +184,8 @@ target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_
 add_executable(command_tests src/command_tests.cpp)
 target_link_libraries(command_tests MAVSDK::mavsdk mavsdk_fcu_tel_collector_lib agrilab_cmd_managing_lib)# backward_object)
 
-
+add_executable(bh_test src/bh_test.cpp)
+target_link_libraries(bh_test MAVSDK::mavsdk mavsdk_fcu_tel_collector_lib agrilab_cmd_managing_lib)# backward_object)
 
 
 # add_executable(inheritance_tests src/inheritance_tests.cpp)
@@ -194,6 +195,7 @@ target_link_libraries(command_tests MAVSDK::mavsdk mavsdk_fcu_tel_collector_lib 
 install(TARGETS
   tests
   command_tests
+  bh_test
   # inheritance_tests
   DESTINATION lib/${PROJECT_NAME}
 )
