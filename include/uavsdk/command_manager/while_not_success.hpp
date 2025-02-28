@@ -10,12 +10,12 @@ namespace uavsdk
 {
     namespace command_manager
     {
-        class WhileNotSuccess : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+        class WhileNotSuccess : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
         {
             public:
             WhileNotSuccess(std::shared_ptr<useful_di::UniMapStr> _blackboard, 
                 std::shared_ptr<uavsdk::command_manager::SingleProccessCommandInterface> _node ) 
-                : uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>(_blackboard)
+                : uavsdk::command_manager::IBlackboard(_blackboard)
             {
                 this->node = _node;
                 this->set_id("while_not_success");

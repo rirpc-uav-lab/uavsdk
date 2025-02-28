@@ -24,6 +24,7 @@ namespace uavsdk
                     auto seq = std::make_shared<uavsdk::command_manager::executors::SequentialExecutionStrategy>();
                     this->set_execution_strategy(seq);
                     this->set_id("sequence");
+                    this->___set_type();
                 }
 
                 uavsdk::command_manager::ExecutionResult logic_tick() override
@@ -41,6 +42,7 @@ namespace uavsdk
                     auto fallb = std::make_shared<uavsdk::command_manager::executors::FallbackExecutionStrategy>();
                     this->set_execution_strategy(fallb);
                     this->set_id("fallback");
+                    this->___set_type();
                 }
 
                 uavsdk::command_manager::ExecutionResult logic_tick() override
@@ -58,6 +60,7 @@ namespace uavsdk
                     auto par_strict = std::make_shared<uavsdk::command_manager::executors::ParallelStrictExecutionStrategy>();
                     this->set_execution_strategy(par_strict);
                     this->set_id("parallel_strict");
+                    this->___set_type();
                 }
 
                 uavsdk::command_manager::ExecutionResult logic_tick() override
@@ -75,6 +78,7 @@ namespace uavsdk
                     auto par_hopeful = std::make_shared<uavsdk::command_manager::executors::ParallelHopefulExecutionStrategy>();
                     this->set_execution_strategy(par_hopeful);
                     this->set_id("parallel_hopeful");
+                    this->___set_type();
                 }
 
                 uavsdk::command_manager::ExecutionResult logic_tick() override
