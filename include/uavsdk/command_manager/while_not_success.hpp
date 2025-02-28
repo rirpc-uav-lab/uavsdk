@@ -18,6 +18,7 @@ namespace uavsdk
                 : uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>(_blackboard)
             {
                 this->node = _node;
+                this->set_id("while_not_success");
             }
             ExecutionResult logic_tick() override
             {

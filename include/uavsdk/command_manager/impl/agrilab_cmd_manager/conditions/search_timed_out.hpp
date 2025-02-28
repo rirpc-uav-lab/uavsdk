@@ -18,6 +18,7 @@ namespace uavsdk
             SearchTimedOut(std::shared_ptr<useful_di::UniMapStr> _blackboard) 
                 : uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>(_blackboard)
             {
+                this->set_id("search_timed_out");
             }
 
 

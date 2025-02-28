@@ -22,18 +22,19 @@ namespace uavsdk
                 this->condition = _condition;
                 this->true_cmd = _true_cmd;
                 this->false_cmd = _false_cmd;
+                this->set_id("conditional_executor");
             }
             ExecutionResult logic_tick() override
             {
-                if (condition->logic_tick() == ExecutionResult::SUCCESS)
+                if (condition->tick() == ExecutionResult::SUCCESS)
                 {
-                    return true_cmd->logic_tick();
+                    return true_cmd->tick();
                 }
-                if (condition->logic_tick() == ExecutionResult::FAILED)
+                if (condition->tick() == ExecutionResult::FAILED)
                 {
-                    return false_cmd->logic_tick();
+                    return false_cmd->tick();
                 }
-                if (condition->logic_tick() == ExecutionResult::RUNNING)
+                if (condition->tick() == ExecutionResult::RUNNING)
                 {
                     return ExecutionResult::RUNNING;
                 }

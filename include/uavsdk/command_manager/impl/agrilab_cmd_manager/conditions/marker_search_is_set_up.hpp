@@ -18,6 +18,7 @@ namespace uavsdk
             MarkerSearchIsSetUp(std::shared_ptr<useful_di::UniMapStr> _blackboard) 
                 : uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>(_blackboard)
             {
+                this->set_id("marker_search_is_set_up");
             }
 
 

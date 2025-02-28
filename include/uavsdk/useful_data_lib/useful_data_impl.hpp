@@ -152,8 +152,7 @@ namespace useful_di
             return this->data_storage.size();
         }
     };
-
-
+    
 
     class UniMapStr : public useful_di::MapLikeDataStorageInterface<std::string>
     {
@@ -208,7 +207,7 @@ namespace useful_di
                 if (not this->data_storage.count(_key))
                 {
                     this->keys.push_back(_key);
-                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
+                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(_key), _data));
                 }
                 else 
                 {
@@ -223,13 +222,14 @@ namespace useful_di
 
             virtual void _add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
             {
+                
                 if (not this->data_storage.count(_key))
                 {
                     std::string tmp_key = _key;
                     
                     this->keys.push_back(_key);
 
-                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(tmp_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
+                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(tmp_key), _data));
                 }
                 else 
                 {
