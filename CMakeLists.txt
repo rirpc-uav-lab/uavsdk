@@ -132,29 +132,17 @@ ament_export_targets(cmd_managing_lib HAS_LIBRARY_TARGET)
 # add_executable(tests src/tests.cpp)
 # target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib data_adpters_lib_ros2)# backward_object)
 
-add_executable(bh_test src/bh_test.cpp)
-target_link_libraries(bh_test MAVSDK::mavsdk mavsdk_fcu_tel_collector_lib agrilab_cmd_managing_lib)# backward_object)
-
 
 # add_executable(inheritance_tests src/inheritance_tests.cpp)
 # target_link_libraries(inheritance_tests useful_data_lib backward_object)
 
 
-<<<<<<< HEAD
-# install(TARGETS
-#   tests
-#   # inheritance_tests
-#   DESTINATION lib/${PROJECT_NAME}
-# )
-=======
 install(TARGETS
-  tests
-  command_tests
-  bh_test
+  # tests
+  # command_tests
   # inheritance_tests
   DESTINATION lib/${PROJECT_NAME}
 )
->>>>>>> dev/max/additional-nodes
 
 install(
   DIRECTORY include/${PROJECT_NAME}
