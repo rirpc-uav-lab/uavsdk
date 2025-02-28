@@ -58,6 +58,8 @@ include/uavsdk/command_manager/command_interface.hpp
 include/uavsdk/command_manager/manager.hpp 
 include/uavsdk/command_manager/conditial_executor.hpp
 include/uavsdk/command_manager/while_not_success.hpp
+include/uavsdk/command_manager/executors.hpp 
+include/uavsdk/command_manager/control_nodes.hpp
 )
 add_library(cmd_managing_lib SHARED ${MAVSDK_FCUTELCOLLIB_SOURCES})
 set_target_properties(cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)

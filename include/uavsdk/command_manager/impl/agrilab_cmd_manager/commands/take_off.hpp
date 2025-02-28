@@ -5,6 +5,7 @@
 #include <thread>
 
 #include <uavsdk/command_manager/command_interface.hpp>
+#include <uavsdk/command_manager/executors.hpp>
 
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/external_resource.hpp>
 #include <uavsdk/command_manager/impl/agrilab_cmd_manager/command_data.hpp>
@@ -24,10 +25,10 @@ namespace uavsdk
     {
         namespace commands
         {
-            class CheckOffboard : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class CheckOffboard : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                CheckOffboard(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                CheckOffboard(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
                 {
                     this->set_id("check_offboard");
 
@@ -85,23 +86,13 @@ namespace uavsdk
                     this->stop();
                     return uavsdk::command_manager::ExecutionResult::SUCCESS;
                 }
-
-
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
 
-            class CheckSetpoint : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class CheckSetpoint : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                CheckSetpoint(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                CheckSetpoint(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
                 {
                     this->set_id("check_setpoint");
                     this->___set_type();
@@ -151,23 +142,13 @@ namespace uavsdk
                     this->stop();
                     return uavsdk::command_manager::ExecutionResult::SUCCESS;
                 }
-
-
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
 
-            class WaitForHealth : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class WaitForHealth : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                WaitForHealth(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                WaitForHealth(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
                 {
                     this->set_id("wait_for_health");
                     this->___set_type();
@@ -190,23 +171,13 @@ namespace uavsdk
                         return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
-
-
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
 
-            class Arm : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class Arm : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                Arm(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                Arm(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
                 {
                     this->set_id("arm");
                     this->___set_type();
@@ -233,23 +204,13 @@ namespace uavsdk
                         return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
-
-                
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
 
-            class StartTakeoff : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class StartTakeoff : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                StartTakeoff(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                StartTakeoff(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
                 {
                     this->set_id("start_takeoff");
                     this->___set_type();
@@ -283,23 +244,13 @@ namespace uavsdk
                         return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
-
-                
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
 
-            class CheckPosition : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class CheckPosition : public uavsdk::command_manager::SingleProccessCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                CheckPosition(std::shared_ptr<useful_di::UniMapStr> _blackboard) : CommandInterfaceWithBlackboard(_blackboard)
+                CheckPosition(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
                 {
                     this->set_id("check_position");
                     this->___set_type();
@@ -329,25 +280,16 @@ namespace uavsdk
                         return uavsdk::command_manager::ExecutionResult::SUCCESS;
                     }
                 }
-
-                
-                void handle_stop() override
-                {
-                    // auto res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // while (res != mavsdk::Action::Result::Success)
-                    // {
-                    //     res = this->bb_at<uavsdk::agrilab::CmdExternalResources>("external_resources")->action->hold();
-                    // }
-                }
             };
 
-            class TakeOff : public uavsdk::command_manager::CommandInterfaceWithBlackboard<std::string>
+            class TakeOff : public uavsdk::command_manager::IStoppable, public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
             {
                 public:
-                TakeOff(std::shared_ptr<useful_di::UniMapStr> blackboard_init) : CommandInterfaceWithBlackboard(blackboard_init)
+                TakeOff(std::shared_ptr<useful_di::UniMapStr> blackboard_init) : IBlackboard(blackboard_init)
                 {
                     this->___set_type();
                     this->set_id("take_off"); // path_following
+                    this->set_execution_strategy(std::make_shared<uavsdk::command_manager::executors::SequentialExecutionStrategy>());
 
                     auto z_coor = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<float>>(0);
                     this->add_data_to_bb("z_coor", z_coor);

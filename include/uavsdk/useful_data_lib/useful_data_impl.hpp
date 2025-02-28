@@ -207,7 +207,7 @@ namespace useful_di
                 if (not this->data_storage.count(_key))
                 {
                     this->keys.push_back(_key);
-                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(_key), _data));
+                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
                 }
                 else 
                 {
@@ -228,8 +228,7 @@ namespace useful_di
                     std::string tmp_key = _key;
                     
                     this->keys.push_back(_key);
-
-                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(tmp_key), _data));
+                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(tmp_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
                 }
                 else 
                 {
@@ -256,6 +255,10 @@ namespace useful_di
 
             std::shared_ptr<TypeInterface> _at(const std::string& data_identifier) override
             {
+                if (not this->data_storage.count(data_identifier))
+                {
+                    std::string msg = "UniMapStr: Error! No such key in blackboard. Key = " + data_identifier + ".\n";
+                }
                 return this->data_storage.at(data_identifier);
             }
 
@@ -324,7 +327,8 @@ namespace useful_di
                     nlohmann::json json_data = data->get_data();
 
                     // new_data[static_cast<int>(iter->first)] = data->get_data();
-                    new_data[json_data["name"]] = json_data;
+                    // new_data[json_data["name"]] = json_data;
+                    new_data[json_data["name"].get<std::string>()] = json_data;
                 }
                 else
                 {

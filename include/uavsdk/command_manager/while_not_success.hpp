@@ -22,7 +22,7 @@ namespace uavsdk
             }
             ExecutionResult logic_tick() override
             {
-                if (node->logic_tick() != ExecutionResult::SUCCESS)
+                if (node->tick() != ExecutionResult::SUCCESS)
                 {
                     return ExecutionResult::RUNNING;
                 }

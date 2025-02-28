@@ -1,0 +1,25 @@
+@startmindmap
+*[#LimeGreen] Parallel (Strict)
+    * Получение параметров - x_rad, y_rad, telem, last_time_marker_was_seen
+    *[#SkyBlue] Sequence
+        *[#Orange] Fallback
+            * Condition goto_rtl_loc_done
+            *[#SkyBlue] Sequence
+                * Получить миссию и параметры миссии
+                *[#Pink] Decorator Invert
+                    * BLOCK CheckLandedState
+                *[#MediumPurple] GoToRTLLocation
+                * goto_rtl_loc_done = true -> blackboard
+        * Установить начальное значение current_time
+        * Установить начальное значение search_start_time = current_time
+        * Определить и добавить в blackboard search_timed_out = false
+        * Определить и добавить в blackboard marker_visible = true
+        *[#Orange] Fallback
+            * BLOCK CheckLandedState
+            *[#SkyBlue] Sequence
+                *[#MediumPurple] PreparePIDs
+                *[#MediumPurple] CenterAboveMarker
+                *[#MediumPurple] OrientationRegulation
+                
+
+@endmindmap

@@ -77,7 +77,7 @@ namespace uavsdk
                     }
                     
                     this->ex_res_promise = std::make_unique<std::promise<uavsdk::command_manager::ExecutionResult>>();
-                    this->_set_current_command_id(std::dynamic_pointer_cast<uavsdk::command_manager::CommandInterfaceWithId<Id>>(this->current_command)->get_id());
+                    this->_set_current_command_id(std::dynamic_pointer_cast<uavsdk::command_manager::IIdentification<Id>>(this->current_command)->get_id());
         
                     this->executor_thread = std::make_shared<std::thread>(std::bind(&CommandExecutor::_loop, this));
                     this->executor_thread->detach();
