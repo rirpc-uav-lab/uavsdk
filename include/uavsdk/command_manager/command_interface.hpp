@@ -182,7 +182,17 @@ namespace uavsdk
             template <typename T>
             std::shared_ptr<T> bb_at(std::string key)
             {
-                std::shared_ptr<useful_di::TypeInterface> data = this->blackboard->at(key);
+                std::shared_ptr<useful_di::TypeInterface> data = nullptr;
+                try
+                {
+                    data = this->blackboard->at(key);
+                }
+                catch(const std::out_of_range e)
+                {
+                    std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + key + std::string("\n"));
+                    throw std::runtime_error(msg);
+                }
+                
                 
                 // std::cout << "bb at key = " << key << "\n";
 
