@@ -147,7 +147,13 @@ namespace uavsdk
                 }
                 else
                 {
-                    std::runtime_error("Called add_data_to_bb(key, data), but this key is alredy in blackboard");
+                    auto bb_type = blackboard->at(key)->___get_type();
+                    auto data_type = data->___get_type();
+                    if (bb_type != data_type) throw std::runtime_error("IBlackboard: OVERWITE ERROR! Called add_data_to_bb(key, data) on key" + key + ", but this key is alredy in blackboard with a different type. ");
+                    else
+                    {
+                        blackboard->add_data(key, data);
+                    }
                 }
             }
 
