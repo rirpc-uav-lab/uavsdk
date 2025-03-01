@@ -184,6 +184,8 @@ namespace uavsdk
             {
                 std::shared_ptr<useful_di::TypeInterface> data = this->blackboard->at(key);
                 
+                // std::cout << "bb at key = " << key << "\n";
+
                 if (data->___get_type() == utils::cppext::get_type<T>())
                 {
                     return std::dynamic_pointer_cast<T>(data);
@@ -223,6 +225,13 @@ namespace uavsdk
 
         class BaseCommandInterface : public IExecutable, public IResultProvider, public IStoppable, public IInitializable, public useful_di::TypeInterface
         {
+            public:
+            ExecutionResult get_last_execution_result()
+            {
+                return this->last_result;
+            }
+
+
             protected:
             ExecutionResult last_result = ExecutionResult::INVALID;
             /**
