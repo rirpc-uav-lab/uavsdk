@@ -17,7 +17,7 @@ jobs:
     - name: Build
       run: |
         mkdir -p src_loc/uavsdk
-        find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src/uavsdk \;
+        find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
         mv src_loc src
         colcon build
 
