@@ -1,0 +1,22 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+    container: osrf/ros:humble-desktop
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: |
+        mkdir -p src/uavsdk
+        mv * src/uavsdk
+        colcon build
+
