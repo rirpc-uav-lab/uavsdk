@@ -39,7 +39,7 @@ jobs:
         mkdir -p src_loc/uavsdk
         find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
         mv src_loc src
-        export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble
+        # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble/
         colcon build --symlink-install
 
      
