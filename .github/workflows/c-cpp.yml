@@ -22,8 +22,13 @@ jobs:
         colcon build
 
     - name: Install Dependencies
-      run: rosdep install --from-paths src --ignore-src -y
-
+      run: |
+        sudo apt update && sudo apt install -y lsb-release wget
+        echo "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu jammy main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list
+        wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+        sudo apt update
+        sudo apt install ros-humble-ament-cmake-ros
+      
     - name: Source ROS2 Workspace
       shell: bash
       run: source /opt/ros/humble/setup.bash && source install/setup.bash
