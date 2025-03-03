@@ -34,21 +34,29 @@ jobs:
     #     sudo apt install ros-dev-tools
 
 
-    - name: Build
+    - name: Install Dependencies
+      shell: bash
       run: |
-        mkdir -p src_loc/uavsdk
-        find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
-        mv src_loc src
+        sudo apt install -y libzmq3-dev nlohmann-json3-dev
+
+
+    - name: Build
+      shell: bash
+      run: |
+        # mkdir -p src_loc/uavsdk
+        # find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
+        # mv src_loc src
         # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble/
         rosdep update
-        rosdep install -i -y --from-path src --rosdistro $ROS_DISTRO
+        rosdep install -i -y --from-path . --rosdistro $ROS_DISTRO
+        source /opt/ros/humble/setup.bash
         colcon build --symlink-install
+
 
      
     - name: Source ROS2 Workspace
       shell: bash
-      run: source /opt/ros/humble/setup.bash && source install/setup.bash
-
+      run: source /opt/ros/humble/setup.bash && source ./install/setup.bash
 
     - name: Run ROS2 Node
       shell: bash
