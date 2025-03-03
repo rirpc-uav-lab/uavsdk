@@ -36,7 +36,7 @@ jobs:
 
     - name: Install Dependencies
       shell: bash
-      run: sudo apt install libzmq3-dev
+      run: sudo apt install -y libzmq3-dev
 
 
     - name: Build
