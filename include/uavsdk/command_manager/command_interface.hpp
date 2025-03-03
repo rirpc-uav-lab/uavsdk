@@ -147,7 +147,13 @@ namespace uavsdk
                 }
                 else
                 {
-                    std::runtime_error("Called add_data_to_bb(key, data), but this key is alredy in blackboard");
+                    auto bb_type = blackboard->at(key)->___get_type();
+                    auto data_type = data->___get_type();
+                    if (bb_type != data_type) throw std::runtime_error("IBlackboard: OVERWITE ERROR! Called add_data_to_bb(key, data) on key" + key + ", but this key is alredy in blackboard with a different type. ");
+                    else
+                    {
+                        blackboard->add_data(key, data);
+                    }
                 }
             }
 
@@ -176,8 +182,20 @@ namespace uavsdk
             template <typename T>
             std::shared_ptr<T> bb_at(std::string key)
             {
-                std::shared_ptr<useful_di::TypeInterface> data = this->blackboard->at(key);
+                std::shared_ptr<useful_di::TypeInterface> data = nullptr;
+                try
+                {
+                    data = this->blackboard->at(key);
+                }
+                catch(const std::out_of_range e)
+                {
+                    std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + key + std::string("\n"));
+                    throw std::runtime_error(msg);
+                }
                 
+                
+                // std::cout << "bb at key = " << key << "\n";
+
                 if (data->___get_type() == utils::cppext::get_type<T>())
                 {
                     return std::dynamic_pointer_cast<T>(data);
@@ -217,6 +235,13 @@ namespace uavsdk
 
         class BaseCommandInterface : public IExecutable, public IResultProvider, public IStoppable, public IInitializable, public useful_di::TypeInterface
         {
+            public:
+            ExecutionResult get_last_execution_result()
+            {
+                return this->last_result;
+            }
+
+
             protected:
             ExecutionResult last_result = ExecutionResult::INVALID;
             /**
