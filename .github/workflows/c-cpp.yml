@@ -37,12 +37,12 @@ jobs:
     - name: Build
       shell: bash
       run: |
-        mkdir -p src_loc/uavsdk
-        find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
-        mv src_loc src
+        # mkdir -p src_loc/uavsdk
+        # find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
+        # mv src_loc src
         # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble/
         rosdep update
-        rosdep install -i -y --from-path src --rosdistro $ROS_DISTRO
+        rosdep install -i -y --from-path . --rosdistro $ROS_DISTRO
         source /opt/ros/humble/setup.bash
         colcon build --symlink-install
 
