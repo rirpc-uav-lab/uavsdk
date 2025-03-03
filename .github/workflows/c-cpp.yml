@@ -20,6 +20,14 @@ jobs:
         find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src/uavsdk \;
         mv src_loc src
         colcon build
-        bash install/setup.bash
+
+    - name: Source ROS2 Workspace
+      run: bash /opt/ros/humble/setup.bash && bash install/setup.bash
+
+
+    - name: Run ROS2 Node
+      run: |
+        bash /opt/ros/humble/setup.bash && \
+        bash install/setup.bash && \
         ros2 run uavsdk bh_test
 
