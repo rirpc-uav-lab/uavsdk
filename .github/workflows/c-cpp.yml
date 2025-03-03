@@ -19,6 +19,7 @@ jobs:
         wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
         sudo apt update
         sudo apt install ros-humble-desktop
+        sudo apt update && sudo apt install -y ros-humble-ament-cmake
         sudo apt install ros-dev-tools
 
 
