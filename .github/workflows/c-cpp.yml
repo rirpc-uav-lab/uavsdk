@@ -22,12 +22,12 @@ jobs:
         colcon build
 
     - name: Source ROS2 Workspace
-      run: bash /opt/ros/humble/setup.bash && bash install/setup.bash
+      run: source /opt/ros/humble/setup.bash && source install/setup.bash
 
 
     - name: Run ROS2 Node
       run: |
-        bash /opt/ros/humble/setup.bash && \
-        bash install/setup.bash && \
+        source /opt/ros/humble/setup.bash && \
+        source install/setup.bash && \
         ros2 run uavsdk bh_test
 
