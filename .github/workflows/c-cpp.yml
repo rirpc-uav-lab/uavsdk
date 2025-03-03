@@ -21,6 +21,9 @@ jobs:
         mv src_loc src
         colcon build
 
+    - name: Install Dependencies
+      run: rosdep install --from-paths src --ignore-src -y
+
     - name: Source ROS2 Workspace
       shell: bash
       run: source /opt/ros/humble/setup.bash && source install/setup.bash
