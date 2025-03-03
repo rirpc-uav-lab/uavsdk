@@ -16,7 +16,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build
       run: |
-        mkdir -p src/uavsdk
-        mv * src/uavsdk
+        mkdir -p src_loc/uavsdk
+        mv * src_loc/uavsdk
+        mv src_loc src
         colcon build
 
