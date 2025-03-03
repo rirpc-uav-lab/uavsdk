@@ -1,0 +1,59 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+    container: osrf/ros:humble-desktop
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up ROS 2 Humble
+      shell: bash
+      run: |
+        sudo apt update  
+        sudo apt upgrade -y 
+        sudo apt install software-properties-common -y 
+        sudo apt install python3-pip -y
+        source /opt/ros/humble/setup.bash
+    
+    # - name: Install ROS2
+    #   run: |
+    #     sudo apt update && sudo apt install -y lsb-release wget
+    #     echo "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu jammy main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list
+    #     wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+    #     sudo apt update
+    #     sudo apt install ros-humble-desktop
+    #     sudo apt update && sudo apt install -y ros-humble-ament-cmake
+    #     sudo apt install ros-dev-tools
+
+
+    - name: Build
+      run: |
+        mkdir -p src_loc/uavsdk
+        find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
+        mv src_loc src
+        # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble/
+        rosdep update
+        rosdep install -i -y --from-path src --rosdistro $ROS_DISTRO
+        colcon build --symlink-install
+
+     
+    - name: Source ROS2 Workspace
+      shell: bash
+      run: source /opt/ros/humble/setup.bash && source install/setup.bash
+
+
+    - name: Run ROS2 Node
+      shell: bash
+      run: |
+        source /opt/ros/humble/setup.bash && \
+        source install/setup.bash && \
+        ros2 run uavsdk bh_test
+

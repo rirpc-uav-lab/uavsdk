@@ -125,8 +125,13 @@ ament_export_targets(cmd_managing_lib HAS_LIBRARY_TARGET)
 # target_link_libraries(inheritance_tests useful_data_lib backward_object)
 
 
+add_executable(bh_test src/bh_test.cpp)
+target_link_libraries(bh_test cmd_managing_lib)# backward_object)
+
+
 install(TARGETS
   # tests
+  bh_test
   # command_tests
   # inheritance_tests
   DESTINATION lib/${PROJECT_NAME}
