@@ -36,7 +36,7 @@ jobs:
      
     - name: Source ROS2 Workspace
       shell: bash
-      run: source /opt/ros/humble/setup.bash && source install/setup.bash
+      run: source /opt/ros/humble/setup.bash && source ./install/setup.bash
 
 
     - name: Build
