@@ -22,10 +22,12 @@ jobs:
         colcon build
 
     - name: Source ROS2 Workspace
+      shell: bash
       run: source /opt/ros/humble/setup.bash && source install/setup.bash
 
 
     - name: Run ROS2 Node
+      shell: bash
       run: |
         source /opt/ros/humble/setup.bash && \
         source install/setup.bash && \
