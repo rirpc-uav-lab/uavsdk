@@ -15,6 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up ROS 2 Humble
+    - shell: bash
       run: |
         sudo apt update  
         sudo apt upgrade -y 
