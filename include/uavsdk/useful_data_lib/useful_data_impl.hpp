@@ -170,7 +170,7 @@ namespace useful_di
 
             std::string add_data(const std::shared_ptr<TypeInterface>& _data) 
             {
-                this->_add_data(_data);
+                return this->_add_data(_data);
             }
 
 
