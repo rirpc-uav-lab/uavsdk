@@ -40,6 +40,7 @@ namespace uavsdk
             template <typename T>
             class PointerAccessDataAdapter : BasicDataAdapter<T>
             {
+                public:
                 PointerAccessDataAdapter(T initial_data) : BasicDataAdapter<T>(initial_data)
                 {
                     this->___set_type();
