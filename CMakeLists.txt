@@ -37,8 +37,6 @@ set_target_properties(data_adpters_lib_ros2 PROPERTIES LINKER_LANGUAGE CXX)
 set(CMD_MANAGING_LIB 
 include/uavsdk/command_manager/command_interface.hpp 
 include/uavsdk/command_manager/manager.hpp 
-include/uavsdk/command_manager/conditial_executor.hpp
-include/uavsdk/command_manager/while_not_success.hpp
 include/uavsdk/command_manager/executors.hpp 
 include/uavsdk/command_manager/control_nodes.hpp
 )
