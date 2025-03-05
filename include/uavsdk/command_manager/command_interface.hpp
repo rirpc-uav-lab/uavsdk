@@ -233,7 +233,7 @@ namespace uavsdk
         };
 
 
-        class BaseCommandInterface : public IExecutable, public IResultProvider, public IStoppable, public IInitializable, public useful_di::TypeInterface
+        class IStateManager
         {
             public:
             ExecutionResult get_last_execution_result()
@@ -242,8 +242,17 @@ namespace uavsdk
             }
 
 
+            virtual std::shared_ptr<useful_di::UniMapStr> get_state() = 0;
+
+
             protected:
             ExecutionResult last_result = ExecutionResult::INVALID;
+        };
+
+
+        class BaseCommandInterface : public IExecutable, public IResultProvider, public IStoppable, public IInitializable, public useful_di::TypeInterface, public IStateManager
+        {
+            protected:
             /**
              * @brief Periodically executes core logic of the command.
              *
@@ -271,12 +280,26 @@ namespace uavsdk
         };
 
 
-        class SingleProccessCommandInterface : public BaseCommandInterface
+        class SingleProccessCommandInterface : public BaseCommandInterface, public uavsdk::command_manager::IIdentification<std::string>
         {
             public:
             SingleProccessCommandInterface()
             {
                 this->initialize();
+            }
+
+
+            virtual std::shared_ptr<useful_di::UniMapStr> get_state() override
+            {
+                auto state = std::make_shared<useful_di::UniMapStr>();
+            
+                auto name = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<std::string>>(this->get_id());
+                auto last_state = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<ExecutionResult>>(this->get_last_execution_result());
+
+                state->add_data("name", name);
+                state->add_data("last_state", last_state);
+
+                return state;
             }
 
 
@@ -341,6 +364,29 @@ namespace uavsdk
             void set_execution_strategy(std::shared_ptr<IExecutionStrategy> new_exec_strat)
             {
                 this->execution_strategy = new_exec_strat;
+            }
+
+
+            virtual std::shared_ptr<useful_di::UniMapStr> get_state() override
+            {
+                auto state = std::make_shared<useful_di::UniMapStr>();
+            
+                auto name = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<std::string>>(this->get_id());
+                auto last_state = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<ExecutionResult>>(this->get_last_execution_result());
+
+                state->add_data("name", name);
+                state->add_data("last_state", last_state);
+
+                auto child_nodes = std::make_shared<useful_di::UniMapStr>();
+
+                for (const auto& stage : this->stages)
+                {
+                    child_nodes->add_data(stage->get_id(), stage->get_state());
+                }
+
+                state->add_data("child_nodes", child_nodes);
+
+                return state;
             }
 
 
