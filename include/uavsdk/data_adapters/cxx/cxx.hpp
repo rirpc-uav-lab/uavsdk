@@ -35,6 +35,22 @@ namespace uavsdk
                 protected:
                 std::shared_ptr<T> data_p;
             };
+
+
+            template <typename T>
+            class PointerAccessDataAdapter : BasicDataAdapter<T>
+            {
+                PointerAccessDataAdapter(T initial_data) : BasicDataAdapter(initial_data)
+                {
+                    this->___set_type();
+                }
+
+
+                virtual std::shared_ptr<T> get_shared_ptr()
+                {
+                    return this->data_p;
+                }
+            };
         }
     }
 }
