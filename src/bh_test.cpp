@@ -82,8 +82,8 @@ int main()
 {
     Executor executor;
     std::shared_ptr<useful_di::UniMapStr> blackboard_init =  std::make_shared<useful_di::UniMapStr>();
-    auto sequsss = std::make_shared<uavsdk::command_manager::ControlNodes::Sequence>(blackboard_init);
-    auto fallback = std::make_shared<uavsdk::command_manager::ControlNodes::Fallback>(blackboard_init);
+    auto sequsss = std::make_shared<uavsdk::command_manager::control_nodes::Sequence>(blackboard_init);
+    auto fallback = std::make_shared<uavsdk::command_manager::control_nodes::Fallback>(blackboard_init);
 
     sequsss->add_stage(std::make_shared<Success>());
 

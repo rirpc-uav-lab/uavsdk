@@ -186,7 +186,7 @@ namespace uavsdk
                 }
             }
         
-            uavsdk::command_manager::ExecutionResult _executor_tick()
+            virtual uavsdk::command_manager::ExecutionResult _executor_tick()
             {
                 uavsdk::command_manager::ExecutionResult res = std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command)->tick();
                 
@@ -194,6 +194,75 @@ namespace uavsdk
                 // {
                 //     this->stop_execution(res);
                 // }
+                
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                return res;
+            }
+        };
+
+
+        template <typename Id> 
+        class ObservableCommandExecutor : public CommandExecutor<Id>, public useful_di::DataCollectorInterface<useful_di::UniMapStr>
+        {
+            public:
+            void update_data(std::shared_ptr<useful_di::UniMapStr> data) override
+            {
+                this->data = data;
+                this->notify_observers();
+            }
+
+
+            void attach_observer(std::shared_ptr<useful_di::DataObserverInterface<useful_di::UniMapStr>> observer) override
+            {
+                if (observer)
+                {
+                    this->observers_list.push_back(observer);
+                }
+                else
+                {
+                    throw std::runtime_error("ObservableCommandExecutor::attach_observer: Error! Observer pointer is invalid.\n");
+                }
+            }
+
+
+            protected:
+            void notify_observers() override
+            {
+                size_t i = 0;
+                std::vector<size_t> deletion_list = {};
+
+                for (const auto& observer : this->observers_list)
+                {
+                    if (observer)
+                    {
+                        observer->be_notified(this->data);
+                    }
+                    else
+                    {
+                        std::cout << "ObservableCommandExecutor::notify_observers: Warning! Observer pointer is invalid. Deleting\n";
+                        deletion_list.push_back(i);
+                    }
+                    i++;
+                }
+
+                // for (size_t idx = deletion_list.size() - 1; idx >= 0; idx--)
+                // {
+                //     observers_list.erase(observers_list.begin() + deletion_list.at(idx));
+                // }
+            }
+
+            private:
+            std::shared_ptr<useful_di::UniMapStr> data;
+            std::vector<std::shared_ptr<useful_di::DataObserverInterface<useful_di::UniMapStr>>> observers_list = {};
+            
+            virtual uavsdk::command_manager::ExecutionResult _executor_tick() override
+            {
+                auto command = std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command);
+                
+                uavsdk::command_manager::ExecutionResult res = command->tick();
+
+                auto state = command->get_state();
+                this->update_data(state);
                 
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 return res;

@@ -14,9 +14,9 @@ namespace uavsdk
 {
     namespace command_manager
     {
-        namespace ControlNodes
+        namespace control_nodes
         {
-            class Sequence : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
+            class Sequence : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard
             {
                 public:
                 Sequence(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
@@ -34,7 +34,7 @@ namespace uavsdk
             };
 
 
-            class Fallback : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
+            class Fallback : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard
             {
                 public:
                 Fallback(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
@@ -52,7 +52,7 @@ namespace uavsdk
             };
 
 
-            class ParallelStrict : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
+            class ParallelStrict : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard
             {
                 public:
                 ParallelStrict(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
@@ -70,7 +70,7 @@ namespace uavsdk
             };
 
 
-            class ParallelHopeful : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard, public uavsdk::command_manager::IIdentification<std::string>
+            class ParallelHopeful : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard
             {
                 public:
                 ParallelHopeful(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)

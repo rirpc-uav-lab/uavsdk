@@ -42,6 +42,7 @@ include/uavsdk/command_manager/control_nodes.hpp
 )
 add_library(cmd_managing_lib SHARED ${CMD_MANAGING_LIB})
 set_target_properties(cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(cmd_managing_lib data_adpters_lib_ros2)
 
 
 

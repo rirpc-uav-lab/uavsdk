@@ -8,6 +8,7 @@
 #include <functional>
 
 #include <uavsdk/useful_data_lib/useful_data_interfaces.hpp>
+#include <uavsdk/data_adapters/cxx/cxx.hpp>
 
 namespace uavsdk
 {
