@@ -19,11 +19,18 @@ namespace uavsdk
             class Sequence : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard
             {
                 public:
-                Sequence(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
+                Sequence(std::shared_ptr<useful_di::UniMapStr> _blackboard, int id=-1) : IBlackboard(_blackboard)
                 {
                     auto seq = std::make_shared<uavsdk::command_manager::executors::SequentialExecutionStrategy>();
                     this->set_execution_strategy(seq);
-                    this->set_id("sequence");
+                    if (id != -1)
+                    {
+                        this->set_id("sequence" + std::to_string(id));
+                    }
+                    else 
+                    {
+                        this->set_id("sequence");
+                    }
                     this->___set_type();
                 }
 
@@ -37,11 +44,18 @@ namespace uavsdk
             class Fallback : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard
             {
                 public:
-                Fallback(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
+                Fallback(std::shared_ptr<useful_di::UniMapStr> _blackboard, int id=-1) : IBlackboard(_blackboard)
                 {
                     auto fallb = std::make_shared<uavsdk::command_manager::executors::FallbackExecutionStrategy>();
                     this->set_execution_strategy(fallb);
-                    this->set_id("fallback");
+                    if (id != -1)
+                    {
+                        this->set_id("fallback" + std::to_string(id));
+                    }
+                    else 
+                    {
+                        this->set_id("fallback");
+                    }
                     this->___set_type();
                 }
 
@@ -55,11 +69,18 @@ namespace uavsdk
             class ParallelStrict : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard
             {
                 public:
-                ParallelStrict(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
+                ParallelStrict(std::shared_ptr<useful_di::UniMapStr> _blackboard, int id=-1) : IBlackboard(_blackboard)
                 {
                     auto par_strict = std::make_shared<uavsdk::command_manager::executors::ParallelStrictExecutionStrategy>();
                     this->set_execution_strategy(par_strict);
-                    this->set_id("parallel_strict");
+                    if (id != -1)
+                    {
+                        this->set_id("parallel_strict" + std::to_string(id));
+                    }
+                    else 
+                    {
+                        this->set_id("parallel_strict");
+                    }
                     this->___set_type();
                 }
 
@@ -73,11 +94,18 @@ namespace uavsdk
             class ParallelHopeful : public uavsdk::command_manager::StagedCommandInterface, public uavsdk::command_manager::IBlackboard
             {
                 public:
-                ParallelHopeful(std::shared_ptr<useful_di::UniMapStr> _blackboard) : IBlackboard(_blackboard)
+                ParallelHopeful(std::shared_ptr<useful_di::UniMapStr> _blackboard, int id=-1) : IBlackboard(_blackboard)
                 {
                     auto par_hopeful = std::make_shared<uavsdk::command_manager::executors::ParallelHopefulExecutionStrategy>();
                     this->set_execution_strategy(par_hopeful);
-                    this->set_id("parallel_hopeful");
+                    if (id != -1)
+                    {
+                        this->set_id("parallel_hopeful" + std::to_string(id));
+                    }
+                    else 
+                    {
+                        this->set_id("parallel_hopeful");
+                    }
                     this->___set_type();
                 }
 
