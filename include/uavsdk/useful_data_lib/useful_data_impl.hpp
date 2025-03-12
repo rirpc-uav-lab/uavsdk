@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <set>
+#include <mutex>
 
 #include <nlohmann/json.hpp>
 
@@ -282,6 +283,151 @@ namespace useful_di
                 return this->data_storage.size();
             }
     };
+
+
+    class Blackboard : public MapLikeDataStorageInterface<std::string>
+    {
+        public:
+        Blackboard(std::shared_ptr<useful_di::UniMapStr> _blackboard)
+        {
+                this->___set_type();
+                init_blackboard(_blackboard);
+        }
+
+
+        Blackboard()
+        {
+            this->___set_type();
+            auto _blackboard = std::make_shared<useful_di::UniMapStr>();
+            init_blackboard(_blackboard);
+        }
+
+
+        std::vector<std::string> get_keys_from_blackboard()
+        {
+            std::scoped_lock llock(bb_mutex);
+            return blackboard->get_present_keys();
+        }
+
+
+        template <typename T>
+        std::shared_ptr<T> at(std::string key)
+        {
+            std::shared_ptr<useful_di::TypeInterface> data = nullptr;
+            try
+            {
+                data = this->blackboard->at(key);
+            }
+            catch(const std::out_of_range e)
+            {
+                std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + key + std::string("\n"));
+                throw std::runtime_error(msg);
+            }
+            
+            
+            // std::cout << "bb at key = " << key << "\n";
+
+            if (data->___get_type() == utils::cppext::get_type<T>())
+            {
+                return std::dynamic_pointer_cast<T>(data);
+            }
+            else
+            {
+                std::string msg = "CommandInterfaceWithBlackboard::at<T>(std::string key) error: tried conversion of data withe key " + key + " from type " + data->___get_type() + " to " + utils::cppext::get_type<T>() + "\n";
+                throw std::runtime_error(msg);
+            }
+        }
+
+
+        protected:
+        std::string _add_data(const std::shared_ptr<TypeInterface>& _data) override
+        {
+            throw std::runtime_error("Sorry, but calling useful_di::Blackboard::add_data(data) is not possible. We are working to remove this option completely so please do not use it. Instead you should explicitly specify the key.\n");
+            return "error";
+        }
+
+
+        void _add_data(const std::string key, const std::shared_ptr<useful_di::TypeInterface>& data) override
+        {
+            std::scoped_lock llock(bb_mutex);
+
+            auto keys = this->blackboard->get_present_keys();
+            
+            bool key_not_in_bb = true;
+            
+            for (const auto& bb_key : keys)
+            {
+                if (bb_key == key)
+                {
+                    key_not_in_bb = false;
+                    break;
+                }
+            }
+            
+            if (key_not_in_bb)
+            {
+                blackboard->add_data(key, data);
+            }
+            else
+            {
+                auto bb_type = blackboard->at(key)->___get_type();
+                auto data_type = data->___get_type();
+                if (bb_type != data_type) throw std::runtime_error("Blackboard: OVERWITE ERROR! Called add_data_to_bb(key, data) on key " + key + ", but this key is alredy in blackboard with a different type. ");
+                else
+                {
+                    blackboard->add_data(key, data);
+                }
+            }
+        }
+
+
+        void _remove_data(const std::string& data_identifier) override
+        {
+            std::scoped_lock llock(bb_mutex);
+            blackboard->remove_data(data_identifier);
+        }
+
+
+        void _modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& _data) override
+        {
+            std::scoped_lock llock(bb_mutex);
+            blackboard->modify_data(data_identifier, _data);
+        }
+
+
+        std::shared_ptr<TypeInterface> _at(const std::string& data_identifier) override
+        {
+            std::shared_ptr<useful_di::TypeInterface> data = nullptr;
+            try
+            {
+                data = this->blackboard->at(data_identifier);
+            }
+            catch(const std::out_of_range e)
+            {
+                std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + data_identifier + std::string("\n"));
+                throw std::runtime_error(msg);
+            }
+        }
+
+
+
+        size_t _size() override
+        {
+            return blackboard->size();
+        }
+
+
+        private:
+        std::shared_ptr<useful_di::UniMapStr> blackboard; // shared_resource
+        std::mutex bb_mutex; // blackboard mutex
+
+
+        void init_blackboard(std::shared_ptr<useful_di::UniMapStr> init_bb)
+        {
+            this->blackboard = init_bb;
+        }
+    };
+
 
 
     // template <typename UniversalDataFormat>

@@ -55,6 +55,13 @@ namespace uavsdk
             }
 
 
+            void set_sleep_period_ms(int ms)
+            {
+                std::scoped_lock lock(this->command_mutex);
+                this->sleep_period_ms = ms;
+            }
+
+
             uavsdk::command_manager::StartExecutionResult start_execution() override
             {
                 if (stop_requested_inside)
@@ -145,6 +152,7 @@ namespace uavsdk
         
         
             private:
+            int sleep_period_ms = 100;
             std::unique_ptr<std::promise<uavsdk::command_manager::ExecutionResult>> ex_res_promise;
             std::future<uavsdk::command_manager::ExecutionResult> ex_res_future;
             std::mutex command_mutex;
@@ -175,7 +183,7 @@ namespace uavsdk
                         break;
                     }
 
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
                     std::scoped_lock lock(command_mutex);
                     _command_executing = this->command_executing;
                     // stop_requested_inside = _stop_requested_inside;
@@ -195,7 +203,7 @@ namespace uavsdk
                 //     this->stop_execution(res);
                 // }
                 
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleep_period_ms);
                 return res;
             }
         };

@@ -9,6 +9,7 @@
 
 #include <uavsdk/useful_data_lib/useful_data_interfaces.hpp>
 #include <uavsdk/command_manager/command_interface.hpp>
+#include <uavsdk/command_manager/behaviour_interfaces.hpp>
 
 namespace uavsdk
 {
@@ -16,10 +17,26 @@ namespace uavsdk
     {
         namespace executors
         {
+            class IExecutionStrategy : public useful_di::TypeInterface
+            {
+                public:
+                virtual uavsdk::command_manager::ExecutionResult execute_stages(std::vector<std::shared_ptr<SingleProccessCommandInterface>>& stages) = 0;
+                virtual std::vector<bool> get_last_was_executed_stage_status() { return this->last_was_executed_stage_status; }
+                
+                protected:
+                std::vector<bool> last_was_executed_stage_status;
+            };
+
+
             // All stages must return SUCCESS execution result
             class SequentialExecutionStrategy : public IExecutionStrategy
             {
                 public:
+                SequentialExecutionStrategy()
+                {
+                    this->___set_type();
+                }
+
                 uavsdk::command_manager::ExecutionResult execute_stages(std::vector<std::shared_ptr<uavsdk::command_manager::SingleProccessCommandInterface>>& stages) override
                 {
                     if (stages.empty())
@@ -70,6 +87,11 @@ namespace uavsdk
             class FallbackExecutionStrategy : public IExecutionStrategy
             {
                 public:
+                FallbackExecutionStrategy()
+                {
+                    this->___set_type();
+                }
+
                 uavsdk::command_manager::ExecutionResult execute_stages(std::vector<std::shared_ptr<uavsdk::command_manager::SingleProccessCommandInterface>>& stages) override
                 {
                     if (stages.empty())
@@ -120,6 +142,11 @@ namespace uavsdk
             class ParallelStrictExecutionStrategy : public IExecutionStrategy
             {
                 public:
+                ParallelStrictExecutionStrategy()
+                {
+                    this->___set_type();
+                }
+
                 uavsdk::command_manager::ExecutionResult execute_stages(std::vector<std::shared_ptr<uavsdk::command_manager::SingleProccessCommandInterface>>& stages) override
                 {
                     if (stages.empty())
@@ -175,6 +202,11 @@ namespace uavsdk
             class ParallelHopefulExecutionStrategy : public IExecutionStrategy
             {
                 public:
+                ParallelHopefulExecutionStrategy()
+                {
+                    this->___set_type();
+                }
+
                 uavsdk::command_manager::ExecutionResult execute_stages(std::vector<std::shared_ptr<uavsdk::command_manager::SingleProccessCommandInterface>>& stages) override
                 {
                     if (stages.empty())

@@ -205,6 +205,12 @@ namespace useful_di
     template <typename KeyT>
     class MapLikeDataStorageInterface : public DataStorageInterface<KeyT>
     {
+        public:
+        virtual void add_data(const KeyT _key, const std::shared_ptr<TypeInterface>& _data)
+        {
+            this->_add_data(_key, _data);
+        }
+
         protected:
         std::map<KeyT, std::shared_ptr<TypeInterface>> data_storage;
 
