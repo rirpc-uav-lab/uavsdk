@@ -298,9 +298,11 @@ namespace uavsdk
             
                 auto name = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<std::string>>(this->get_id());
                 auto last_state = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<ExecutionResult>>(this->get_last_execution_result());
+                auto child_num = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<size_t>>(0);
 
                 state->add_data("name", name);
                 state->add_data("last_state", last_state);
+                state->add_data("child_num", child_num);
 
                 return state;
             }
@@ -377,18 +379,26 @@ namespace uavsdk
                 auto name = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<std::string>>(this->get_id());
                 auto last_state = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<ExecutionResult>>(this->get_last_execution_result());
 
+                
+                
+                auto child_nodes = std::make_shared<useful_di::UniMapStr>();
+                auto child_num = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<size_t>>(this->stages.size());
+                
+                std::cout << "StagedCommandInterface::child_num: " << child_nodes->size() << "\n";
+
+                // for (const auto& stage : this->stages)
+                for(size_t i = 0; i < this->stages.size(); i++)
+                {
+                    auto data_pair = std::make_pair<std::string, std::shared_ptr<useful_di::UniMapStr>>(stages.at(i)->get_id(), stages.at(i)->get_state());
+                    auto data = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<std::pair<std::string, std::shared_ptr<useful_di::UniMapStr>>>>(data_pair);
+                    child_nodes->add_data(std::to_string(i), data);
+                }
+                
                 state->add_data("name", name);
                 state->add_data("last_state", last_state);
-
-                auto child_nodes = std::make_shared<useful_di::UniMapStr>();
-
-                for (const auto& stage : this->stages)
-                {
-                    child_nodes->add_data(stage->get_id(), stage->get_state());
-                }
-
                 state->add_data("child_nodes", child_nodes);
-
+                state->add_data("child_num", child_num);
+                
                 return state;
             }
 
