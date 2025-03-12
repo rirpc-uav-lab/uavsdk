@@ -271,7 +271,7 @@ namespace uavsdk
                 if (res == uavsdk::command_manager::ExecutionResult::INVALID) msg = "INVALID";
 
                 std::cout << this->___get_type() << " result was = " << msg << "\n";
-                
+
                 return res;
             }
 
@@ -328,9 +328,10 @@ namespace uavsdk
             }
 
 
-            void initialize() override 
+            virtual void initialize() override 
             {
                 this->last_result = ExecutionResult::RUNNING;
+                std::cout << typeid(*this).name() << " was initialized\n";
             }
             
             
@@ -372,6 +373,17 @@ namespace uavsdk
             }
 
 
+            virtual void initialize() override 
+            {
+                this->last_result = ExecutionResult::RUNNING;
+                for (const auto& stage : this->stages)
+                {
+                    stage->initialize();
+                }
+                std::cout << typeid(*this).name() << " was initialized\n";
+            }
+
+
             virtual std::shared_ptr<useful_di::UniMapStr> get_state() override
             {
                 auto state = std::make_shared<useful_di::UniMapStr>();
@@ -384,8 +396,6 @@ namespace uavsdk
                 auto child_nodes = std::make_shared<useful_di::UniMapStr>();
                 auto child_num = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<size_t>>(this->stages.size());
                 
-                std::cout << "StagedCommandInterface::child_num: " << child_nodes->size() << "\n";
-
                 // for (const auto& stage : this->stages)
                 for(size_t i = 0; i < this->stages.size(); i++)
                 {
