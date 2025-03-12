@@ -28,10 +28,18 @@ namespace uavsdk
                     }
                     else
                     {
+                        this->last_was_executed_stage_status.resize(stages.size());
+
+                        for(size_t i = 0; i < this->last_was_executed_stage_status.size(); i++)
+                        {
+                            this->last_was_executed_stage_status.at(i) = false;
+                        }
+
                         uavsdk::command_manager::ExecutionResult result = uavsdk::command_manager::ExecutionResult::INVALID;
                         if (stages.at(stage_index)->get_last_execution_result() == uavsdk::command_manager::ExecutionResult::RUNNING)
                         {
                             result = stages.at(stage_index)->tick();
+                            this->last_was_executed_stage_status.at(stage_index) = true;
                         }
                         if (result == uavsdk::command_manager::ExecutionResult::SUCCESS)
                         {
@@ -53,6 +61,7 @@ namespace uavsdk
                     }
                 }
 
+
                 private:
                 size_t stage_index = 0;
             };
@@ -69,10 +78,18 @@ namespace uavsdk
                     }
                     else
                     {
+                        this->last_was_executed_stage_status.resize(stages.size());
+
+                        for(size_t i = 0; i < this->last_was_executed_stage_status.size(); i++)
+                        {
+                            this->last_was_executed_stage_status.at(i) = false;
+                        }
+
                         uavsdk::command_manager::ExecutionResult result = uavsdk::command_manager::ExecutionResult::INVALID;
                         if (stages.at(stage_index)->get_last_execution_result() == uavsdk::command_manager::ExecutionResult::RUNNING)
                         {
                             result = stages.at(stage_index)->tick();
+                            this->last_was_executed_stage_status.at(stage_index) = true;
                         }
                         if (result == uavsdk::command_manager::ExecutionResult::FAILED)
                         {
@@ -112,6 +129,13 @@ namespace uavsdk
 
                     if (stage_results.empty()) stage_results.resize(stages.size());
 
+                    this->last_was_executed_stage_status.resize(stages.size());
+
+                    for(size_t i = 0; i < this->last_was_executed_stage_status.size(); i++)
+                    {
+                        this->last_was_executed_stage_status.at(i) = false;
+                    }
+
                     bool all_sucess = true;
 
                     for (size_t i = 0; i < stages.size(); i++)
@@ -122,6 +146,7 @@ namespace uavsdk
                         }
 
                         stage_results.at(i) = stages.at(i)->tick();
+                        this->last_was_executed_stage_status.at(i) = true;
 
                         if (stage_results.at(i) == uavsdk::command_manager::ExecutionResult::RUNNING)
                         {
@@ -159,6 +184,13 @@ namespace uavsdk
 
                     if (stage_results.empty()) stage_results.resize(stages.size());
 
+                    this->last_was_executed_stage_status.resize(stages.size());
+
+                    for(size_t i = 0; i < this->last_was_executed_stage_status.size(); i++)
+                    {
+                        this->last_was_executed_stage_status.at(i) = false;
+                    }
+
                     bool all_failed = true;
 
                     for (size_t i = 0; i < stages.size(); i++)
@@ -169,6 +201,7 @@ namespace uavsdk
                         }
 
                         stage_results.at(i) = stages.at(i)->tick();
+                        this->last_was_executed_stage_status.at(i) = true;
 
                         if (stage_results.at(i) == uavsdk::command_manager::ExecutionResult::RUNNING)
                         {

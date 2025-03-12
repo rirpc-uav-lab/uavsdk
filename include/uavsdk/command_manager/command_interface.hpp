@@ -355,6 +355,10 @@ namespace uavsdk
         {
             public:
             virtual ExecutionResult execute_stages(std::vector<std::shared_ptr<SingleProccessCommandInterface>>& stages) = 0;
+            virtual std::vector<bool> get_last_was_executed_stage_status() { return this->last_was_executed_stage_status; }
+            
+            protected:
+            std::vector<bool> last_was_executed_stage_status;
         };
 
 
@@ -390,9 +394,6 @@ namespace uavsdk
             
                 auto name = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<std::string>>(this->get_id());
                 auto last_state = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<ExecutionResult>>(this->get_last_execution_result());
-
-                
-                
                 auto child_nodes = std::make_shared<useful_di::UniMapStr>();
                 auto child_num = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<size_t>>(this->stages.size());
                 
@@ -404,10 +405,14 @@ namespace uavsdk
                     child_nodes->add_data(std::to_string(i), data);
                 }
                 
+                std::vector<bool> exec_stat = this->execution_strategy->get_last_was_executed_stage_status();
+                auto exec_stat_adap = std::make_shared<uavsdk::data_adapters::cxx::BasicDataAdapter<std::vector<bool>>>(exec_stat);
+
                 state->add_data("name", name);
                 state->add_data("last_state", last_state);
                 state->add_data("child_nodes", child_nodes);
                 state->add_data("child_num", child_num);
+                state->add_data("child_exec_stat", exec_stat_adap);
                 
                 return state;
             }
@@ -421,27 +426,8 @@ namespace uavsdk
 
             virtual ExecutionResult logic_tick() override
             {
-                // if (!stages.empty())
-                // {
-
-                //     ExecutionResult subres = this->stages.at(0)->tick();
-
-                //     if (subres == ExecutionResult::SUCCESS)
-                //     {
-                //         this->stages.erase(this->stages.begin());
-                //         return ExecutionResult::RUNNING;
-                //     }
-                //     else
-                //     {
-                //         return subres;
-                //     }
-                // }
-                // else
-                // {
-                //     this->stop();
-                //     return ExecutionResult::SUCCESS;
-                // }
-                return this->execution_strategy->execute_stages(this->stages);
+                auto res = this->execution_strategy->execute_stages(this->stages);
+                
             }
         };
     };
