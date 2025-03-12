@@ -261,6 +261,7 @@ namespace uavsdk
              */
             ExecutionResult _tick()
             {
+                std::cout << this->___get_type() << ": tick()\n"; 
                 auto res = this->logic_tick();
                 std::string msg;
                 
@@ -269,7 +270,8 @@ namespace uavsdk
                 if (res == uavsdk::command_manager::ExecutionResult::RUNNING) msg = "RUNNING";
                 if (res == uavsdk::command_manager::ExecutionResult::INVALID) msg = "INVALID";
 
-                std::cout << this->___get_type() << ": tick() res = " << msg << "\n";
+                std::cout << this->___get_type() << " result was = " << msg << "\n";
+                
                 return res;
             }
 
