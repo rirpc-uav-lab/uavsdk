@@ -96,8 +96,8 @@ namespace useful_di
 
 
         #warning Developer warning. Next two methods should be in the interface:
-        std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator begin() { return this->data_storage.begin(); }
-        std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator end() { return this->data_storage.end(); }
+        typename std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator begin() { return this->data_storage.begin(); }
+        typename std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator end() { return this->data_storage.end(); }
 
     protected:
         std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>> data_storage;
@@ -136,7 +136,7 @@ namespace useful_di
         }
 
 
-        std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> _at(const std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator iterator)
+        std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> _at(const typename std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator iterator)
         {
             return this->data_storage.at(iterator);
         }
@@ -305,7 +305,7 @@ namespace useful_di
 
         std::vector<std::string> get_keys_from_blackboard()
         {
-            std::scoped_lock llock(bb_mutex);
+            std::lock_guard<std::mutex> llock(bb_mutex);
             return blackboard->get_present_keys();
         }
 
@@ -349,7 +349,7 @@ namespace useful_di
 
         void _add_data(const std::string key, const std::shared_ptr<useful_di::TypeInterface>& data) override
         {
-            std::scoped_lock llock(bb_mutex);
+            std::lock_guard<std::mutex> llock(bb_mutex);
 
             auto keys = this->blackboard->get_present_keys();
             
@@ -383,14 +383,14 @@ namespace useful_di
 
         void _remove_data(const std::string& data_identifier) override
         {
-            std::scoped_lock llock(bb_mutex);
+            std::lock_guard<std::mutex> llock(bb_mutex);
             blackboard->remove_data(data_identifier);
         }
 
 
         void _modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& _data) override
         {
-            std::scoped_lock llock(bb_mutex);
+            std::lock_guard<std::mutex> llock(bb_mutex);
             blackboard->modify_data(data_identifier, _data);
         }
 

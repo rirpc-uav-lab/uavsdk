@@ -57,7 +57,7 @@ namespace uavsdk
 
             void set_sleep_period_ms(int ms)
             {
-                std::scoped_lock lock(this->command_mutex);
+                std::lock_guard<std::mutex> lock(this->command_mutex);
                 this->sleep_period_ms = ms;
             }
 
@@ -71,7 +71,7 @@ namespace uavsdk
 
                 bool _command_executing = false;
                 {
-                    std::scoped_lock lock(command_mutex);
+                    std::lock_guard<std::mutex> lock(command_mutex);
                     _command_executing = this->command_executing;
                 }
         
@@ -79,7 +79,7 @@ namespace uavsdk
                 {
                     // std::cout << "start_execution::not _command_executing\n";
                     {
-                        std::scoped_lock lock(command_mutex);
+                        std::lock_guard<std::mutex> lock(command_mutex);
                         command_executing = true;
                     }
                     
@@ -118,7 +118,7 @@ namespace uavsdk
                 bool _stop_requested_inside;
         
                 {
-                    std::scoped_lock lock(command_mutex);
+                    std::lock_guard<std::mutex> lock(command_mutex);
                     _command_executing = this->command_executing;
                 }
         
@@ -130,7 +130,7 @@ namespace uavsdk
                 else
                 {
                     // std::cout << "stop_execution::_command_executing\n";
-                    std::scoped_lock lock(command_mutex);
+                    std::lock_guard<std::mutex> lock(command_mutex);
                     this->command_executing = false;
                     this->stop_requested_inside = false;
                     // this->ex_res_promise->set_value(res);
@@ -166,7 +166,7 @@ namespace uavsdk
                 bool _stop_requested_inside;
         
                 {
-                    std::scoped_lock lock(command_mutex);
+                    std::lock_guard<std::mutex> lock(command_mutex);
                     _command_executing = this->command_executing;
                     _stop_requested_inside = this->stop_requested_inside;
                 }
@@ -184,7 +184,7 @@ namespace uavsdk
                     }
 
                     // std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                    std::scoped_lock lock(command_mutex);
+                    std::lock_guard<std::mutex> lock(command_mutex);
                     _command_executing = this->command_executing;
                     // stop_requested_inside = _stop_requested_inside;
                     // if (stop_requested_inside)
@@ -203,7 +203,7 @@ namespace uavsdk
                 //     this->stop_execution(res);
                 // }
                 
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleep_period_ms);
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleep_period_ms));
                 return res;
             }
         };
