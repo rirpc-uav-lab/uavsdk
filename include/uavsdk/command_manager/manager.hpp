@@ -62,6 +62,18 @@ namespace uavsdk
             }
 
 
+            bool is_running()
+            {
+
+                bool _command_executing = false;
+                {
+                    std::lock_guard<std::mutex> lock(command_mutex);
+                    _command_executing = this->command_executing;
+                }
+                return _command_executing;
+            }
+
+
             uavsdk::command_manager::StartExecutionResult start_execution() override
             {
                 if (stop_requested_inside)
