@@ -39,7 +39,7 @@ namespace uavsdk
                 return current_command_id;
             }
         
-            protected:
+            protected: 
             Id current_command_id;
         };
         
@@ -123,7 +123,12 @@ namespace uavsdk
                 return ex_res_future.share();
             }
 
-        
+            void reset_execution_result() 
+            {
+                std::lock_guard<std::mutex> lock(command_mutex);
+                ex_res_promise = std::make_unique<std::promise<ExecutionResult>>(); // Создаем новый promise
+            }
+
             void stop_execution() override
             {
                 bool _command_executing;
@@ -145,11 +150,13 @@ namespace uavsdk
                     std::lock_guard<std::mutex> lock(command_mutex);
                     this->command_executing = false;
                     this->stop_requested_inside = false;
+                    this->ex_res_promise->set_value(uavsdk::command_manager::ExecutionResult::INVALID);
                     // this->ex_res_promise->set_value(res);
                 }
 
                 this->executor_thread = nullptr;
                 this->_set_current_command_id_to_idle();
+                std::cout << "OKKAK\n";
             }
         
         
@@ -171,11 +178,13 @@ namespace uavsdk
             bool command_executing = false;
             bool stop_requested_inside = false;
             std::shared_ptr<std::thread> executor_thread; 
-        
+
+            
             void _loop()
             {
                 bool _command_executing;
                 bool _stop_requested_inside;
+                std::cout << "ZALUP\n";
         
                 {
                     std::lock_guard<std::mutex> lock(command_mutex);
@@ -183,27 +192,69 @@ namespace uavsdk
                     _stop_requested_inside = this->stop_requested_inside;
                 }
                 
+
                 while (_command_executing)
                 {
-                    auto res = this->_executor_tick();
+                    std::cout << "DCP\n";
+                    uavsdk::command_manager::ExecutionResult res;
+                    {
+                        std::lock_guard<std::mutex> lock(command_mutex);
+                        _command_executing = this->command_executing;
+                    }
 
+                    if (!_command_executing and !_stop_requested_inside)
+                    {
+                        break;
+                    }
+
+                    res = this->_executor_tick();
+
+                    // switch (res) {
+                    //     case ExecutionResult::FAILED:
+                    //         std::cout << "FAILED_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_FAILED\n";
+                    //         break;
+                    //     case ExecutionResult::RUNNING:
+                    //         std::cout << "RUNNING_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_RUNNING\n";
+                    //         break;
+                    //     case ExecutionResult::SUCCESS:
+                    //         std::cout << "SUCCESS_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_SUCCESS\n";
+                    //         break;
+                    //     case ExecutionResult::INVALID:
+                    //         std::cout << "INVALID_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_INVALID\n";
+                    //         break;
+                    //     default:
+                    //         std::cout << "UNKNOWN_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_UNKNOWN\n";
+                    //         break;
+                    // }
+                    
                     if (res == uavsdk::command_manager::ExecutionResult::SUCCESS or res == uavsdk::command_manager::ExecutionResult::FAILED)
                     {
+                        std::cout << "ABC\n";
                         // this->stop_execution(res);
                         _stop_requested_inside = true;
+                        {
+                            std::lock_guard<std::mutex> lock(command_mutex);
+                            this->stop_requested_inside = _stop_requested_inside;
+                            command_executing = false;
+                        }
+                        _command_executing = false;
                         this->ex_res_promise->set_value(res);
+                        // this->stop_execution();
                         break;
                     }
 
                     // std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                    std::lock_guard<std::mutex> lock(command_mutex);
-                    _command_executing = this->command_executing;
                     // stop_requested_inside = _stop_requested_inside;
                     // if (stop_requested_inside)
                     // {
                     //     break;
                     // }
+                    std::cout << "WHILEENDDD\n";
                 }
+
+                std::cout << "current_command " << this->get_current_command_id() << "\n";
+                std::cout << "command_executing " << _command_executing << "\n";
+                std::cout << "stop_requested_inside " << _stop_requested_inside << "\n";
             }
         
             virtual uavsdk::command_manager::ExecutionResult _executor_tick()

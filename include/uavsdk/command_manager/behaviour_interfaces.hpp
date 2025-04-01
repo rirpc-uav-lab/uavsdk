@@ -149,16 +149,16 @@ namespace uavsdk
              */
             ExecutionResult _tick()
             {
-                std::cout << this->___get_type() << ": tick()\n"; 
+                // std::cout << this->___get_type() << ": tick()\n"; 
                 auto res = this->logic_tick();
-                std::string msg;
+                // std::string msg;
                 
-                if (res == uavsdk::command_manager::ExecutionResult::FAILED) msg = "FAILED";
-                if (res == uavsdk::command_manager::ExecutionResult::SUCCESS) msg = "SUCCESS";
-                if (res == uavsdk::command_manager::ExecutionResult::RUNNING) msg = "RUNNING";
-                if (res == uavsdk::command_manager::ExecutionResult::INVALID) msg = "INVALID";
+                // if (res == uavsdk::command_manager::ExecutionResult::FAILED) msg = "FAILED";
+                // if (res == uavsdk::command_manager::ExecutionResult::SUCCESS) msg = "SUCCESS";
+                // if (res == uavsdk::command_manager::ExecutionResult::RUNNING) msg = "RUNNING";
+                // if (res == uavsdk::command_manager::ExecutionResult::INVALID) msg = "INVALID";
 
-                std::cout << this->___get_type() << " result was = " << msg << "\n";
+                // std::cout << this->___get_type() << " result was = " << msg << "\n";
 
                 return res;
             }
@@ -208,8 +208,26 @@ namespace uavsdk
                 {
                     if (this->last_result != ExecutionResult::RUNNING)
                     {
-                        std::string msg = std::string(typeid(*this).name()) + " returned ExecutionResult::INVALID whic must not be possible. Check your code's logic\n";
-                        throw std::runtime_error(msg);
+                        std::string result = "";
+                        switch (this->last_result) {
+                            case ExecutionResult::FAILED:
+                                result = "FAILED";
+                                break;
+                            case ExecutionResult::RUNNING:
+                                result = "RUNNING";
+                                break;
+                            case ExecutionResult::SUCCESS:
+                                result = "SUCCESS";
+                                break;
+                            case ExecutionResult::INVALID:
+                                result = "INVALID";
+                                break;
+                            default:
+                                result = "UNKNOWN";
+                                break;
+                        }
+                        std::string msg = std::string(typeid(*this).name()) + " returned ExecutionResult::INVALID because the last result was " + result + " which must not be possible. Check your code's logic\n";
+                        // throw std::runtime_error(msg);
                         return ExecutionResult::INVALID;
                     }
                     this->last_result = this->_tick();
@@ -225,7 +243,8 @@ namespace uavsdk
             virtual void initialize() override 
             {
                 this->last_result = ExecutionResult::RUNNING;
-                std::cout << typeid(*this).name() << " was initialized\n";
+                std::cout << typeid(*this).name() << "with id " 
+                << this->get_id() << " was initialized\n";
             }
             
             
