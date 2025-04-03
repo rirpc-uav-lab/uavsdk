@@ -372,7 +372,8 @@ namespace useful_di
             {
                 auto bb_type = blackboard->at(key)->___get_type();
                 auto data_type = data->___get_type();
-                if (bb_type != data_type) throw std::runtime_error("Blackboard: OVERWITE ERROR! Called add_data_to_bb(key, data) on key " + key + ", but this key is alredy in blackboard with a different type. ");
+                if (bb_type != data_type) 
+                    throw std::runtime_error("Blackboard: OVERWITE ERROR! Called Blackboard::add_data(key, data) on key " + key + ", but this key is alredy in blackboard with a different type. bb_type = " + bb_type + " data_type = " + data_type);
                 else
                 {
                     blackboard->add_data(key, data);

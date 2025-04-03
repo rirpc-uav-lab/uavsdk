@@ -165,6 +165,8 @@ namespace uavsdk
 
                     bool all_sucess = true;
 
+                    // std::cout << "Размер stage_results" << stage_results.size() << std::endl;
+
                     for (size_t i = 0; i < stages.size(); i++)
                     {
                         if (stage_results.at(i) == ExecutionResult::SUCCESS or stage_results.at(i) == ExecutionResult::FAILED)
@@ -173,6 +175,19 @@ namespace uavsdk
                         }
 
                         stage_results.at(i) = stages.at(i)->tick();
+
+                        if (stage_results.at(i) == uavsdk::command_manager::ExecutionResult::RUNNING)   std::cerr << "RUNNING!!!!!!!!!!!!!!" << std::endl; 
+                        else if (stage_results.at(i) == uavsdk::command_manager::ExecutionResult::SUCCESS)   std::cerr << "SUCCESS!!!!!!!!!!!!!!" << std::endl;
+                        else if (stage_results.at(i) == uavsdk::command_manager::ExecutionResult::FAILED)    std::cerr << "FAILED!!!!!!!!!!!!!!" << std::endl;
+                        else if (stage_results.at(i) == uavsdk::command_manager::ExecutionResult::INVALID)   std::cerr << "INVALID!!!!!!!!!!!!!!" << std::endl;
+                        else 
+                        {
+                            throw std::runtime_error("Unknown ExecutionResult returned from command.");
+                        }
+
+
+                        // std::cout << "Номер stage_results" << i << std::endl;
+
                         this->last_was_executed_stage_status.at(i) = true;
 
                         if (stage_results.at(i) == uavsdk::command_manager::ExecutionResult::RUNNING)

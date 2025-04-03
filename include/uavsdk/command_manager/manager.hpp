@@ -65,47 +65,42 @@ namespace uavsdk
             bool is_running()
             {
 
-                bool _command_executing = false;
-                {
-                    std::lock_guard<std::mutex> lock(command_mutex);
-                    _command_executing = this->command_executing;
-                }
-                return _command_executing;
+                // bool _command_executing = false;
+                // {
+                //     std::lock_guard<std::mutex> lock(command_mutex);
+                //     _command_executing = this->allowed_to_execute;
+                // }
+                return allowed_to_execute.load();
             }
 
 
             uavsdk::command_manager::StartExecutionResult start_execution() override
             {
-                if (stop_requested_inside)
+                if (stop_requested_inside.load())
                 {
-                    stop_execution();
-                }
-
-                bool _command_executing = false;
-                {
-                    std::lock_guard<std::mutex> lock(command_mutex);
-                    _command_executing = this->command_executing;
+                    // stop_execution();
+                    throw std::runtime_error("CommandManager: start_execution() was called but the command has not yet stopped after finishing execution (stop_requested_inside is true).");
                 }
         
-                if (not _command_executing)
+                if (not allowed_to_execute.load())
                 {
-                    // std::cout << "start_execution::not _command_executing\n";
+                    // std::cout << "Maxim " //pidor
+                    // << dopishi siaty
+                    allowed_to_execute.store(true);
+                    
                     {
                         std::lock_guard<std::mutex> lock(command_mutex);
-                        command_executing = true;
+                        this->ex_res_promise = std::make_unique<std::promise<uavsdk::command_manager::ExecutionResult>>();
+                        this->executor_thread = std::make_unique<std::thread>(std::bind(&CommandExecutor::_loop, this));
+                        this->executor_thread->detach();
                     }
-                    
-                    this->ex_res_promise = std::make_unique<std::promise<uavsdk::command_manager::ExecutionResult>>();
+                    this->thread_finished.store(false);
                     this->_set_current_command_id(std::dynamic_pointer_cast<uavsdk::command_manager::IIdentification<Id>>(this->current_command)->get_id());
-        
-                    this->executor_thread = std::make_shared<std::thread>(std::bind(&CommandExecutor::_loop, this));
-                    this->executor_thread->detach();
         
                     return uavsdk::command_manager::StartExecutionResult::STARTED;
                 } 
                 else
                 {
-                    // std::cout << "start_execution::_command_executing\n";
                     return uavsdk::command_manager::StartExecutionResult::ALREADY_RUNNING;
                 }
             }
@@ -119,7 +114,10 @@ namespace uavsdk
 
             std::shared_future<uavsdk::command_manager::ExecutionResult> get_execution_result_future()
             {
-                ex_res_future = this->ex_res_promise->get_future();
+                {
+                    std::lock_guard<std::mutex> lock(command_mutex);
+                    ex_res_future = this->ex_res_promise->get_future();
+                }
                 return ex_res_future.share();
             }
 
@@ -131,32 +129,45 @@ namespace uavsdk
 
             void stop_execution() override
             {
-                bool _command_executing;
-                bool _stop_requested_inside;
-        
+                // std::cout << "!&!&!&!&!CommandExecutor::stop_execution\n";
+                if (not allowed_to_execute.load() and not stop_requested_inside.load())
                 {
-                    std::lock_guard<std::mutex> lock(command_mutex);
-                    _command_executing = this->command_executing;
-                }
-        
-                if (not _command_executing)
-                {
-                    // std::cout << "stop_execution::not _command_executing\n";
+                    // std::cout << "!&!&!&!&!CommandExecutor::stop_execution::if-1-!&!&!&!&!\n";
                     return;
+                }
+                else if (allowed_to_execute.load() and not stop_requested_inside.load())
+                {
+                    // std::cout << "!&!&!&!&!CommandExecutor::stop_execution::if-2-!&!&!&!&!\n";
+                    this->allowed_to_execute.store(false);
+                    this->stop_requested_inside.store(false);
+
+                    {
+                        std::lock_guard<std::mutex> lock(command_mutex);
+                        this->ex_res_promise->set_value(uavsdk::command_manager::ExecutionResult::INVALID);
+                    }
                 }
                 else
                 {
-                    // std::cout << "stop_execution::_command_executing\n";
-                    std::lock_guard<std::mutex> lock(command_mutex);
-                    this->command_executing = false;
-                    this->stop_requested_inside = false;
-                    this->ex_res_promise->set_value(uavsdk::command_manager::ExecutionResult::INVALID);
-                    // this->ex_res_promise->set_value(res);
+                    // std::cout << "!&!&!&!&!CommandExecutor::stop_execution::if-3-!&!&!&!&!\n";
+                    this->allowed_to_execute.store(false);
+                    this->stop_requested_inside.store(false);
                 }
 
-                this->executor_thread = nullptr;
+                // std::cout << "! ! ! ! ! EXECUTOR NULLIFIED ! ! ! ! !\n";
+                {
+                    std::lock_guard<std::mutex> lock(command_mutex);
+                    // this->executor_thread->~thread();
+                    while (!thread_finished.load())
+                    {
+                        // std::cout << "! ! ! ! ! Waiting for thread to fi ! ! ! ! !\n";
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    }
+                    this->executor_thread = nullptr;
+                    // this->executor_thread->join();
+                }
+                // std::cout << "! ! ! ! ! EXECUTOR NULLIFIED ! ! ! ! !\n is it really? It is " << !this->executor_thread << "\n";
                 this->_set_current_command_id_to_idle();
-                std::cout << "OKKAK\n";
+                // std::cout << "OKKAK\n";
             }
         
         
@@ -175,86 +186,58 @@ namespace uavsdk
             std::unique_ptr<std::promise<uavsdk::command_manager::ExecutionResult>> ex_res_promise;
             std::future<uavsdk::command_manager::ExecutionResult> ex_res_future;
             std::mutex command_mutex;
-            bool command_executing = false;
-            bool stop_requested_inside = false;
-            std::shared_ptr<std::thread> executor_thread; 
+            std::atomic<bool> allowed_to_execute{false};
+            std::atomic<bool> stop_requested_inside{false};
+            std::atomic<bool> thread_finished{true};
+            std::unique_ptr<std::thread> executor_thread; 
 
             
             void _loop()
             {
-                bool _command_executing;
-                bool _stop_requested_inside;
-                std::cout << "ZALUP\n";
-        
+                while (allowed_to_execute.load())
                 {
-                    std::lock_guard<std::mutex> lock(command_mutex);
-                    _command_executing = this->command_executing;
-                    _stop_requested_inside = this->stop_requested_inside;
-                }
-                
-
-                while (_command_executing)
-                {
-                    std::cout << "DCP\n";
+                    // std::cout << "!&!&!&!&!while step\n";
                     uavsdk::command_manager::ExecutionResult res;
+
+                    // std::cout << "!&!&!&!&! !allowed_to_execute.load()" << !allowed_to_execute.load() << "\n";
+                    // std::cout << "!&!&!&!&! !stop_requested_inside.load()" << !stop_requested_inside.load() << "\n";
+                    // std::cout << "!&!&!&!&! this->get_current_command_id()" << this->get_current_command_id() << "\n";
+                    if (allowed_to_execute.load() and !stop_requested_inside.load()) 
                     {
-                        std::lock_guard<std::mutex> lock(command_mutex);
-                        _command_executing = this->command_executing;
+                        // std::cout << "!&!&!&!&! tick\n";
+                        // std::cout << "!&!&!&!&! allowed_to_execute.load()" << allowed_to_execute.load() << "\n";
+                        // std::cout << "!&!&!&!&! !stop_requested_inside.load()" << !stop_requested_inside.load() << "\n";
+                        res = this->_executor_tick();
                     }
 
-                    if (!_command_executing and !_stop_requested_inside)
-                    {
-                        break;
-                    }
-
-                    res = this->_executor_tick();
-
-                    // switch (res) {
-                    //     case ExecutionResult::FAILED:
-                    //         std::cout << "FAILED_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_FAILED\n";
-                    //         break;
-                    //     case ExecutionResult::RUNNING:
-                    //         std::cout << "RUNNING_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_RUNNING\n";
-                    //         break;
-                    //     case ExecutionResult::SUCCESS:
-                    //         std::cout << "SUCCESS_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_SUCCESS\n";
-                    //         break;
-                    //     case ExecutionResult::INVALID:
-                    //         std::cout << "INVALID_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_INVALID\n";
-                    //         break;
-                    //     default:
-                    //         std::cout << "UNKNOWN_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_UNKNOWN\n";
-                    //         break;
-                    // }
                     
-                    if (res == uavsdk::command_manager::ExecutionResult::SUCCESS or res == uavsdk::command_manager::ExecutionResult::FAILED)
+                    // std::cout << "!&!&!&!&! res == uavsdk::command_manager::ExecutionResult::SUCCESS" << bool(res == uavsdk::command_manager::ExecutionResult::SUCCESS) << "\n";
+                    // std::cout << "!&!&!&!&! res == uavsdk::command_manager::ExecutionResult::FAILED" << bool(res == uavsdk::command_manager::ExecutionResult::FAILED) << "\n";
+                    // std::cout << "!&!&!&!&! res" << static_cast<int>(res) << "\n";
+                    if (res == uavsdk::command_manager::ExecutionResult::SUCCESS || res == uavsdk::command_manager::ExecutionResult::FAILED)
                     {
-                        std::cout << "ABC\n";
+                        // std::cout << "!&!&!&!&!Command finished\n";
                         // this->stop_execution(res);
-                        _stop_requested_inside = true;
+
+                        this->stop_requested_inside.store(true);
+                        this->allowed_to_execute.store(false);
+
+                        // _command_executing = false;
                         {
                             std::lock_guard<std::mutex> lock(command_mutex);
-                            this->stop_requested_inside = _stop_requested_inside;
-                            command_executing = false;
+                            this->ex_res_promise->set_value(res);
                         }
-                        _command_executing = false;
-                        this->ex_res_promise->set_value(res);
+                        
                         // this->stop_execution();
                         break;
                     }
-
-                    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                    // stop_requested_inside = _stop_requested_inside;
-                    // if (stop_requested_inside)
-                    // {
-                    //     break;
-                    // }
-                    std::cout << "WHILEENDDD\n";
+                    // std::cout << "WHILEENDDD\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
                 }
+                this->thread_finished.store(true);
 
-                std::cout << "current_command " << this->get_current_command_id() << "\n";
-                std::cout << "command_executing " << _command_executing << "\n";
-                std::cout << "stop_requested_inside " << _stop_requested_inside << "\n";
+                // std::cout << "current_command " << this->get_current_command_id() << "\n";
+                // std::cout << "allowed_to_execute " << allowed_to_execute.load() << "\n";
+                // std::cout << "stop_requested_inside " << stop_requested_inside.load() << "\n";
             }
         
             virtual uavsdk::command_manager::ExecutionResult _executor_tick()
@@ -397,3 +380,35 @@ namespace uavsdk
 //         /* args */);
 //     ~BlackBoard();
 // };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    // switch (res) {
+                    //     case ExecutionResult::FAILED:
+                    //         std::cout << "FAILED_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_FAILED\n";
+                    //         break;
+                    //     case ExecutionResult::RUNNING:
+                    //         std::cout << "RUNNING_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_RUNNING\n";
+                    //         break;
+                    //     case ExecutionResult::SUCCESS:
+                    //         std::cout << "SUCCESS_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_SUCCESS\n";
+                    //         break;
+                    //     case ExecutionResult::INVALID:
+                    //         std::cout << "INVALID_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_INVALID\n";
+                    //         break;
+                    //     default:
+                    //         std::cout << "UNKNOWN_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_UNKNOWN\n";
+                    //         break;
+                    // }
