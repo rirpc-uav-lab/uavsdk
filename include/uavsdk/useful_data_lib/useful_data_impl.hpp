@@ -179,27 +179,27 @@ namespace useful_di
             // }
 
 
-            virtual std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
-            {
+            // virtual std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
+            // {
 
-                std::mt19937 generator(std::random_device{}()); // Seed with real randomness
-                std::uniform_int_distribution<int> distribution(0, RAND_MAX);
+            //     std::mt19937 generator(std::random_device{}()); // Seed with real randomness
+            //     std::uniform_int_distribution<int> distribution(0, RAND_MAX);
 
-                std::string _key = std::to_string(distribution(generator));
-                if (not this->data_storage.count(_key))
-                {
-                    this->keys.push_back(_key);
-                    this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
-                }
-                else 
-                {
-                    this->modify_data(_key, _data);
-                    std::cout << "ATTENTION!!! Your new randomly generated key already exists! Overwriting data...\n";
-                    // throw std::runtime_error("UniMapStr::_add_data(id) - _key random generation failed. Randomly generated key is the same as one of existing keys");
-                }
+            //     std::string _key = std::to_string(distribution(generator));
+            //     if (not this->data_storage.count(_key))
+            //     {
+            //         this->keys.push_back(_key);
+            //         this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
+            //     }
+            //     else 
+            //     {
+            //         this->modify_data(_key, _data);
+            //         std::cout << "ATTENTION!!! Your new randomly generated key already exists! Overwriting data...\n";
+            //         // throw std::runtime_error("UniMapStr::_add_data(id) - _key random generation failed. Randomly generated key is the same as one of existing keys");
+            //     }
 
-                return _key;
-            }
+            //     return _key;
+            // }
 
 
             virtual void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
@@ -339,11 +339,11 @@ namespace useful_di
         }
 
 
-        std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
-        {
-            throw std::runtime_error("Sorry, but calling useful_di::Blackboard::add_data(data) is not possible. We are working to remove this option completely so please do not use it. Instead you should explicitly specify the key.\n");
-            return "error";
-        }
+        // std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
+        // {
+        //     throw std::runtime_error("Sorry, but calling useful_di::Blackboard::add_data(data) is not possible. We are working to remove this option completely so please do not use it. Instead you should explicitly specify the key.\n");
+        //     return "error";
+        // }
 
 
         void add_data(const std::string key, const std::shared_ptr<useful_di::TypeInterface>& data) override
@@ -428,24 +428,44 @@ namespace useful_di
     };
 
 
+    /**
+     * @tparam UniversalDataFormat универсальный тип данных 
+     * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
+     * @tparam SubjectTypes множество типов изначальных объектов данных, которые могут использоваться в контейтере, индексируемом перечислением, которое создает этот класс
+     */
+    template <typename UniversalDataFormat, typename Id, typename ThisStorageType>
+    class ConvertableDataComposite : public DataInterface<std::shared_ptr<ThisStorageType>, UniversalDataFormat>, public IDataComposite<Id, ThisStorageType>
+    {
+    protected:
+        // std::shared_ptr<DataStorageInterface<Msg, UniversalDataFormat, Id>> data_storage;
+    
+    public:
+        ConvertableDataComposite()
+        {
+            this->msg = std::make_shared<ThisStorageType>();
+        }
+        // virtual void add_data(std::shared_ptr<TypeInterface> data) = 0;
+    };
+
+
 
     // template <typename UniversalDataFormat>
     // class DescriptedUniMap : public DataStorageInterface<std::string, UniversalDataFormat>
 
 
-    class DataCompositeJson : public useful_di::DataCompositeInterface<nlohmann::json, std::string, UniMapStr>
+    class DataCompositeJson : public useful_di::ConvertableDataComposite<nlohmann::json, std::string, UniMapStr> //, useful_di::IAppendAbleContainer<std::string>
     {
-        void ___set_type() override
-        {
-            this->___type = utils::cppext::get_type<DataCompositeJson>();
-        }
+        // void ___set_type() override
+        // {
+        //     this->___type = utils::cppext::get_type<DataCompositeJson>();
+        // }
 
 
         public: 
-        void add_data(std::shared_ptr<TypeInterface> data) override
-        {
-            this->msg->add_data(data);
-        }
+        // std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
+        // {
+        //     this->msg->add_data(data);
+        // }
 
 
         void add_data(std::string key, std::shared_ptr<TypeInterface> data)
@@ -488,19 +508,19 @@ namespace useful_di
 
 
     
-    class DataCompositeJsonMap : public useful_di::DataCompositeInterface<nlohmann::json, std::string, UniMapStr>
+    class DataCompositeJsonMap : public useful_di::ConvertableDataComposite<nlohmann::json, std::string, UniMapStr>
     {
-        void ___set_type() override
-        {
-            this->___type = utils::cppext::get_type<DataCompositeJsonMap>();
-        }
+        // void ___set_type() override
+        // {
+        //     this->___type = utils::cppext::get_type<DataCompositeJsonMap>();
+        // }
 
 
         public: 
-        void add_data(std::shared_ptr<TypeInterface> data) override
-        {
-            this->msg->add_data(data);
-        }
+        // void add_data(std::shared_ptr<TypeInterface> data) override
+        // {
+        //     this->msg->add_data(data);
+        // }
 
 
         void add_data(std::string key, std::shared_ptr<TypeInterface> data)

@@ -11,7 +11,7 @@ namespace uavsdk
         namespace cxx
         {
             template <typename T>
-            class BasicDataAdapter : public useful_di::TypeInterface
+            class BasicDataAdapter : public virtual useful_di::TypeInterface
             {
                 public:
                 BasicDataAdapter(T initial_data)

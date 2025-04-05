@@ -79,7 +79,7 @@ namespace useful_di
      * формате
      */
     template <typename UniversalDataFormat>
-    class UniversalDataInterface : public TypeInterface
+    class UniversalDataInterface : public virtual TypeInterface
     {
         public:
             /**
@@ -166,6 +166,57 @@ namespace useful_di
 // #########    Storage Interfaces     #########
 // ##########################################
 
+    template <typename Id>
+    class IAppendAbleContainer
+    {
+        public:
+        virtual Id add_data(const std::shared_ptr<TypeInterface>& _data) = 0;
+    };
+
+
+    template <typename Id>
+    class IInsertAbleContainer
+    {
+        public:
+        virtual void add_data(const Id _key, const std::shared_ptr<TypeInterface>& _data) = 0;
+    };
+
+
+    template <typename Id>
+    class IRemoveAbleContainer
+    {
+        public:
+            virtual void remove_data(const Id& data_identifier) = 0;
+    };
+
+
+    template <typename Id>
+    class IAtAbleContainer
+    {
+        public:
+            virtual std::shared_ptr<TypeInterface> at(const Id& data_identifier) = 0;
+    };
+
+
+    class ISizeAbleContainer
+    {
+        public:
+            virtual size_t size() = 0;
+    };
+
+
+    template <typename Id>
+    class IModifyAbleContainer
+    {
+        public:
+            virtual void modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
+    };
+
+
+    template <typename Id>
+    class IBaseStorage : public virtual TypeInterface, public IRemoveAbleContainer<Id>, public IAtAbleContainer<Id>, public IModifyAbleContainer<Id>, public ISizeAbleContainer
+    {};
+
 
     /**
      * @tparam SubjectType тип изначального объекта данных
@@ -173,32 +224,17 @@ namespace useful_di
      * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
      */
     template <typename Id>
-    class DataStorageInterface : public TypeInterface
+    class DataStorageInterface : public IBaseStorage<Id>, public IAppendAbleContainer<Id>
+    {};
+
+
+    template <typename Id>
+    class MapLikeDataStorageInterface : public IBaseStorage<Id>, public IInsertAbleContainer<Id>
     {
         public:
-            virtual Id add_data(const std::shared_ptr<TypeInterface>& _data) = 0;
-            virtual void remove_data(const Id& data_identifier) = 0;
-            virtual std::shared_ptr<TypeInterface> at(const Id& data_identifier) = 0;
-            virtual size_t size() = 0;
-            virtual void modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
-
-        // protected:
-            // virtual Id _add_data(const std::shared_ptr<TypeInterface>& _data) = 0;
-            // virtual void _remove_data(const Id& data_identifier) = 0;
-            // virtual std::shared_ptr<TypeInterface> _at(const Id& data_identifier) = 0;
-            // virtual size_t _size() = 0;
-            // virtual void _modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
-    };
-
-
-    template <typename KeyT>
-    class MapLikeDataStorageInterface : public DataStorageInterface<KeyT>
-    {
-        public:
-        virtual void add_data(const KeyT _key, const std::shared_ptr<TypeInterface>& _data) = 0;
 
         protected:
-        std::map<KeyT, std::shared_ptr<TypeInterface>> data_storage;
+        std::map<Id, std::shared_ptr<TypeInterface>> data_storage;
     };
 
 
@@ -209,26 +245,15 @@ namespace useful_di
 // ##########################################
 
 
-    /**
-     * @tparam UniversalDataFormat универсальный тип данных 
-     * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
-     * @tparam SubjectTypes множество типов изначальных объектов данных, которые могут использоваться в контейтере, индексируемом перечислением, которое создает этот класс
-     */
-    template <typename UniversalDataFormat, typename Id, typename StorageType>
-    class DataCompositeInterface : public DataInterface<std::shared_ptr<DataStorageInterface<Id>>, UniversalDataFormat>
+    template<typename Id, typename ThisStorageType>
+    class IDataComposite : public ThisStorageType
     {
-        static_assert(std::is_base_of<DataStorageInterface<Id>, StorageType>::value, "DataCompositeInterface: provided StorageType is not derived from DataStorageInterface");
-    protected:
-        // std::shared_ptr<DataStorageInterface<Msg, UniversalDataFormat, Id>> data_storage;
-    
-    public:
-        DataCompositeInterface()
-        {
-            this->msg = std::make_shared<StorageType>();
-        }
-
-        virtual void add_data(std::shared_ptr<TypeInterface> data) = 0;
+        static_assert(std::is_base_of<IBaseStorage<Id>, ThisStorageType>::value, "IDataComposite: provided StorageType is not derived from IBaseStorage");
     };
+
+
+    // template <typename UniversalDataFormat, typename Id>
+    // class ListLikeDataComposite : public DataCompositeInterface<UniversalDataFormat, 
 
 
 
@@ -236,7 +261,7 @@ namespace useful_di
      * @brief Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface
      */
     template <typename SubjectType>
-    class DataObserverInterface : public TypeInterface
+    class DataObserverInterface : public virtual TypeInterface
     {
     public:
         static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataObserverInterface: provided SubjectType is not derived from TypeInterface");
@@ -253,7 +278,7 @@ namespace useful_di
      * @tparam SubjectType тип изначального объекта данных
      */
     template <typename SubjectType>
-    class DataCollectorInterface
+    class DataCollectorInterface 
     {
     public:
         static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataCollectorInterface: provided SubjectType is not derived from TypeInterface");

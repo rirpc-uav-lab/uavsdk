@@ -1,177 +1,78 @@
-#include <memory>
-#include <string>
-#include <vector>
-#include <map>
+#include <functional>
 #include <iostream>
+#include <memory>
 
-#include <uavsdk/useful_data_lib/useful_data_interfaces.hpp>
-#include <uavsdk/useful_data_lib/useful_data_impl.hpp>
-#include <uavsdk/utils/cpp_custom_extras.hpp>
-
-class ABC : public useful_di::DataInterface<int, std::string>
+class Abc
 {
-    public:
-    ABC(int a)
+public:
+    Abc(std::function<int(int const&, int const&)> f) 
     {
-        this->___set_type();
-        this->msg = a;
-        this->data = std::to_string(a);
+        two_num_func = f;
+    }
+    
+    int call()
+    {
+        return two_num_func(num1, num2);
     }
 
-    void ___set_type() override
+
+    void set_f(std::function<int(int const&, int const&)> f)
     {
-        this->___type = utils::cppext::get_type<ABC>();
+        two_num_func = f;
     }
+
+private:
+    int num1 = 3;
+    int num2 = 2;
+    std::function<int(int const&, int const&)> two_num_func;
 };
 
 
-class BCA : public useful_di::DataInterface<float, std::string>
+class WhateverCaller
 {
-    public:
-    BCA(float a)
+public:
+    WhateverCaller(std::function<int()> f)
     {
-        this->___set_type();
-        this->msg = a;
-        this->data = std::to_string(a);
+        whatever = f;
     }
 
-    void ___set_type() override
-    {
-        this->___type = utils::cppext::get_type<BCA>();
-    }
-};
-
-
-enum TypeId
-{
-    _ABC = 0,
-    _BCA = 1
-};
-
-
-class IdFactory : public useful_di::IdFactoryInterface<TypeId>
-{
-    public:
-    TypeId get_id(std::shared_ptr<useful_di::TypeInterface> data) override
-    {
-        if (data->___get_type() == utils::cppext::get_type<ABC>())
-        {
-            return TypeId::_ABC;
-        }
-        else if (data->___get_type() == utils::cppext::get_type<BCA>())
-        {
-            return TypeId::_BCA;
-        }
-        else
-        {
-            throw std::runtime_error("Unknown type");
-        }
-    }
-};
-
-
-class DataStorageExample : public useful_di::RegistryDataStorage<TypeId, IdFactory, nlohmann::json>
-{
-
-};
-
-
-class DataCompositeExample : public useful_di::DataCompositeInterface<nlohmann::json, TypeId, IdFactory, DataStorageExample>
-{
-    void ___set_type() override
-    {
-        this->___type = utils::cppext::get_type<DataCompositeExample>();
-    }
-
-
-    public: 
-    void add_data(std::shared_ptr<useful_di::UniversalDataInterface<nlohmann::json>> data) override
-    {
-        this->msg->add_data(data);
-    }
-
-
-    protected:
-    nlohmann::json _get_data() override
-    {
-        nlohmann::json new_data;
-        for (std::map<TypeId, std::shared_ptr<useful_di::UniversalDataInterface<nlohmann::json>>>::iterator iter = std::dynamic_pointer_cast<DataStorageExample>(this->msg)->begin(); iter != std::dynamic_pointer_cast<DataStorageExample>(this->msg)->end(); iter++)
-        {
-            auto type = iter->second->___get_type();
-            if (type == utils::cppext::get_type<ABC>())
-            {
-                auto data = std::dynamic_pointer_cast<ABC>(iter->second);
-                new_data["ABC"] = data->get_data();
-            }
-            else if (type == utils::cppext::get_type<BCA>())
-            {
-                auto data = std::dynamic_pointer_cast<BCA>(iter->second);
-                new_data["BCA"] = data->get_data();
-            }
-            else 
-            {
-                throw std::runtime_error("Unknown type");
-            }
-        }
-
-        this->data = new_data;
-        return this->data;
-    }
+    std::function<int()> whatever;
 };
 
 
 int main()
 {
+    int multiplexor = 3;
+    std::function<int(int, int)> sum_plus_multiplex = 
+    [multiplexor](int a, int b) 
+    {
+        return multiplexor * (a + b);
+    };
 
-    DataCompositeExample composite;
-    auto abc = std::make_shared<ABC>(1);
-    auto bca = std::make_shared<BCA>(2.5);
-    auto cab = std::make_shared<BCA>(3.5);
+    std::function<int(int, int)> sum = 
+    [](int a, int b) 
+    {
+        return a + b;
+    };
 
-    // storage.add_data(abc);
-    // storage.add_data(bca);
+    std::function<int(int, int)> difference = 
+    [](int a, int b) 
+    {
+        return a - b;
+    };
 
-    composite.add_data(abc);
-    composite.add_data(bca);
-    composite.add_data(cab);
+    Abc obj(sum_plus_multiplex);
+    std::cout << obj.call() << "\n";
 
-    // std::shared_ptr<DataStorageExample> storage = std::dynamic_pointer_cast<DataStorageExample>(composite.get_msg());
+    obj.set_f(sum);
+    std::cout << obj.call() << "\n";
 
-    nlohmann::json data = composite.get_data();
+    obj.set_f(difference);
+    std::cout << obj.call() << "\n";
 
-    std::cout << data << std::endl;
+    WhateverCaller caller(std::bind(&Abc::call, &obj));
 
-    // TypeId id;
-    
-
-    // int i = 0;
-    // for (std::map<TypeId, std::shared_ptr<useful_di::TypeInterface>>::iterator iter = storage->begin(); iter != storage->end(); iter++)
-    // {
-    //     std::cout << ++i << "'st  iteration.\n";
-    //     auto type = iter->second->___get_type();
-    //     if (type == utils::cppext::get_type<ABC>())
-    //     {
-    //         auto data = std::dynamic_pointer_cast<ABC>(iter->second);
-    //         std::cout << data->get_data() << std::endl;
-    //     }
-    //     else if (type == utils::cppext::get_type<BCA>())
-    //     {
-    //         auto data = std::dynamic_pointer_cast<BCA>(iter->second);
-    //         std::cout << data->get_data() << std::endl;
-    //     }
-    //     else 
-    //     {
-    //         throw std::runtime_error("Unknown type");
-    //     }
-    //     std::cout << "\n";
-    // }
-    
-    // id = TypeId::_ABC;
-
-    // std::cout << std::dynamic_pointer_cast<ABC>(storage->at(id))->get_msg() << std::endl;
-    // id = TypeId::_BCA;
-
-    // std::cout << std::dynamic_pointer_cast<BCA>(storage->at(id))->get_msg() << std::endl;
+    std::cout << caller.whatever() << "\n";
 
     return 0;
 }
