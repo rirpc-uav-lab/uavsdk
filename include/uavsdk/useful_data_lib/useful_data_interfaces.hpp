@@ -277,11 +277,11 @@ namespace useful_di
     class DataObserverWithCallback : public IDataObserver<SubjectType>
     {
     public:
-        virtual void set_callback(std::function<void(std::shared_ptr<SubjectType>)> callback)
+        DataObserverWithCallback(std::function<void(std::shared_ptr<SubjectType>)> callback)
         {
-            this->callback_obj = callback;
-            callback_set = true;
+            this->set_callback(callback);
         }
+
 
         void callback(std::shared_ptr<SubjectType> msg) 
         {
@@ -291,10 +291,16 @@ namespace useful_di
                 std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
         }
 
-    
     protected:
         std::function<void(std::shared_ptr<SubjectType>)> callback_obj;
         bool callback_set{false};
+
+        
+        virtual void set_callback(std::function<void(std::shared_ptr<SubjectType>)> callback)
+        {
+            this->callback_obj = callback;
+            callback_set = true;
+        }
     };
 
 
