@@ -94,22 +94,7 @@ namespace useful_di
         }
 
 
-
-        #warning Developer warning. Next two methods should be in the interface:
-        typename std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator begin() { return this->data_storage.begin(); }
-        typename std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator end() { return this->data_storage.end(); }
-
-    protected:
-        std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>> data_storage;
-        std::shared_ptr<IdFactoryInterface<Id>> _id_factory;
-
-        Id _get_id_for_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& data)
-        {
-            return this->_id_factory->get_id(data);
-        }
-
-
-        virtual Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& data) override 
+        virtual Id add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& data) override 
         {
             Id id = this->_get_id_for_data(data);
             if (not this->data_storage.count(id))
@@ -124,33 +109,46 @@ namespace useful_di
         }
 
 
-        virtual void _remove_data(const Id& data_identifier) override
+        virtual void remove_data(const Id& data_identifier) override
         {
             this->data_storage.erase(data_identifier);
         }
 
 
-        std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> _at(const Id& data_identifier) override
+        std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> at(const Id& data_identifier) override
         {
             return this->data_storage.at(data_identifier);
         }
 
 
-        std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> _at(const typename std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator iterator)
+        std::shared_ptr<UniversalDataInterface<UniversalDataFormat>> at(const typename std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator iterator)
         {
             return this->data_storage.at(iterator);
         }
 
 
-        void _modify_data(const Id& data_identifier, const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& new_data) override
+        void modify_data(const Id& data_identifier, const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& new_data) override
         {
             this->data_storage.at(data_identifier) = new_data;
         }
 
 
-        virtual size_t _size() override
+        virtual size_t size() override
         {
             return this->data_storage.size();
+        }
+
+        #warning Developer warning. Next two methods should be in the interface:
+        typename std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator begin() { return this->data_storage.begin(); }
+        typename std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>>::iterator end() { return this->data_storage.end(); }
+
+    protected:
+        std::map<Id, std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>> data_storage;
+        std::shared_ptr<IdFactoryInterface<Id>> _id_factory;
+
+        Id _get_id_for_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& data)
+        {
+            return this->_id_factory->get_id(data);
         }
     };
     
@@ -169,36 +167,19 @@ namespace useful_di
             }
 
 
-            std::string add_data(const std::shared_ptr<TypeInterface>& _data) 
-            {
-                return this->_add_data(_data);
-            }
+            // std::string add_data(const std::shared_ptr<TypeInterface>& _data) 
+            // {
+            //     return this->_add_data(_data);
+            // }
 
 
-            void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data)
-            {
-                this->_add_data(_key, _data);
-            }
+            // void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data)
+            // {
+            //     this->_add_data(_key, _data);
+            // }
 
 
-        #warning Developer warning. Next two methods should be in the interface:
-        std::map<std::string, std::shared_ptr<TypeInterface>>::iterator begin() { return this->data_storage.begin(); }
-        std::map<std::string, std::shared_ptr<TypeInterface>>::iterator end() { return this->data_storage.end(); }
-
-
-        private:
-            int _get_key_id(std::string search_key)
-            {
-                for (int i = 0; i < this->keys.size(); i++)
-                {
-                    if (this->keys.at(i) == search_key) return i;
-                }
-            }
-        
-        protected:
-            std::vector<std::string> keys;
-            // Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
-            virtual std::string _add_data(const std::shared_ptr<TypeInterface>& _data) override
+            virtual std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
             {
 
                 std::mt19937 generator(std::random_device{}()); // Seed with real randomness
@@ -221,7 +202,7 @@ namespace useful_di
             }
 
 
-            virtual void _add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
+            virtual void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
             {
                 
                 if (not this->data_storage.count(_key))
@@ -240,7 +221,8 @@ namespace useful_di
                 }
             }
 
-            virtual void _remove_data(const std::string& data_identifier) override
+
+            virtual void remove_data(const std::string& data_identifier) override
             {
                 if (this->data_storage.count(data_identifier)) 
                 {
@@ -254,7 +236,7 @@ namespace useful_di
             }
 
 
-            std::shared_ptr<TypeInterface> _at(const std::string& data_identifier) override
+            std::shared_ptr<TypeInterface> at(const std::string& data_identifier) override
             {
                 if (not this->data_storage.count(data_identifier))
                 {
@@ -264,8 +246,7 @@ namespace useful_di
             }
 
 
-
-            void _modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& new_data) override
+            void modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& new_data) override
             {
                 if (this->data_storage.count(data_identifier))
                 {
@@ -278,10 +259,29 @@ namespace useful_di
             }
 
 
-            virtual size_t _size() override
+            virtual size_t size() override
             {
                 return this->data_storage.size();
             }
+
+
+        #warning Developer warning. Next two methods should be in the interface:
+        std::map<std::string, std::shared_ptr<TypeInterface>>::iterator begin() { return this->data_storage.begin(); }
+        std::map<std::string, std::shared_ptr<TypeInterface>>::iterator end() { return this->data_storage.end(); }
+
+
+        private:
+            int _get_key_id(std::string search_key)
+            {
+                for (int i = 0; i < this->keys.size(); i++)
+                {
+                    if (this->keys.at(i) == search_key) return i;
+                }
+            }
+        
+        protected:
+            std::vector<std::string> keys;
+            // Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
     };
 
 
@@ -309,7 +309,7 @@ namespace useful_di
             return blackboard->get_present_keys();
         }
 
-
+        #warning No interface for the following function?
         template <typename T>
         std::shared_ptr<T> at(std::string key)
         {
@@ -339,15 +339,14 @@ namespace useful_di
         }
 
 
-        protected:
-        std::string _add_data(const std::shared_ptr<TypeInterface>& _data) override
+        std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
         {
             throw std::runtime_error("Sorry, but calling useful_di::Blackboard::add_data(data) is not possible. We are working to remove this option completely so please do not use it. Instead you should explicitly specify the key.\n");
             return "error";
         }
 
 
-        void _add_data(const std::string key, const std::shared_ptr<useful_di::TypeInterface>& data) override
+        void add_data(const std::string key, const std::shared_ptr<useful_di::TypeInterface>& data) override
         {
             std::lock_guard<std::mutex> llock(bb_mutex);
 
@@ -382,21 +381,21 @@ namespace useful_di
         }
 
 
-        void _remove_data(const std::string& data_identifier) override
+        void remove_data(const std::string& data_identifier) override
         {
             std::lock_guard<std::mutex> llock(bb_mutex);
             blackboard->remove_data(data_identifier);
         }
 
 
-        void _modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& _data) override
+        void modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& _data) override
         {
             std::lock_guard<std::mutex> llock(bb_mutex);
             blackboard->modify_data(data_identifier, _data);
         }
 
 
-        std::shared_ptr<TypeInterface> _at(const std::string& data_identifier) override
+        std::shared_ptr<TypeInterface> at(const std::string& data_identifier) override
         {
             std::shared_ptr<useful_di::TypeInterface> data = nullptr;
             try
@@ -411,8 +410,7 @@ namespace useful_di
         }
 
 
-
-        size_t _size() override
+        size_t size() override
         {
             return blackboard->size();
         }

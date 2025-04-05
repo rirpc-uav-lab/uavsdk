@@ -7,6 +7,10 @@
 namespace useful_di
 {
 
+// ##########################################
+// #########    Base Interfaces     #########
+// ##########################################
+
     /**
      * @brief Интерфейс типа. Любой класс, являющися объектом данных и 
      * предполагающий совместимость с композитной системой библиотеки useful_di, 
@@ -155,6 +159,14 @@ namespace useful_di
     };
 
 
+
+
+
+// ##########################################
+// #########    Storage Interfaces     #########
+// ##########################################
+
+
     /**
      * @tparam SubjectType тип изначального объекта данных
      * @tparam UniversalDataFormat универсальный тип данных 
@@ -164,41 +176,18 @@ namespace useful_di
     class DataStorageInterface : public TypeInterface
     {
         public:
-            Id add_data(const std::shared_ptr<TypeInterface>& _data)
-            {
-                return this->_add_data(_data);
-            }
+            virtual Id add_data(const std::shared_ptr<TypeInterface>& _data) = 0;
+            virtual void remove_data(const Id& data_identifier) = 0;
+            virtual std::shared_ptr<TypeInterface> at(const Id& data_identifier) = 0;
+            virtual size_t size() = 0;
+            virtual void modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
 
-            void remove_data(const Id& data_identifier)
-            {
-                this->_remove_data(data_identifier);
-            }
-
-            std::shared_ptr<TypeInterface> at(const Id& data_identifier)
-            {
-                return this->_at(data_identifier);
-            }
-
-
-            size_t size()
-            {
-                return this->_size();
-            }
-            
-            
-            void modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data)
-            {
-                this->_modify_data(data_identifier, _data);
-            }
-
-
-        protected:
-            // virtual Id _get_id_for_data(const std::shared_ptr<TypeInterface>& _data) = 0;
-            virtual Id _add_data(const std::shared_ptr<TypeInterface>& _data) = 0;
-            virtual void _remove_data(const Id& data_identifier) = 0;
-            virtual std::shared_ptr<TypeInterface> _at(const Id& data_identifier) = 0;
-            virtual size_t _size() = 0;
-            virtual void _modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
+        // protected:
+            // virtual Id _add_data(const std::shared_ptr<TypeInterface>& _data) = 0;
+            // virtual void _remove_data(const Id& data_identifier) = 0;
+            // virtual std::shared_ptr<TypeInterface> _at(const Id& data_identifier) = 0;
+            // virtual size_t _size() = 0;
+            // virtual void _modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
     };
 
 
@@ -206,17 +195,18 @@ namespace useful_di
     class MapLikeDataStorageInterface : public DataStorageInterface<KeyT>
     {
         public:
-        virtual void add_data(const KeyT _key, const std::shared_ptr<TypeInterface>& _data)
-        {
-            this->_add_data(_key, _data);
-        }
+        virtual void add_data(const KeyT _key, const std::shared_ptr<TypeInterface>& _data) = 0;
 
         protected:
         std::map<KeyT, std::shared_ptr<TypeInterface>> data_storage;
-
-
-        virtual void _add_data(const KeyT _key, const std::shared_ptr<TypeInterface>& _data) = 0;
     };
+
+
+
+
+// ##########################################
+// #########    Pattern Interfaces     #########
+// ##########################################
 
 
     /**
