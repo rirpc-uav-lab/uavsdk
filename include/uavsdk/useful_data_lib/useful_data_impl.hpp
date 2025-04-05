@@ -572,7 +572,7 @@ namespace useful_di
     {
     public:
         static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "SingleObserverDataCollector: provided SubjectType is not derived from TypeInterface");
-        void attach_observer(std::shared_ptr<DataObserverInterface<SubjectType>> observer) override 
+        void attach_observer(std::shared_ptr<IDataObserver<SubjectType>> observer) override 
         {
             this->observer = observer;
         }
@@ -596,7 +596,7 @@ namespace useful_di
 
     private:
         std::shared_ptr<SubjectType> data;
-        std::shared_ptr<DataObserverInterface<SubjectType>> observer;
+        std::shared_ptr<IDataObserver<SubjectType>> observer;
     };
 
 
@@ -605,7 +605,7 @@ namespace useful_di
     {
     public:
         static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "MultiObserverDataCollector: provided SubjectType is not derived from TypeInterface");
-        std::string attach_observer(std::shared_ptr<DataObserverInterface<SubjectType>> observer) override 
+        std::string attach_observer(std::shared_ptr<IDataObserver<SubjectType>> observer) override 
         {
             // this->observer = observer;
             auto id = this->observer_map.add_data(observer);
@@ -658,14 +658,14 @@ namespace useful_di
 
     private:
         std::shared_ptr<SubjectType> data;
-        // std::vector<std::shared_ptr<DataObserverInterface<SubjectType>>> observer;
+        // std::vector<std::shared_ptr<IDataObserver<SubjectType>>> observer;
         useful_di::UniMapStr observer_map;
     };
 
 
 
     template <typename SubjectType>
-    class DataSubscriber : public DataObserverInterface<SubjectType>
+    class DataSubscriber : public IDataObserver<SubjectType>
     {
     public:
         static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataSubscriber: provided SubjectType is not derived from TypeInterface");

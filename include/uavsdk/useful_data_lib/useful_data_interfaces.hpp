@@ -261,15 +261,40 @@ namespace useful_di
      * @brief Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface
      */
     template <typename SubjectType>
-    class DataObserverInterface : public virtual TypeInterface
+    class IDataObserver : public virtual TypeInterface
     {
     public:
-        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataObserverInterface: provided SubjectType is not derived from TypeInterface");
+        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "IDataObserver: provided SubjectType must be derived from TypeInterface (currently it is not).");
         /**
          * @brief метод, который будет вызван, когда DataCollectorInterface<DataType> изменит свое состояние
          */
         virtual void be_notified(std::shared_ptr<SubjectType> input_data) = 0;
         virtual std::shared_ptr<SubjectType> get_data() = 0;
+    };
+
+
+    template <typename SubjectType>
+    class DataObserverWithCallback : public IDataObserver<SubjectType>
+    {
+    public:
+        virtual void set_callback(std::function<void(std::shared_ptr<SubjectType>)> callback)
+        {
+            this->callback_obj = callback;
+            callback_set = true;
+        }
+
+        void callback(std::shared_ptr<SubjectType> msg) 
+        {
+            if (callback_set)
+                this->callback_obj(msg);
+            else 
+                std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
+        }
+
+    
+    protected:
+        std::function<void(std::shared_ptr<SubjectType>)> callback_obj;
+        bool callback_set{false};
     };
 
 
@@ -281,7 +306,7 @@ namespace useful_di
     class DataCollectorInterface 
     {
     public:
-        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataCollectorInterface: provided SubjectType is not derived from TypeInterface");
+        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataCollectorInterface: provided SubjectType must be derived from TypeInterface (currently it is not).");
         /**
          * @brief метод для изменения состояния субъекта
          */
@@ -290,7 +315,7 @@ namespace useful_di
         /**
          * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта
          */
-        virtual void attach_observer(std::shared_ptr<DataObserverInterface<SubjectType>> observer) = 0;
+        virtual void attach_observer(std::shared_ptr<IDataObserver<SubjectType>> observer) = 0;
 
     protected:
         /**
