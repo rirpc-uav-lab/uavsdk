@@ -555,20 +555,20 @@ namespace useful_di
 
 
     template <typename SubjectType>
-    class SingleObserverDataCollector : public DataCollectorInterface<SubjectType>
+    class SingleObserverDataCollector : public IDataCollector
     {
     public:
         static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "SingleObserverDataCollector: provided SubjectType is not derived from TypeInterface");
-        void attach_observer(std::shared_ptr<IDataObserver<SubjectType>> observer) override 
+        void attach_observer(std::shared_ptr<IDataObserver> observer) override 
         {
             this->observer = observer;
         }
 
-        void update_data(std::shared_ptr<SubjectType> data) override 
+        void update_data(std::shared_ptr<TypeInterface> data) override 
         {
-
             // std::cout << "DataSubscriber::update_data: " << data->get_data() << std::endl;
-            this->data = data;
+            if (utils::cppext::get_type<SubjectType>() != data->___get_type()) throw std::runtime_error("SingleObserverDataCollector::update_data(): Provided input data type is not equal to SubjectType. SubjectType is " + utils::cppext::get_type<SubjectType>() + ", input type is " + data->___get_type() + ".\n");
+            this->data = std::dynamic_pointer_cast<SubjectType>(data);
             this->notify_observers();
         }
 
@@ -583,71 +583,71 @@ namespace useful_di
 
     private:
         std::shared_ptr<SubjectType> data;
-        std::shared_ptr<IDataObserver<SubjectType>> observer;
+        std::shared_ptr<IDataObserver> observer;
     };
 
 
-    template <typename SubjectType>
-    class MultiObserverDataCollector : public DataCollectorInterface<SubjectType>
-    {
-    public:
-        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "MultiObserverDataCollector: provided SubjectType is not derived from TypeInterface");
-        std::string attach_observer(std::shared_ptr<IDataObserver<SubjectType>> observer) override 
-        {
-            // this->observer = observer;
-            auto id = this->observer_map.add_data(observer);
-            return id;
-        }
+    // template <typename SubjectType>
+    // class MultiObserverDataCollector : public IDataCollector
+    // {
+    // public:
+    //     static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "MultiObserverDataCollector: provided SubjectType is not derived from TypeInterface");
+    //     std::string attach_observer(std::shared_ptr<IDataObserver> observer) override 
+    //     {
+    //         // this->observer = observer;
+    //         auto id = this->observer_map.add_data(observer);
+    //         return id;
+    //     }
 
 
-        void remove_observer(std::string id)
-        {
-            std::vector<std::string> keys = this->observer_map.get_present_keys();
+    //     void remove_observer(std::string id)
+    //     {
+    //         std::vector<std::string> keys = this->observer_map.get_present_keys();
 
-            bool id_present = false;
+    //         bool id_present = false;
 
-            for (const auto& key : keys)
-            {
-                if (id == key)
-                {
-                    id_present = true;
-                    break;
-                }
-            }
+    //         for (const auto& key : keys)
+    //         {
+    //             if (id == key)
+    //             {
+    //                 id_present = true;
+    //                 break;
+    //             }
+    //         }
 
-            if (id_present)
-            {
-                this->observer_map.remove_data(id);
-            }
-            else
-            {
-                throw std::runtime_error("MultiObserverDataCollector: Id " + id + " is not present in MultiObserverDataCollector::observers_map.");
-            }
-        }
-
-
-        void update_data(std::shared_ptr<SubjectType> data) override 
-        {
-
-            // std::cout << "DataSubscriber::update_data: " << data->get_data() << std::endl;
-            this->data = data;
-            this->notify_observers();
-        }
+    //         if (id_present)
+    //         {
+    //             this->observer_map.remove_data(id);
+    //         }
+    //         else
+    //         {
+    //             throw std::runtime_error("MultiObserverDataCollector: Id " + id + " is not present in MultiObserverDataCollector::observers_map.");
+    //         }
+    //     }
 
 
-        void notify_observers() override 
-        {
-            if (this->observer != nullptr)
-            {
-                this->observer->be_notified(this->data);
-            }
-        }
+    //     void update_data(std::shared_ptr<SubjectType> data) override 
+    //     {
 
-    private:
-        std::shared_ptr<SubjectType> data;
-        // std::vector<std::shared_ptr<IDataObserver<SubjectType>>> observer;
-        useful_di::UniMapStr observer_map;
-    };
+    //         // std::cout << "DataSubscriber::update_data: " << data->get_data() << std::endl;
+    //         this->data = data;
+    //         this->notify_observers();
+    //     }
+
+
+    //     void notify_observers() override 
+    //     {
+    //         if (this->observer != nullptr)
+    //         {
+    //             this->observer->be_notified(this->data);
+    //         }
+    //     }
+
+    // private:
+    //     std::shared_ptr<SubjectType> data;
+    //     // std::vector<std::shared_ptr<IDataObserver<SubjectType>>> observer;
+    //     useful_di::UniMapStr observer_map;
+    // };
 
 
 
@@ -667,11 +667,13 @@ namespace useful_di
         /**
          * @brief Обновляет данные по указателю this->data.
          */
-        void be_notified(std::shared_ptr<SubjectType> input_data) override
+        void be_notified(std::shared_ptr<TypeInterface> input_data) override
         {
             std::lock_guard<std::mutex> lock(data_mx);
+
+            if (utils::cppext::get_type<SubjectType>() != input_data->___get_type()) throw std::runtime_error("DataSubscriber::be_notified(): Provided input data type is not equal to SubjectType. SubjectType is " + utils::cppext::get_type<SubjectType>() + ", input type is " + input_data->___get_type() + ".\n");
             // std::cout << "\nBefore:  " << input_data->get_data() << std::endl;
-            this->data = input_data;
+            this->data = std::dynamic_pointer_cast<SubjectType>(input_data);
             // std::cout << "After:  " << this->data->get_data() << std::endl;
         }
 
@@ -691,7 +693,7 @@ namespace useful_di
 
 
     protected:
-        std::shared_ptr<SubjectType> data; ///< Указатель на объект, который будет обновляться при изменении состояния субъекта DataCollectorInterface.
+        std::shared_ptr<SubjectType> data; ///< Указатель на объект, который будет обновляться при изменении состояния субъекта IDataCollector.
         std::mutex data_mx;
     };
 };

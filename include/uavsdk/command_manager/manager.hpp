@@ -256,17 +256,17 @@ namespace uavsdk
 
 
         template <typename Id> 
-        class ObservableCommandExecutor : public CommandExecutor<Id>, public useful_di::DataCollectorInterface<useful_di::UniMapStr>
+        class ObservableCommandExecutor : public CommandExecutor<Id>, public useful_di::IDataCollector
         {
             public:
-            void update_data(std::shared_ptr<useful_di::UniMapStr> data) override
+            void update_data(std::shared_ptr<useful_di::TypeInterface> data) override
             {
-                this->data = data;
+                this->data = std::dynamic_pointer_cast<useful_di::UniMapStr>(data);
                 this->notify_observers();
             }
 
 
-            void attach_observer(std::shared_ptr<useful_di::IDataObserver<useful_di::UniMapStr>> observer) override
+            void attach_observer(std::shared_ptr<useful_di::IDataObserver> observer) override
             {
                 if (observer)
                 {
@@ -307,7 +307,7 @@ namespace uavsdk
 
             private:
             std::shared_ptr<useful_di::UniMapStr> data;
-            std::vector<std::shared_ptr<useful_di::IDataObserver<useful_di::UniMapStr>>> observers_list = {};
+            std::vector<std::shared_ptr<useful_di::IDataObserver>> observers_list = {};
             
             virtual uavsdk::command_manager::ExecutionResult _executor_tick() override
             {

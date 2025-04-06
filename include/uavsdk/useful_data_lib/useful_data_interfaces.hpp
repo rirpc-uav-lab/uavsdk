@@ -92,11 +92,7 @@ namespace useful_di
     };
 
 
-    /**
-     * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
-     * @tparam UniversalDataFormat универсальный тип данных 
-     * @tparam SubjectTypes множество типов изначальных объектов данных, которые могут использоваться в контейтере, индексируемом перечислением, которое создает этот класс
-     */
+
     template <typename Id>
     class IdFactoryInterface 
     {
@@ -115,11 +111,7 @@ namespace useful_di
     {};
 
 
-    /**
-     * @tparam SubjectType тип изначального объекта данных
-     * @tparam UniversalDataFormat универсальный тип данных 
-     * @tparam Id тип идентификатора объекта данных. Как правило, заранее определенный enum
-     */
+
     template <typename Id>
     class DataStorageInterface : public IBaseStorage<Id>, public IAppendAbleContainer<Id>
     {};
@@ -153,83 +145,90 @@ namespace useful_di
     // class ListLikeDataComposite : public DataCompositeInterface<UniversalDataFormat, 
 
 
+    class IDataObserverPlaceholder : public virtual TypeInterface
+    {};
+
 
     /**
      * @brief Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface
      */
-    template <typename SubjectType>
-    class IDataObserver : public virtual TypeInterface
+    class IDataObserver : virtual public IDataObserverPlaceholder
     {
     public:
-        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "IDataObserver: provided SubjectType must be derived from TypeInterface (currently it is not).");
         /**
          * @brief метод, который будет вызван, когда DataCollectorInterface<DataType> изменит свое состояние
          */
-        virtual void be_notified(std::shared_ptr<SubjectType> input_data) = 0;
+        virtual void be_notified(std::shared_ptr<TypeInterface> input_data) = 0;
         // virtual std::shared_ptr<SubjectType> get_data() = 0;
     };
 
 
     template <typename SubjectType>
-    class RetrievableDataObserver : public IDataObserver<SubjectType>, public IRetrievableDataContainer<std::shared_ptr<SubjectType>>
-    {};
+    class RetrievableDataObserver : public IDataObserver, public IRetrievableDataContainer<std::shared_ptr<SubjectType>>
+    {
+        static_assert(std::is_base_of<TypeInterface, SubjectType>(), "RetrievableDataObserver: provided SubjectType is not derived from TypeInterface.");
+    };
 
 
-    template <typename SubjectType>
-    class DataObserverWithCallback : public IDataObserver<SubjectType>
+    class DataObserverWithCallback : public IDataObserver
     {
     public:
-        DataObserverWithCallback(std::function<void(std::shared_ptr<SubjectType>)> callback)
+        DataObserverWithCallback(std::function<void(std::shared_ptr<TypeInterface>)> callback)
         {
             this->set_callback(callback);
         }
 
 
-        void be_notified(std::shared_ptr<SubjectType> input_data)
+        void be_notified(std::shared_ptr<TypeInterface> input_data) override
         {
             this->callback(input_data);
         }
 
 
-        void callback(std::shared_ptr<SubjectType> msg) 
+    private:
+        std::function<void(std::shared_ptr<TypeInterface>)> callback_obj;
+        bool callback_set{false};
+
+        
+        void set_callback(std::function<void(std::shared_ptr<TypeInterface>)> callback)
+        {
+            this->callback_obj = callback;
+            callback_set = true;
+        }
+
+
+        void callback(std::shared_ptr<TypeInterface> msg) 
         {
             if (callback_set)
                 this->callback_obj(msg);
             else 
                 std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
         }
-
-    private:
-        std::function<void(std::shared_ptr<SubjectType>)> callback_obj;
-        bool callback_set{false};
-
-        
-        void set_callback(std::function<void(std::shared_ptr<SubjectType>)> callback)
-        {
-            this->callback_obj = callback;
-            callback_set = true;
-        }
     };
+
+
+    class IDataCollectorPlaceholder : public virtual TypeInterface
+    {};
 
 
     /**
      * 
      * @tparam SubjectType тип изначального объекта данных
      */
-    template <typename SubjectType>
-    class DataCollectorInterface 
+    // template <typename SubjectType>
+    class IDataCollector : public virtual IDataCollectorPlaceholder
     {
     public:
-        static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataCollectorInterface: provided SubjectType must be derived from TypeInterface (currently it is not).");
+        // static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataCollectorInterface: provided SubjectType must be derived from TypeInterface (currently it is not).");
         /**
          * @brief метод для изменения состояния субъекта
          */
-        virtual void update_data(std::shared_ptr<SubjectType> data) = 0;
+        virtual void update_data(std::shared_ptr<TypeInterface> data) = 0;
 
         /**
          * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта
          */
-        virtual void attach_observer(std::shared_ptr<IDataObserver<SubjectType>> observer) = 0;
+        virtual void attach_observer(std::shared_ptr<IDataObserver> observer) = 0;
 
     protected:
         /**
