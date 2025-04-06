@@ -1,6 +1,0 @@
-@startmindmap
-*[#SkyBlue] Sequence
-    * BLOCK CheckMission
-    * BLOCK CheckRTLParams
-    * BLOCK PathFollowingOffboard
-@endmindmap
