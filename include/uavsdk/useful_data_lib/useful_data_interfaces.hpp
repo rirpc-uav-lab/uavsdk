@@ -58,6 +58,14 @@ namespace useful_di
     };
 
 
+    template <typename Retrieved>
+    class IRetrievableDataContainer
+    {
+    public:
+        virtual Retrieved get_data() = 0;
+    };
+
+
     /**
      * @brief Класс, являющийся интерфейсом для адаптации используемых
      * объектов данных к универсальному типу данных, в котором можно
@@ -79,30 +87,20 @@ namespace useful_di
      * формате
      */
     template <typename UniversalDataFormat>
-    class UniversalDataInterface : public virtual TypeInterface
+    class UniversalDataInterface : public virtual TypeInterface, public IRetrievableDataContainer<UniversalDataFormat>
     {
         public:
             /**
              * @brief Returns universal data structure of type UniversalDataFormat
              */
-            UniversalDataFormat get_data()
+            UniversalDataFormat get_data() override
             {
-                return this->_get_data();
+                return this->data;
             }
 
 
         protected:
             UniversalDataFormat data; // Данные в универсальном формате
-
-
-            /**
-             * @brief может быть использована для кастомизации логики работы
-             * публичного метода get_data()
-             */
-            virtual UniversalDataFormat _get_data()
-            {
-                return this->data;
-            }
     };
 
 
@@ -269,8 +267,13 @@ namespace useful_di
          * @brief метод, который будет вызван, когда DataCollectorInterface<DataType> изменит свое состояние
          */
         virtual void be_notified(std::shared_ptr<SubjectType> input_data) = 0;
-        virtual std::shared_ptr<SubjectType> get_data() = 0;
+        // virtual std::shared_ptr<SubjectType> get_data() = 0;
     };
+
+
+    template <typename SubjectType>
+    class RetrievableDataObserver : public IDataObserver<SubjectType>, public IRetrievableDataContainer<std::shared_ptr<SubjectType>>
+    {};
 
 
     template <typename SubjectType>
@@ -283,6 +286,12 @@ namespace useful_di
         }
 
 
+        void be_notified(std::shared_ptr<SubjectType> input_data)
+        {
+            this->callback(input_data);
+        }
+
+
         void callback(std::shared_ptr<SubjectType> msg) 
         {
             if (callback_set)
@@ -291,12 +300,12 @@ namespace useful_di
                 std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
         }
 
-    protected:
+    private:
         std::function<void(std::shared_ptr<SubjectType>)> callback_obj;
         bool callback_set{false};
 
         
-        virtual void set_callback(std::function<void(std::shared_ptr<SubjectType>)> callback)
+        void set_callback(std::function<void(std::shared_ptr<SubjectType>)> callback)
         {
             this->callback_obj = callback;
             callback_set = true;

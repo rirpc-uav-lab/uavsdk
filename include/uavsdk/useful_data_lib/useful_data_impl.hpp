@@ -29,7 +29,7 @@ namespace useful_di
         
         std::string get_name() { return this->name; }
         
-        virtual nlohmann::json _get_data() override 
+        virtual nlohmann::json get_data() override 
         { 
             this->data["name"] = this->name;
             return this->data; 
@@ -63,7 +63,7 @@ namespace useful_di
 
             std::string get_type() { return this->type; }
 
-            virtual nlohmann::json _get_data() override 
+            virtual nlohmann::json get_data() override 
             { 
                 this->data["name"] = this->get_name();
                 this->data["type"] = this->get_type();
@@ -455,18 +455,7 @@ namespace useful_di
 
     class DataCompositeJson : public useful_di::ConvertableDataComposite<nlohmann::json, std::string, UniMapStr> //, useful_di::IAppendAbleContainer<std::string>
     {
-        // void ___set_type() override
-        // {
-        //     this->___type = utils::cppext::get_type<DataCompositeJson>();
-        // }
-
-
         public: 
-        // std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
-        // {
-        //     this->msg->add_data(data);
-        // }
-
 
         void add_data(std::string key, std::shared_ptr<TypeInterface> data)
         {
@@ -474,8 +463,7 @@ namespace useful_di
         }
 
 
-        protected:
-        nlohmann::json _get_data() override
+        nlohmann::json get_data() override
         {
             // int counter = 0;
             nlohmann::json new_data;
@@ -535,8 +523,7 @@ namespace useful_di
         }
 
 
-        protected:
-        nlohmann::json _get_data() override
+        nlohmann::json get_data() override
         {
             // int counter = 0;
             nlohmann::json new_data;
@@ -665,7 +652,7 @@ namespace useful_di
 
 
     template <typename SubjectType>
-    class DataSubscriber : public IDataObserver<SubjectType>
+    class DataSubscriber : public RetrievableDataObserver<SubjectType>
     {
     public:
         static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataSubscriber: provided SubjectType is not derived from TypeInterface");
