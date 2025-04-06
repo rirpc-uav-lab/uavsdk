@@ -18,6 +18,7 @@ add_library(utils_lib SHARED ${UTILS_LIB_SOURCES})
 set_target_properties(utils_lib PROPERTIES LINKER_LANGUAGE CXX)
 
 set(USEF_DATA_LIB 
+include/uavsdk/useful_data_lib/base_interfaces.hpp
 include/uavsdk/useful_data_lib/useful_data_interfaces.hpp
 include/uavsdk/useful_data_lib/useful_data_impl.hpp
 )
