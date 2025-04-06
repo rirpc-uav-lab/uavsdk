@@ -146,8 +146,8 @@ ament_export_targets(kalman_filters_ros2 HAS_LIBRARY_TARGET)
 # target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib data_adpters_lib_ros2)# backward_object)
 
 
-# add_executable(inheritance_tests src/inheritance_tests.cpp)
-# target_link_libraries(inheritance_tests useful_data_lib backward_object)
+add_executable(inheritance_tests src/inheritance_tests.cpp)
+target_link_libraries(inheritance_tests useful_data_lib)# backward_object)
 
 
 add_executable(bh_test src/bh_test.cpp)
@@ -163,7 +163,7 @@ install(TARGETS
   bh_test
   ukf_test
   # command_tests
-  # inheritance_tests
+  inheritance_tests
   DESTINATION lib/${PROJECT_NAME}
 )
 

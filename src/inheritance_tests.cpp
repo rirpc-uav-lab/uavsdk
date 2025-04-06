@@ -1,78 +1,37 @@
-#include <functional>
 #include <iostream>
 #include <memory>
+#include <thread>
 
-class Abc
-{
-public:
-    Abc(std::function<int(int const&, int const&)> f) 
-    {
-        two_num_func = f;
-    }
-    
-    int call()
-    {
-        return two_num_func(num1, num2);
-    }
-
-
-    void set_f(std::function<int(int const&, int const&)> f)
-    {
-        two_num_func = f;
-    }
-
-private:
-    int num1 = 3;
-    int num2 = 2;
-    std::function<int(int const&, int const&)> two_num_func;
-};
-
-
-class WhateverCaller
-{
-public:
-    WhateverCaller(std::function<int()> f)
-    {
-        whatever = f;
-    }
-
-    std::function<int()> whatever;
-};
-
+#include <uavsdk/useful_data_lib/useful_data_impl.hpp>
+#include <uavsdk/data_adapters/cxx/cxx.hpp>
 
 int main()
 {
-    int multiplexor = 3;
-    std::function<int(int, int)> sum_plus_multiplex = 
-    [multiplexor](int a, int b) 
+    using std::dynamic_pointer_cast;
+    using uavsdk::data_adapters::cxx::BasicDataAdapter;
+    
+    useful_di::ObserverCollectorExpectations expectations;
+    expectations.set_data_type(utils::cppext::get_type<BasicDataAdapter<uint32_t>>());
+
+    auto f = [](std::shared_ptr<useful_di::TypeInterface> p) 
     {
-        return multiplexor * (a + b);
+        std::cout << "" << p->___get_type() << "\n";
+        std::cout << "value: " << dynamic_pointer_cast<BasicDataAdapter<uint32_t>>(p)->get_data() << "\n";
     };
 
-    std::function<int(int, int)> sum = 
-    [](int a, int b) 
+    useful_di::StrictBindableDataObserver observer(expectations, f);
+
+    auto collector = std::make_shared<useful_di::StrictDataCollector>(expectations);
+
+    observer.bind(collector);
+
+    for (uint32_t i = 0; i < 100; i++)
     {
-        return a + b;
-    };
-
-    std::function<int(int, int)> difference = 
-    [](int a, int b) 
-    {
-        return a - b;
-    };
-
-    Abc obj(sum_plus_multiplex);
-    std::cout << obj.call() << "\n";
-
-    obj.set_f(sum);
-    std::cout << obj.call() << "\n";
-
-    obj.set_f(difference);
-    std::cout << obj.call() << "\n";
-
-    WhateverCaller caller(std::bind(&Abc::call, &obj));
-
-    std::cout << caller.whatever() << "\n";
+        // std::cout << "B\n";
+        auto int_p = std::make_shared<BasicDataAdapter<uint32_t>>(i);
+        collector->update_data(int_p);
+        std::this_thread::sleep_for(std::chrono::milliseconds(333));
+    }
 
     return 0;
 }

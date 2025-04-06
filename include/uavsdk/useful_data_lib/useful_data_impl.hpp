@@ -592,37 +592,46 @@ namespace useful_di
     // {
     // public:
     //     static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "MultiObserverDataCollector: provided SubjectType is not derived from TypeInterface");
-    //     std::string attach_observer(std::shared_ptr<IDataObserver> observer) override 
+    //     size_t attach_observer(std::shared_ptr<IDataObserver> observer) override 
     //     {
     //         // this->observer = observer;
-    //         auto id = this->observer_map.add_data(observer);
+    //         this->observers.push_back(observer);
+    //         auto id = this->observers.size() - 1;
     //         return id;
     //     }
 
 
-    //     void remove_observer(std::string id)
+    //     void remove_observer(size_t id)
     //     {
-    //         std::vector<std::string> keys = this->observer_map.get_present_keys();
-
-    //         bool id_present = false;
-
-    //         for (const auto& key : keys)
+    //         if (id < this->observers.size())
     //         {
-    //             if (id == key)
-    //             {
-    //                 id_present = true;
-    //                 break;
-    //             }
+    //             this->observers.erase(this->observers.begin() + id);
     //         }
+    //         else 
+    //         {
+    //             throw std::runtime_error("MultiObserverDataCollector: Id " + std::to_string(id) + " is not present in MultiObserverDataCollector::observers.");
+    //         }
+    //         // std::vector<std::string> keys = this->observer_map.get_present_keys();
 
-    //         if (id_present)
-    //         {
-    //             this->observer_map.remove_data(id);
-    //         }
-    //         else
-    //         {
-    //             throw std::runtime_error("MultiObserverDataCollector: Id " + id + " is not present in MultiObserverDataCollector::observers_map.");
-    //         }
+    //         // bool id_present = false;
+
+    //         // for (const auto& key : keys)
+    //         // {
+    //         //     if (id == key)
+    //         //     {
+    //         //         id_present = true;
+    //         //         break;
+    //         //     }
+    //         // }
+
+    //         // if (id_present)
+    //         // {
+    //         //     this->observer_map.remove_data(id);
+    //         // }
+    //         // else
+    //         // {
+    //         //     throw std::runtime_error("MultiObserverDataCollector: Id " + id + " is not present in MultiObserverDataCollector::observers_map.");
+    //         // }
     //     }
 
 
@@ -637,16 +646,23 @@ namespace useful_di
 
     //     void notify_observers() override 
     //     {
-    //         if (this->observer != nullptr)
+    //         for (const auto &observer : observers)
     //         {
-    //             this->observer->be_notified(this->data);
+    //             if (observer != nullptr)
+    //             {
+    //                 observer->be_notified(this->data);
+    //             }
+    //             else
+    //             {
+    //                 throw std::runtime_error("MultiObserverDataCollector::notify_observers(): observer != nullptr has failed.");
+    //             }
     //         }
     //     }
 
     // private:
     //     std::shared_ptr<SubjectType> data;
     //     // std::vector<std::shared_ptr<IDataObserver<SubjectType>>> observer;
-    //     useful_di::UniMapStr observer_map;
+    //     std::vector<std::shared_ptr<IDataObserver> observers;
     // };
 
 
@@ -696,4 +712,194 @@ namespace useful_di
         std::shared_ptr<SubjectType> data; ///< Указатель на объект, который будет обновляться при изменении состояния субъекта IDataCollector.
         std::mutex data_mx;
     };
+
+
+    class ObserverCollectorExpectations
+    {
+    public:
+        bool operator==(const ObserverCollectorExpectations& other) const
+        {
+            bool expectations_match = true;
+            
+            if (this->get_data_type() != other.get_data_type()) expectations_match = false;
+
+            return expectations_match;
+        }
+
+
+        void set_data_type(std::string new_data_type)
+        {
+            this->data_type = new_data_type;
+            this->data_type_set = true;
+        }
+
+
+        std::string get_data_type() const
+        {
+            if (!data_type_set) throw std::runtime_error("ObserverCollectorExpectations: data_type was not set.");
+            return this->data_type;
+        }
+
+
+        std::string to_str() const
+        {
+            std::string out;
+            out = "\ndata_type = " + data_type + "\n" +
+            "data_type_set = " + std::to_string(data_type_set) + "\n";
+
+            return out;
+        }
+
+    private:
+        std::string data_type;
+        bool data_type_set{false};
+    };
+
+
+
+    class StrictDataObserver : public DataObserverWithCallback, public IHasExpectations<ObserverCollectorExpectations>
+    {
+    public:
+        StrictDataObserver(std::function<void(std::shared_ptr<TypeInterface>)> callback_) : DataObserverWithCallback(callback_)
+        {}
+
+        virtual void be_notified(std::shared_ptr<TypeInterface> input_data) override
+        {
+            if (input_data->___get_type() != this->get_expectations().get_data_type()) throw std::runtime_error("StrictDataObserver::be_notified(): Expected " + this->get_expectations().get_data_type() + " but got " + input_data->___get_type());
+            this->callback(input_data);
+        }
+
+        ObserverCollectorExpectations get_expectations() override
+        {
+            return this->expectations;
+        }
+
+
+        void set_expectations(ObserverCollectorExpectations new_expectations) override
+        {
+            this->expectations = new_expectations;
+        }
+
+
+        const bool match_expectations(const ObserverCollectorExpectations &other_expectations) override
+        {
+            return this->expectations == other_expectations;
+        }
+    };
+
+    
+    class StrictDataCollector : public IDataCollector, public IHasExpectations<ObserverCollectorExpectations>
+    // class StrictDataCollector : public IDataCollector, public IHasExpectations<ObserverCollectorExpectations>
+    {
+    public:
+        StrictDataCollector(ObserverCollectorExpectations new_expectations)
+        {
+            this->set_expectations(new_expectations);
+        }
+
+        ObserverCollectorExpectations get_expectations() override
+        {
+            return this->expectations;
+        }
+
+
+        void set_expectations(ObserverCollectorExpectations new_expectations) override
+        {
+            this->expectations = new_expectations;
+        }
+
+
+        const bool match_expectations(const ObserverCollectorExpectations &other_expectations) override
+        {
+            return this->expectations == other_expectations;
+        }
+
+
+        void update_data(std::shared_ptr<TypeInterface> data) override
+        {
+            if (data->___get_type() != this->get_expectations().get_data_type()) throw std::runtime_error("StrictDataCollector::update_data(): Expected " + this->get_expectations().get_data_type() + " but got " + data->___get_type());
+            this->current_data = data;
+            this->notify_observers();
+        }
+
+        void attach_observer(std::shared_ptr<IDataObserver> observer) override
+        {
+            auto observer_p = std::dynamic_pointer_cast<StrictDataObserver>(observer);
+
+            if (!observer_p) throw std::runtime_error("StrictDataCollector: Tried to attach an incompatible observer. Should derive from StrictDataObserver");
+            if (!this->match_expectations(observer_p->get_expectations())) throw std::runtime_error("StrictDataCollector: Tried to bind incompatible expectations. This expectations: " + this->expectations.to_str() + "Other expectations: " + observer_p->get_expectations().to_str());
+
+            this->observers.push_back(observer);
+        }
+
+    protected:
+        std::shared_ptr<TypeInterface> current_data;
+        std::vector<std::shared_ptr<IDataObserver>> observers;
+        
+        void notify_observers() override
+        {
+            for (const auto &observer : observers)
+            {
+                observer->be_notified(current_data);
+            }
+        }
+    };
+
+
+
+
+    class StrictBindableDataObserver : public StrictDataObserver, public IBindable<std::shared_ptr<StrictDataCollector>>, public IBoundCheckAble
+    {
+    public:
+        StrictBindableDataObserver(ObserverCollectorExpectations initial_expectations, std::function<void(std::shared_ptr<TypeInterface>)> callback_) : StrictDataObserver(callback_)
+        {
+            this->set_expectations(initial_expectations);
+        }
+
+        void bind(std::shared_ptr<StrictDataCollector> collector) override 
+        {
+            if (!this->match_expectations(collector->get_expectations())) throw std::runtime_error("StrictBindableDataObserver: Tried to bind incompatible expectations. This expectations: " + this->expectations.to_str() + "Other expectations: " + collector->get_expectations().to_str());
+            std::shared_ptr<StrictBindableDataObserver> this_p(this);
+            collector->attach_observer(this_p);
+            this_is_bound = true;
+        }
+
+
+        bool is_bound() override
+        {
+            return this->this_is_bound;
+        }
+    
+    private:
+        bool this_is_bound{false};
+    };
+
+
+
+    template <typename Id>
+    class StrictlyInitializableDataDependencyManager 
+    :   public IDataDependencyManager<Id>, 
+        public IInitializeAble<std::pair<
+        std::map<Id, std::shared_ptr<StrictBindableDataObserver>>, 
+        std::map<Id, std::shared_ptr<StrictDataCollector>>
+        >>,
+        public IHasStringConvertibleIdentifier<Id>
+    {
+    public:
+        StrictlyInitializableDataDependencyManager(std::pair<std::map<Id, std::shared_ptr<StrictBindableDataObserver>>, std::map<Id, std::shared_ptr<StrictDataCollector>>> init_data_dependencies)
+        {
+            for (auto it = init_data_dependencies.first.begin(); it != init_data_dependencies.first.end(); it++)
+            {
+                if (!it.second->callback_ready()) throw std::runtime_error("StrictlyInitializableDataDependencyManager: provided initialization has an observer with unprepared callback at key " + it.first);
+                if (!it.second->is_bound()) throw std::runtime_error("StrictlyInitializableDataDependencyManager: provided initialization has an unbound observer at key " + it.first);
+            }
+            this->initialize(init_data_dependencies);
+        }
+    };
+
+
+    // class DataDependencyManagerStr : public useful_di::StrictlyInitializableDataDependencyManager<std::string>
+    // {
+
+    // };
 };

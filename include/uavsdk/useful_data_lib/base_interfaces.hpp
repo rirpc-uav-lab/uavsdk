@@ -51,7 +51,7 @@ namespace useful_di
          */
         virtual void ___set_type()
         {
-            this->___type = typeid(*this).name();
+            this->___type = utils::cppext::demangle(typeid(*this).name());
         };
     };
 
@@ -107,7 +107,50 @@ namespace useful_di
     template <typename Id>
     class IModifyAbleContainer
     {
-        public:
-            virtual void modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
+    public:
+        virtual void modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
+    };
+
+
+    template <typename InitializedType>
+    class IInitializeAble
+    {
+    public:
+        virtual void initialize(InitializedType init_data) = 0;
+    };
+
+
+    template <typename BindT>
+    class IBindable 
+    {
+    public:
+        virtual void bind(BindT obj) = 0;
+    };
+
+
+    class IBoundCheckAble
+    {
+    public:
+        virtual bool is_bound() = 0;
+    };
+
+
+    template <typename Id>
+    class IHasStringConvertibleIdentifier 
+    {
+    public:
+        virtual std::string to_str(Id id) = 0;
+    };
+
+
+    template <typename ExpectationsType>
+    class IHasExpectations
+    {
+    public:
+        virtual ExpectationsType get_expectations() = 0;
+        virtual void set_expectations(ExpectationsType new_expectations) = 0;
+        virtual const bool match_expectations(const ExpectationsType &other_expectations) = 0;
+    protected:
+        ExpectationsType expectations;
     };
 } // namespace useful_di

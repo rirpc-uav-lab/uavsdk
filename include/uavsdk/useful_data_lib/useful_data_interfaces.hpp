@@ -145,14 +145,10 @@ namespace useful_di
     // class ListLikeDataComposite : public DataCompositeInterface<UniversalDataFormat, 
 
 
-    class IDataObserverPlaceholder : public virtual TypeInterface
-    {};
-
-
     /**
      * @brief Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface
      */
-    class IDataObserver : virtual public IDataObserverPlaceholder
+    class IDataObserver : virtual public TypeInterface
     {
     public:
         /**
@@ -179,11 +175,25 @@ namespace useful_di
         }
 
 
-        void be_notified(std::shared_ptr<TypeInterface> input_data) override
+        virtual void be_notified(std::shared_ptr<TypeInterface> input_data) override
         {
             this->callback(input_data);
         }
 
+
+        bool callback_ready()
+        {
+            return this->callback_set;
+        }
+    
+    protected:
+        void callback(std::shared_ptr<TypeInterface> msg) 
+        {
+            if (callback_set)
+                this->callback_obj(msg);
+            else 
+                std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
+        }
 
     private:
         std::function<void(std::shared_ptr<TypeInterface>)> callback_obj;
@@ -195,20 +205,7 @@ namespace useful_di
             this->callback_obj = callback;
             callback_set = true;
         }
-
-
-        void callback(std::shared_ptr<TypeInterface> msg) 
-        {
-            if (callback_set)
-                this->callback_obj(msg);
-            else 
-                std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
-        }
     };
-
-
-    class IDataCollectorPlaceholder : public virtual TypeInterface
-    {};
 
 
     /**
@@ -216,7 +213,7 @@ namespace useful_di
      * @tparam SubjectType тип изначального объекта данных
      */
     // template <typename SubjectType>
-    class IDataCollector : public virtual IDataCollectorPlaceholder
+    class IDataCollector : public virtual TypeInterface
     {
     public:
         // static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataCollectorInterface: provided SubjectType must be derived from TypeInterface (currently it is not).");
@@ -235,5 +232,18 @@ namespace useful_di
          * @brief метод, который уведомляет всех наблюдателей о изменении состояния субъекта, и передает им текущее состояние
          */
         virtual void notify_observers() = 0;
+    };
+
+
+    template <typename Id>
+    class IDataDependencyManager : public virtual TypeInterface
+    {
+    public:
+        virtual void bind_input_to(Id identifier, std::shared_ptr<DataObserverWithCallback> output) = 0; 
+        virtual void bind_output_to(Id identifier, std::shared_ptr<IDataObserver> input) = 0; 
+
+    protected:
+        std::map<Id, std::shared_ptr<DataObserverWithCallback>> data_inputs;
+        std::map<Id, std::shared_ptr<IDataCollector>> data_outputs;
     };
 };
