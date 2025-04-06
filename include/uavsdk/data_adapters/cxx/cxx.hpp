@@ -13,7 +13,7 @@ namespace uavsdk
             template <typename T>
             class BasicDataAdapter : public virtual useful_di::TypeInterface
             {
-                public:
+            public:
                 BasicDataAdapter(T initial_data)
                 {
                     this->___set_type();
@@ -23,17 +23,45 @@ namespace uavsdk
                 
                 virtual void set_data(T data)
                 {
-                    *data_p = data;
+                    *this->data_p = data;
                 }
 
 
                 virtual T get_data()
                 {
-                    return *data_p; 
+                    return *this->data_p; 
                 }
 
-                protected:
+            protected:
                 std::shared_ptr<T> data_p;
+            };
+
+
+            template <typename T>
+            class MutexDefendedDataAdapter : public BasicDataAdapter<T>
+            {
+            public:
+                MutexDefendedDataAdapter(T initial_data) : BasicDataAdapter<T>(initial_data)
+                {
+                    this->___set_type();
+                }
+
+
+                virtual void set_data(T data) override
+                {
+                    std::lock_guard<std::mutex> lock(mx);
+                    *this->data_p = data;
+                }
+
+
+                virtual T get_data() override
+                {
+                    std::lock_guard<std::mutex> lock(mx);
+                    return *this->data_p; 
+                }
+
+            protected:
+                std::mutex mx;
             };
 
 

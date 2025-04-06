@@ -148,9 +148,9 @@ namespace useful_di
     {
     public:
         virtual ExpectationsType get_expectations() = 0;
-        virtual void set_expectations(ExpectationsType new_expectations) = 0;
         virtual const bool match_expectations(const ExpectationsType &other_expectations) = 0;
     protected:
         ExpectationsType expectations;
+        virtual void set_expectations(ExpectationsType new_expectations) = 0;
     };
 } // namespace useful_di

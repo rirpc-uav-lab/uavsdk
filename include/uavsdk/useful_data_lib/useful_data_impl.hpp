@@ -685,7 +685,7 @@ namespace useful_di
          */
         void be_notified(std::shared_ptr<TypeInterface> input_data) override
         {
-            std::lock_guard<std::mutex> lock(data_mx);
+            // std::lock_guard<std::mutex> lock(data_mx);
 
             if (utils::cppext::get_type<SubjectType>() != input_data->___get_type()) throw std::runtime_error("DataSubscriber::be_notified(): Provided input data type is not equal to SubjectType. SubjectType is " + utils::cppext::get_type<SubjectType>() + ", input type is " + input_data->___get_type() + ".\n");
             // std::cout << "\nBefore:  " << input_data->get_data() << std::endl;
@@ -696,7 +696,7 @@ namespace useful_di
 
         std::shared_ptr<SubjectType> get_data() override 
         { 
-            std::lock_guard<std::mutex> lock(data_mx);
+            // std::lock_guard<std::mutex> lock(data_mx);
             return this->data; 
         }
 
@@ -765,6 +765,7 @@ namespace useful_di
 
         virtual void be_notified(std::shared_ptr<TypeInterface> input_data) override
         {
+            // std::lock_guard<std::mutex> lock(data_mx);
             if (input_data->___get_type() != this->get_expectations().get_data_type()) throw std::runtime_error("StrictDataObserver::be_notified(): Expected " + this->get_expectations().get_data_type() + " but got " + input_data->___get_type());
             this->callback(input_data);
         }
@@ -775,15 +776,17 @@ namespace useful_di
         }
 
 
-        void set_expectations(ObserverCollectorExpectations new_expectations) override
-        {
-            this->expectations = new_expectations;
-        }
-
-
         const bool match_expectations(const ObserverCollectorExpectations &other_expectations) override
         {
             return this->expectations == other_expectations;
+        }
+
+
+    protected:
+        // std::mutex data_mx;
+        void set_expectations(ObserverCollectorExpectations new_expectations) override
+        {
+            this->expectations = new_expectations;
         }
     };
 
@@ -792,20 +795,21 @@ namespace useful_di
     // class StrictDataCollector : public IDataCollector, public IHasExpectations<ObserverCollectorExpectations>
     {
     public:
-        StrictDataCollector(ObserverCollectorExpectations new_expectations)
+        StrictDataCollector(const ObserverCollectorExpectations new_expectations)
         {
             this->set_expectations(new_expectations);
         }
 
-        ObserverCollectorExpectations get_expectations() override
+
+        StrictDataCollector(const std::shared_ptr<const ObserverCollectorExpectations> new_expectations)
         {
-            return this->expectations;
+            this->set_expectations(*new_expectations);
         }
 
 
-        void set_expectations(ObserverCollectorExpectations new_expectations) override
+        ObserverCollectorExpectations get_expectations() override
         {
-            this->expectations = new_expectations;
+            return this->expectations;
         }
 
 
@@ -817,6 +821,7 @@ namespace useful_di
 
         void update_data(std::shared_ptr<TypeInterface> data) override
         {
+            std::lock_guard<std::mutex> lock(data_mx);
             if (data->___get_type() != this->get_expectations().get_data_type()) throw std::runtime_error("StrictDataCollector::update_data(): Expected " + this->get_expectations().get_data_type() + " but got " + data->___get_type());
             this->current_data = data;
             this->notify_observers();
@@ -824,6 +829,7 @@ namespace useful_di
 
         void attach_observer(std::shared_ptr<IDataObserver> observer) override
         {
+            std::lock_guard<std::mutex> lock(data_mx);
             auto observer_p = std::dynamic_pointer_cast<StrictDataObserver>(observer);
 
             if (!observer_p) throw std::runtime_error("StrictDataCollector: Tried to attach an incompatible observer. Should derive from StrictDataObserver");
@@ -833,15 +839,23 @@ namespace useful_di
         }
 
     protected:
+        std::mutex data_mx;
         std::shared_ptr<TypeInterface> current_data;
         std::vector<std::shared_ptr<IDataObserver>> observers;
         
         void notify_observers() override
         {
+            // std::lock_guard<std::mutex> lock(data_mx);
             for (const auto &observer : observers)
             {
                 observer->be_notified(current_data);
             }
+        }
+
+
+        void set_expectations(ObserverCollectorExpectations new_expectations) override
+        {
+            this->expectations = new_expectations;
         }
     };
 
@@ -856,8 +870,15 @@ namespace useful_di
             this->set_expectations(initial_expectations);
         }
 
+
+        StrictBindableDataObserver(const std::shared_ptr<const ObserverCollectorExpectations> initial_expectations, std::function<void(std::shared_ptr<TypeInterface>)> callback_) : StrictDataObserver(callback_)
+        {
+            this->set_expectations(*initial_expectations);
+        }
+
         void bind(std::shared_ptr<StrictDataCollector> collector) override 
         {
+            // std::lock_guard<std::mutex> lock(data_mx);
             if (!this->match_expectations(collector->get_expectations())) throw std::runtime_error("StrictBindableDataObserver: Tried to bind incompatible expectations. This expectations: " + this->expectations.to_str() + "Other expectations: " + collector->get_expectations().to_str());
             std::shared_ptr<StrictBindableDataObserver> this_p(this);
             collector->attach_observer(this_p);
@@ -867,10 +888,11 @@ namespace useful_di
 
         bool is_bound() override
         {
+            // std::lock_guard<std::mutex> lock(data_mx);
             return this->this_is_bound;
         }
     
-    private:
+    protected:
         bool this_is_bound{false};
     };
 
