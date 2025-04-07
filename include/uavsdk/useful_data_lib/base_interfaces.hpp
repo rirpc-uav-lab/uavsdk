@@ -30,7 +30,7 @@ namespace useful_di
          * @brief Возвращает строку, хранящую тип данного объекта, заданный
          * с помощью функции ___set_type()
          */
-        std::string ___get_type() 
+        std::string ___get_type() const
         {
             if (not this->___type.empty()) return this->___type;
             else throw std::runtime_error("TypeInterface: _set_type was not called before get_type");
