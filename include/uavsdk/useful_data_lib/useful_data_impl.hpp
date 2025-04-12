@@ -397,6 +397,7 @@ namespace useful_di
 
         std::shared_ptr<TypeInterface> at(const std::string& data_identifier) override
         {
+            std::lock_guard<std::mutex> llock(bb_mutex);
             std::shared_ptr<useful_di::TypeInterface> data = nullptr;
             try
             {
@@ -412,11 +413,12 @@ namespace useful_di
 
         size_t size() override
         {
+            std::lock_guard<std::mutex> llock(bb_mutex);
             return blackboard->size();
         }
 
 
-        private:
+        protected:
         std::shared_ptr<useful_di::UniMapStr> blackboard; // shared_resource
         std::mutex bb_mutex; // blackboard mutex
 
@@ -424,6 +426,62 @@ namespace useful_di
         void init_blackboard(std::shared_ptr<useful_di::UniMapStr> init_bb)
         {
             this->blackboard = init_bb;
+        }
+    };
+
+
+    class BulkBlackboard : public Blackboard, public IBulkAtAbleContainer<std::vector<std::string>, UniMapStr>
+    {
+    public:
+        virtual UniMapStr at(const std::vector<std::string>& data_identifiers) override
+        {
+            std::lock_guard<std::mutex> llock(bb_mutex);
+
+            UniMapStr ret;
+
+            for (const auto& data_identifier : data_identifiers)
+            {
+                std::shared_ptr<useful_di::TypeInterface> data = nullptr;
+                try
+                {
+                    data = this->blackboard->at(data_identifier);
+                    ret.add_data(data_identifier, data);
+                }
+                catch(const std::out_of_range e)
+                {
+                    std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + data_identifier + std::string("\n"));
+                    throw std::runtime_error(msg);
+                }
+            }
+
+            return ret;
+        }
+
+
+        virtual UniMapStr get_all() override
+        {
+            std::lock_guard<std::mutex> llock(bb_mutex);
+
+            auto data_identifiers = this->get_keys_from_blackboard();
+
+            UniMapStr ret;
+
+            for (const auto& data_identifier : data_identifiers)
+            {
+                std::shared_ptr<useful_di::TypeInterface> data = nullptr;
+                try
+                {
+                    data = this->blackboard->at(data_identifier);
+                    ret.add_data(data_identifier, data);
+                }
+                catch(const std::out_of_range e)
+                {
+                    std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + data_identifier + std::string("\n"));
+                    throw std::runtime_error(msg);
+                }
+            }
+
+            return ret;
         }
     };
 

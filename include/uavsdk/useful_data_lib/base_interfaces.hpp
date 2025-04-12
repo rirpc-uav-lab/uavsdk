@@ -1,7 +1,6 @@
 
 #pragma once
 #include <memory>
-// #include <map>
 
 #include <uavsdk/utils/cpp_custom_extras.hpp>
 
@@ -94,6 +93,15 @@ namespace useful_di
     {
         public:
             virtual std::shared_ptr<TypeInterface> at(const Id& data_identifier) = 0;
+    };
+
+
+    template <typename Id, typename ReturnedType>
+    class IBulkAtAbleContainer
+    {
+        public:
+            virtual ReturnedType at(const Id& data_identifiers) = 0;
+            virtual ReturnedType get_all() = 0;
     };
 
 
