@@ -1,6 +1,0 @@
-<map id="uavsdk::data_adapters::ros2::geometry_msgs::Pose" name="uavsdk::data_adapters::ros2::geometry_msgs::Pose">
-<area shape="rect" id="node1" title=" " alt="" coords="307,63,517,105"/>
-<area shape="rect" id="node2" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="5,5,183,32"/>
-<area shape="rect" id="node3" href="$classuavsdk_1_1data__adapters_1_1ros2_1_1geometry__msgs_1_1Quaternion.html" title=" " alt="" coords="9,56,179,112"/>
-<area shape="rect" id="node4" href="$classuavsdk_1_1data__adapters_1_1ros2_1_1geometry__msgs_1_1Point32.html" title=" " alt="" coords="9,136,179,192"/>
-</map>

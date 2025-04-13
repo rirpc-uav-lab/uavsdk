@@ -1,6 +1,0 @@
-<map id="useful_di::StrictDataCollector" name="useful_di::StrictDataCollector">
-<area shape="rect" id="node1" title=" " alt="" coords="532,35,744,61"/>
-<area shape="rect" id="node2" href="$classuseful__di_1_1IDataCollector.html" title=" " alt="" coords="266,5,449,32"/>
-<area shape="rect" id="node3" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="5,5,183,32"/>
-<area shape="rect" id="node4" href="$classuseful__di_1_1IHasExpectations.html" title=" " alt="" coords="231,57,484,98"/>
-</map>

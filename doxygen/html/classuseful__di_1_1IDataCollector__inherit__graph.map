@@ -1,7 +1,0 @@
-<map id="useful_di::IDataCollector" name="useful_di::IDataCollector">
-<area shape="rect" id="node1" title=" " alt="" coords="231,78,413,105"/>
-<area shape="rect" id="node3" href="$classuavsdk_1_1command__manager_1_1ObservableCommandExecutor.html" title=" " alt="" coords="461,5,731,47"/>
-<area shape="rect" id="node4" href="$classuseful__di_1_1SingleObserverDataCollector.html" title=" " alt="" coords="487,71,705,112"/>
-<area shape="rect" id="node5" href="$classuseful__di_1_1StrictDataCollector.html" title=" " alt="" coords="490,137,702,163"/>
-<area shape="rect" id="node2" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="5,78,183,105"/>
-</map>

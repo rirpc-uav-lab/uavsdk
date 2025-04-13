@@ -1,9 +1,0 @@
-<map id="useful_di::IDataObserver" name="useful_di::IDataObserver">
-<area shape="rect" id="node1" title="Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface." alt="" coords="231,46,413,73"/>
-<area shape="rect" id="node3" href="$classuseful__di_1_1DataObserverWithCallback.html" title=" " alt="" coords="461,5,671,47"/>
-<area shape="rect" id="node6" href="$classuseful__di_1_1RetrievableDataObserver.html" title=" " alt="" coords="469,71,663,112"/>
-<area shape="rect" id="node2" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="5,46,183,73"/>
-<area shape="rect" id="node4" href="$classuseful__di_1_1StrictDataObserver.html" title=" " alt="" coords="719,13,932,39"/>
-<area shape="rect" id="node5" href="$classuseful__di_1_1StrictBindableDataObserver.html" title=" " alt="" coords="980,5,1160,47"/>
-<area shape="rect" id="node7" href="$classuseful__di_1_1DataSubscriber.html" title=" " alt="" coords="731,71,919,112"/>
-</map>

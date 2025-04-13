@@ -1,7 +1,0 @@
-<map id="IAnimal" name="IAnimal">
-<area shape="rect" id="node1" title=" " alt="" coords="64,80,136,107"/>
-<area shape="rect" id="node3" href="$classBird.html" title=" " alt="" coords="5,155,53,181"/>
-<area shape="rect" id="node4" href="$classCat.html" title=" " alt="" coords="78,155,122,181"/>
-<area shape="rect" id="node5" href="$classDog.html" title=" " alt="" coords="147,155,195,181"/>
-<area shape="rect" id="node2" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="11,5,189,32"/>
-</map>

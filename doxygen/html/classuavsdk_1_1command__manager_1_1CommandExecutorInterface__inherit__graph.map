@@ -1,8 +1,0 @@
-<map id="uavsdk::command_manager::CommandExecutorInterface" name="uavsdk::command_manager::CommandExecutorInterface">
-<area shape="rect" id="node1" title=" " alt="" coords="5,50,216,91"/>
-<area shape="rect" id="node2" href="$classuavsdk_1_1command__manager_1_1CommandWithIdExecutorInterface.html" title=" " alt="" coords="264,50,559,91"/>
-<area shape="rect" id="node3" href="$classuavsdk_1_1command__manager_1_1CommandExecutor.html" title=" " alt="" coords="607,5,813,61"/>
-<area shape="rect" id="node5" href="$classuavsdk_1_1command__manager_1_1CommandExecutor.html" title=" " alt="" coords="607,86,813,127"/>
-<area shape="rect" id="node4" href="$classExecutor.html" title=" " alt="" coords="957,20,1035,47"/>
-<area shape="rect" id="node6" href="$classuavsdk_1_1command__manager_1_1ObservableCommandExecutor.html" title=" " alt="" coords="861,86,1131,127"/>
-</map>

@@ -1,6 +1,0 @@
-<map id="useful_di::RetrievableDataObserver&lt; SubjectType &gt;" name="useful_di::RetrievableDataObserver&lt; SubjectType &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="477,31,672,73"/>
-<area shape="rect" id="node2" href="$classuseful__di_1_1IDataObserver.html" title="Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface." alt="" coords="239,5,421,32"/>
-<area shape="rect" id="node3" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="5,5,183,32"/>
-<area shape="rect" id="node4" href="$classuseful__di_1_1IRetrievableDataContainer.html" title=" " alt="" coords="231,56,429,112"/>
-</map>

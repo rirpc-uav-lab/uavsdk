@@ -1,9 +1,0 @@
-<map id="useful_di::DataInterface&lt; SubjectType, UniversalDataFormat &gt;" name="useful_di::DataInterface&lt; SubjectType, UniversalDataFormat &gt;">
-<area shape="rect" id="node1" title="Продолжение UniversalDataInterface, которое позволяет конвертировать хранимые универсальные интерфейс..." alt="" coords="605,27,883,69"/>
-<area shape="rect" id="node5" href="$classuseful__di_1_1ConvertableDataComposite.html" title=" " alt="" coords="931,20,1141,76"/>
-<area shape="rect" id="node2" href="$classuseful__di_1_1UniversalDataInterface.html" title="Класс, являющийся интерфейсом для адаптации используемых объектов данных к универсальному типу данных..." alt="" coords="308,27,557,69"/>
-<area shape="rect" id="node3" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="44,5,221,32"/>
-<area shape="rect" id="node4" href="$classuseful__di_1_1IRetrievableDataContainer.html" title=" " alt="" coords="5,57,260,98"/>
-<area shape="rect" id="node6" href="$classuseful__di_1_1DataCompositeJson.html" title=" " alt="" coords="1189,5,1407,32"/>
-<area shape="rect" id="node7" href="$classuseful__di_1_1DataCompositeJsonMap.html" title=" " alt="" coords="1203,57,1393,98"/>
-</map>

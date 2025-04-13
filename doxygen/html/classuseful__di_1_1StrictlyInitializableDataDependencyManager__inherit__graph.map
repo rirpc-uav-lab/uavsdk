@@ -1,7 +1,0 @@
-<map id="useful_di::StrictlyInitializableDataDependencyManager&lt; Id &gt;" name="useful_di::StrictlyInitializableDataDependencyManager&lt; Id &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="576,93,809,135"/>
-<area shape="rect" id="node2" href="$classuseful__di_1_1IDataDependencyManager.html" title=" " alt="" coords="277,5,482,47"/>
-<area shape="rect" id="node3" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="5,13,183,39"/>
-<area shape="rect" id="node4" href="$classuseful__di_1_1IInitializeAble.html" title=" " alt="" coords="231,71,528,157"/>
-<area shape="rect" id="node5" href="$classuseful__di_1_1IHasStringConvertibleIdentifier.html" title=" " alt="" coords="264,181,495,223"/>
-</map>

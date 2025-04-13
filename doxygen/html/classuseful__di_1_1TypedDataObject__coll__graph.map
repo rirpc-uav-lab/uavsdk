@@ -1,8 +1,0 @@
-<map id="useful_di::TypedDataObject&lt; SubjectType &gt;" name="useful_di::TypedDataObject&lt; SubjectType &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="1079,27,1279,69"/>
-<area shape="rect" id="node2" href="$classuseful__di_1_1DataObjectJson.html" title=" " alt="" coords="841,27,1031,69"/>
-<area shape="rect" id="node3" href="$classuseful__di_1_1DataInterface.html" title=" " alt="" coords="605,20,793,76"/>
-<area shape="rect" id="node4" href="$classuseful__di_1_1UniversalDataInterface.html" title="Класс, являющийся интерфейсом для адаптации используемых объектов данных к универсальному типу данных..." alt="" coords="308,27,557,69"/>
-<area shape="rect" id="node5" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="44,5,221,32"/>
-<area shape="rect" id="node6" href="$classuseful__di_1_1IRetrievableDataContainer.html" title=" " alt="" coords="5,57,260,98"/>
-</map>
