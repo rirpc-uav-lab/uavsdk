@@ -1,3 +1,4 @@
+#pragma once
 #include <uavsdk/useful_data_lib/base_interfaces.hpp>
 #include <uavsdk/utils/cpp_custom_extras.hpp>
 
