@@ -1,0 +1,10 @@
+<map id="useful_di::IRemoveAbleContainer&lt; Id &gt;" name="useful_di::IRemoveAbleContainer&lt; Id &gt;">
+<area shape="rect" id="node1" title=" " alt="" coords="5,114,244,155"/>
+<area shape="rect" id="node2" href="$classuseful__di_1_1IBaseStorage.html" title=" " alt="" coords="292,114,467,155"/>
+<area shape="rect" id="node3" href="$classuseful__di_1_1MapLikeDataStorageInterface.html" title=" " alt="" coords="517,49,741,90"/>
+<area shape="rect" id="node6" href="$classuseful__di_1_1DataStorageInterface.html" title=" " alt="" coords="515,114,743,155"/>
+<area shape="rect" id="node8" href="$classuseful__di_1_1MapLikeDataStorageInterface.html" title=" " alt="" coords="517,179,741,221"/>
+<area shape="rect" id="node4" href="$classuseful__di_1_1Blackboard.html" title=" " alt="" coords="831,5,994,32"/>
+<area shape="rect" id="node5" href="$classuseful__di_1_1UniMapStr.html" title=" " alt="" coords="834,56,991,83"/>
+<area shape="rect" id="node7" href="$classuseful__di_1_1RegistryDataStorage.html" title="Контейнер для заранее определенного набора данных. Может хранить столько объектов,..." alt="" coords="791,107,1035,163"/>
+</map>

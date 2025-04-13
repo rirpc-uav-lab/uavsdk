@@ -1,0 +1,9 @@
+<map id="useful_di::ConvertableDataComposite&lt; UniversalDataFormat, Id, ThisStorageType &gt;" name="useful_di::ConvertableDataComposite&lt; UniversalDataFormat, Id, ThisStorageType &gt;">
+<area shape="rect" id="node1" title=" " alt="" coords="883,57,1133,113"/>
+<area shape="rect" id="node2" href="$classuseful__di_1_1DataInterface.html" title=" " alt="" coords="605,20,835,76"/>
+<area shape="rect" id="node3" href="$classuseful__di_1_1UniversalDataInterface.html" title="Класс, являющийся интерфейсом для адаптации используемых объектов данных к универсальному типу данных..." alt="" coords="308,27,557,69"/>
+<area shape="rect" id="node4" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="44,5,221,32"/>
+<area shape="rect" id="node5" href="$classuseful__di_1_1IRetrievableDataContainer.html" title=" " alt="" coords="5,57,260,98"/>
+<area shape="rect" id="node6" href="$classuseful__di_1_1IDataComposite.html" title=" " alt="" coords="623,101,817,142"/>
+<area shape="rect" id="node7" title=" " alt="" coords="368,108,497,135"/>
+</map>

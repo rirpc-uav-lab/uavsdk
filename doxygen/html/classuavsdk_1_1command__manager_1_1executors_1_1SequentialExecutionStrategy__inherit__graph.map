@@ -1,0 +1,5 @@
+<map id="uavsdk::command_manager::executors::SequentialExecutionStrategy" name="uavsdk::command_manager::executors::SequentialExecutionStrategy">
+<area shape="rect" id="node1" title=" " alt="" coords="5,169,239,225"/>
+<area shape="rect" id="node2" href="$classuavsdk_1_1command__manager_1_1executors_1_1IExecutionStrategy.html" title=" " alt="" coords="11,80,233,121"/>
+<area shape="rect" id="node3" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="33,5,211,32"/>
+</map>

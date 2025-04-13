@@ -1,0 +1,13 @@
+<map id="uavsdk::command_manager::IdString" name="uavsdk::command_manager::IdString">
+<area shape="rect" id="node1" title=" " alt="" coords="260,74,467,115"/>
+<area shape="rect" id="node3" href="$classuavsdk_1_1command__manager_1_1SingleProccessCommandInterface.html" title=" " alt="" coords="515,74,767,115"/>
+<area shape="rect" id="node2" href="$classuavsdk_1_1command__manager_1_1IIdentification.html" title=" " alt="" coords="5,67,212,123"/>
+<area shape="rect" id="node4" href="$classFailed.html" title=" " alt="" coords="888,5,948,32"/>
+<area shape="rect" id="node5" href="$classSuccess.html" title=" " alt="" coords="881,56,955,83"/>
+<area shape="rect" id="node6" href="$classSuccessAfterRunning.html" title=" " alt="" coords="839,107,997,133"/>
+<area shape="rect" id="node7" href="$classuavsdk_1_1command__manager_1_1StagedCommandInterface.html" title=" " alt="" coords="815,158,1021,199"/>
+<area shape="rect" id="node8" href="$classuavsdk_1_1command__manager_1_1control__nodes_1_1Fallback.html" title=" " alt="" coords="1080,59,1287,101"/>
+<area shape="rect" id="node9" href="$classuavsdk_1_1command__manager_1_1control__nodes_1_1ParallelHopeful.html" title=" " alt="" coords="1069,125,1297,166"/>
+<area shape="rect" id="node10" href="$classuavsdk_1_1command__manager_1_1control__nodes_1_1ParallelStrict.html" title=" " alt="" coords="1078,190,1289,231"/>
+<area shape="rect" id="node11" href="$classuavsdk_1_1command__manager_1_1control__nodes_1_1Sequence.html" title=" " alt="" coords="1080,255,1287,297"/>
+</map>

@@ -1,0 +1,10 @@
+<map id="useful_di::DataStorageInterface&lt; Id &gt;" name="useful_di::DataStorageInterface&lt; Id &gt;">
+<area shape="rect" id="node1" title=" " alt="" coords="575,155,803,197"/>
+<area shape="rect" id="node2" href="$classuseful__di_1_1IBaseStorage.html" title=" " alt="" coords="322,122,497,163"/>
+<area shape="rect" id="node3" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="36,5,213,32"/>
+<area shape="rect" id="node4" href="$classuseful__di_1_1IRemoveAbleContainer.html" title=" " alt="" coords="5,57,244,98"/>
+<area shape="rect" id="node5" href="$classuseful__di_1_1IAtAbleContainer.html" title=" " alt="" coords="25,122,224,163"/>
+<area shape="rect" id="node6" href="$classuseful__di_1_1IModifyAbleContainer.html" title=" " alt="" coords="10,187,239,229"/>
+<area shape="rect" id="node7" href="$classuseful__di_1_1ISizeAbleContainer.html" title=" " alt="" coords="19,253,231,280"/>
+<area shape="rect" id="node8" href="$classuseful__di_1_1IAppendAbleContainer.html" title=" " alt="" coords="292,187,527,229"/>
+</map>

@@ -241,6 +241,7 @@ namespace useful_di
                 if (not this->data_storage.count(data_identifier))
                 {
                     std::string msg = "UniMapStr: Error! No such key in blackboard. Key = " + data_identifier + ".\n";
+                    throw std::runtime_error(msg);
                 }
                 return this->data_storage.at(data_identifier);
             }
@@ -290,8 +291,8 @@ namespace useful_di
         public:
         Blackboard(std::shared_ptr<useful_di::UniMapStr> _blackboard)
         {
-                this->___set_type();
-                init_blackboard(_blackboard);
+            this->___set_type();
+            init_blackboard(_blackboard);
         }
 
 
@@ -430,14 +431,14 @@ namespace useful_di
     };
 
 
-    class BulkBlackboard : public Blackboard, public IBulkAtAbleContainer<std::vector<std::string>, UniMapStr>
+    class BulkBlackboard : public Blackboard, public IBulkAtAbleContainer<std::vector<std::string>, std::shared_ptr<UniMapStr>>
     {
     public:
-        virtual UniMapStr at(const std::vector<std::string>& data_identifiers) override
+        virtual std::shared_ptr<UniMapStr> at(const std::vector<std::string>& data_identifiers) override
         {
             std::lock_guard<std::mutex> llock(bb_mutex);
 
-            UniMapStr ret;
+            std::shared_ptr<UniMapStr> ret;
 
             for (const auto& data_identifier : data_identifiers)
             {
@@ -445,7 +446,7 @@ namespace useful_di
                 try
                 {
                     data = this->blackboard->at(data_identifier);
-                    ret.add_data(data_identifier, data);
+                    ret->add_data(data_identifier, data);
                 }
                 catch(const std::out_of_range e)
                 {
@@ -454,25 +455,33 @@ namespace useful_di
                 }
             }
 
+            this->last_returned = ret;
             return ret;
         }
 
 
-        virtual UniMapStr get_all() override
+        virtual std::shared_ptr<UniMapStr> get_all() override
         {
-            std::lock_guard<std::mutex> llock(bb_mutex);
-
+            int i = 0;
+            // fprintf(stdout, "BulkBlackboard %i\n", ++i);
+            
+            // fprintf(stdout, "BulkBlackboard %i\n", ++i);
+            
             auto data_identifiers = this->get_keys_from_blackboard();
-
-            UniMapStr ret;
+            
+            std::lock_guard<std::mutex> llock(bb_mutex);
+            // fprintf(stdout, "BulkBlackboard %i\n", ++i);
+            std::shared_ptr<UniMapStr> ret = std::make_shared<UniMapStr>();
+            // fprintf(stdout, "BulkBlackboard %i\n", ++i);
 
             for (const auto& data_identifier : data_identifiers)
             {
+                // fprintf(stdout, "BulkBlackboard %i, %i", ++i, i);
                 std::shared_ptr<useful_di::TypeInterface> data = nullptr;
                 try
                 {
                     data = this->blackboard->at(data_identifier);
-                    ret.add_data(data_identifier, data);
+                    ret->add_data(data_identifier, data);
                 }
                 catch(const std::out_of_range e)
                 {
@@ -481,8 +490,13 @@ namespace useful_di
                 }
             }
 
+            // fprintf(stdout, "BulkBlackboard %i\n", ++i);
+            this->last_returned = ret;
             return ret;
         }
+
+    private:
+        std::shared_ptr<UniMapStr> last_returned;
     };
 
 

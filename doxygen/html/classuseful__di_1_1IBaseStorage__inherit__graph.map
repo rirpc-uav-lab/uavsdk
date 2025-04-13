@@ -1,0 +1,14 @@
+<map id="useful_di::IBaseStorage&lt; Id &gt;" name="useful_di::IBaseStorage&lt; Id &gt;">
+<area shape="rect" id="node1" title=" " alt="" coords="292,122,467,163"/>
+<area shape="rect" id="node7" href="$classuseful__di_1_1MapLikeDataStorageInterface.html" title=" " alt="" coords="517,57,741,98"/>
+<area shape="rect" id="node10" href="$classuseful__di_1_1DataStorageInterface.html" title=" " alt="" coords="515,122,743,163"/>
+<area shape="rect" id="node12" href="$classuseful__di_1_1MapLikeDataStorageInterface.html" title=" " alt="" coords="517,187,741,229"/>
+<area shape="rect" id="node2" href="$classuseful__di_1_1TypeInterface.html" title="Интерфейс типа. Любой класс, являющися объектом данных и предполагающий совместимость с композитной с..." alt="" coords="36,5,213,32"/>
+<area shape="rect" id="node3" href="$classuseful__di_1_1IRemoveAbleContainer.html" title=" " alt="" coords="5,57,244,98"/>
+<area shape="rect" id="node4" href="$classuseful__di_1_1IAtAbleContainer.html" title=" " alt="" coords="25,122,224,163"/>
+<area shape="rect" id="node5" href="$classuseful__di_1_1IModifyAbleContainer.html" title=" " alt="" coords="10,187,239,229"/>
+<area shape="rect" id="node6" href="$classuseful__di_1_1ISizeAbleContainer.html" title=" " alt="" coords="19,253,231,280"/>
+<area shape="rect" id="node8" href="$classuseful__di_1_1Blackboard.html" title=" " alt="" coords="831,13,994,40"/>
+<area shape="rect" id="node9" href="$classuseful__di_1_1UniMapStr.html" title=" " alt="" coords="834,64,991,91"/>
+<area shape="rect" id="node11" href="$classuseful__di_1_1RegistryDataStorage.html" title="Контейнер для заранее определенного набора данных. Может хранить столько объектов,..." alt="" coords="791,115,1035,171"/>
+</map>

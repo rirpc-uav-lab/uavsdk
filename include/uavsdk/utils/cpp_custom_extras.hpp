@@ -9,7 +9,7 @@ namespace utils
         #include <memory>
         #include <cxxabi.h>
 
-        std::string demangle(const char* name) {
+        inline std::string demangle(const char* name) {
 
             int status = -4; // some arbitrary value to eliminate the compiler warning
 
@@ -25,7 +25,7 @@ namespace utils
         #else
 
         // does nothing if not g++
-        std::string demangle(const char* name) {
+        inline std::string demangle(const char* name) {
             return name;
         }
 
