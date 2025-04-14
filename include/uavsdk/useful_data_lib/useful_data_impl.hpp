@@ -631,7 +631,7 @@ namespace useful_di
     {
     public:
         static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "SingleObserverDataCollector: provided SubjectType is not derived from TypeInterface");
-        void attach_observer(std::shared_ptr<IDataObserver> observer) override 
+        void attach_observer(std::shared_ptr<useful_di::IObserver<useful_di::TypeInterface>> observer) override 
         {
             this->observer = observer;
         }
@@ -655,7 +655,7 @@ namespace useful_di
 
     private:
         std::shared_ptr<SubjectType> data;
-        std::shared_ptr<IDataObserver> observer;
+        std::shared_ptr<useful_di::IObserver<useful_di::TypeInterface>> observer;
     };
 
 
@@ -736,6 +736,13 @@ namespace useful_di
     //     // std::vector<std::shared_ptr<IDataObserver<SubjectType>>> observer;
     //     std::vector<std::shared_ptr<IDataObserver> observers;
     // };
+
+
+    template <typename SubjectType>
+    class RetrievableDataObserver : public IDataObserver, public IRetrievableDataContainer<std::shared_ptr<SubjectType>>
+    {
+        static_assert(std::is_base_of<TypeInterface, SubjectType>(), "RetrievableDataObserver: provided SubjectType is not derived from TypeInterface.");
+    };
 
 
 
@@ -829,6 +836,49 @@ namespace useful_di
 
 
 
+    class DataObserverWithCallback : public IDataObserver
+    {
+    public:
+        DataObserverWithCallback(std::function<void(std::shared_ptr<TypeInterface>)> callback)
+        {
+            this->set_callback(callback);
+        }
+
+
+        virtual void be_notified(std::shared_ptr<TypeInterface> input_data) override
+        {
+            this->callback(input_data);
+        }
+
+
+        bool callback_ready()
+        {
+            return this->callback_set;
+        }
+    
+    protected:
+        void callback(std::shared_ptr<TypeInterface> msg) 
+        {
+            if (callback_set)
+                this->callback_obj(msg);
+            else 
+                std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
+        }
+
+    private:
+        std::function<void(std::shared_ptr<TypeInterface>)> callback_obj;
+        bool callback_set{false};
+
+        
+        void set_callback(std::function<void(std::shared_ptr<TypeInterface>)> callback)
+        {
+            this->callback_obj = callback;
+            callback_set = true;
+        }
+    };
+
+
+
     class StrictDataObserver : public DataObserverWithCallback, public IHasExpectations<ObserverCollectorExpectations>
     {
     public:
@@ -899,9 +949,14 @@ namespace useful_di
             this->notify_observers();
         }
 
-        void attach_observer(std::shared_ptr<IDataObserver> observer) override
+        void attach_observer(std::shared_ptr<IObserver<TypeInterface>> observer) override
         {
             std::lock_guard<std::mutex> lock(data_mx);
+            
+            if (!observer) {
+                throw std::runtime_error("StrictDataCollector: Tried to attach a null observer.");
+            }
+
             auto observer_p = std::dynamic_pointer_cast<StrictDataObserver>(observer);
 
             if (!observer_p) throw std::runtime_error("StrictDataCollector: Tried to attach an incompatible observer. Should derive from StrictDataObserver");
@@ -913,7 +968,7 @@ namespace useful_di
     protected:
         std::mutex data_mx;
         std::shared_ptr<TypeInterface> current_data;
-        std::vector<std::shared_ptr<IDataObserver>> observers;
+        std::vector<std::shared_ptr<IObserver<TypeInterface>>> observers;
         
         void notify_observers() override
         {
@@ -970,26 +1025,26 @@ namespace useful_di
 
 
 
-    template <typename Id>
-    class StrictlyInitializableDataDependencyManager 
-    :   public IDataDependencyManager<Id>, 
-        public IInitializeAble<std::pair<
-        std::map<Id, std::shared_ptr<StrictBindableDataObserver>>, 
-        std::map<Id, std::shared_ptr<StrictDataCollector>>
-        >>,
-        public IHasStringConvertibleIdentifier<Id>
-    {
-    public:
-        StrictlyInitializableDataDependencyManager(std::pair<std::map<Id, std::shared_ptr<StrictBindableDataObserver>>, std::map<Id, std::shared_ptr<StrictDataCollector>>> init_data_dependencies)
-        {
-            for (auto it = init_data_dependencies.first.begin(); it != init_data_dependencies.first.end(); it++)
-            {
-                if (!it.second->callback_ready()) throw std::runtime_error("StrictlyInitializableDataDependencyManager: provided initialization has an observer with unprepared callback at key " + it.first);
-                if (!it.second->is_bound()) throw std::runtime_error("StrictlyInitializableDataDependencyManager: provided initialization has an unbound observer at key " + it.first);
-            }
-            this->initialize(init_data_dependencies);
-        }
-    };
+    // template <typename Id>
+    // class StrictlyInitializableDataDependencyManager 
+    // :   public IDataDependencyManager<Id>, 
+    //     public IInitializeAble<std::pair<
+    //     std::map<Id, std::shared_ptr<StrictBindableDataObserver>>, 
+    //     std::map<Id, std::shared_ptr<StrictDataCollector>>
+    //     >>,
+    //     public IHasStringConvertibleIdentifier<Id>
+    // {
+    // public:
+    //     StrictlyInitializableDataDependencyManager(std::pair<std::map<Id, std::shared_ptr<StrictBindableDataObserver>>, std::map<Id, std::shared_ptr<StrictDataCollector>>> init_data_dependencies)
+    //     {
+    //         for (auto it = init_data_dependencies.first.begin(); it != init_data_dependencies.first.end(); it++)
+    //         {
+    //             if (!it.second->callback_ready()) throw std::runtime_error("StrictlyInitializableDataDependencyManager: provided initialization has an observer with unprepared callback at key " + it.first);
+    //             if (!it.second->is_bound()) throw std::runtime_error("StrictlyInitializableDataDependencyManager: provided initialization has an unbound observer at key " + it.first);
+    //         }
+    //         this->initialize(init_data_dependencies);
+    //     }
+    // };
 
 
     // class DataDependencyManagerStr : public useful_di::StrictlyInitializableDataDependencyManager<std::string>

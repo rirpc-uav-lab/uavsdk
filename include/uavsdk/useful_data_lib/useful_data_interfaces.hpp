@@ -145,87 +145,38 @@ namespace useful_di
     // class ListLikeDataComposite : public DataCompositeInterface<UniversalDataFormat, 
 
 
+    template <typename T>
+    class IObserver 
+    {
+    public: 
+        virtual ~IObserver() = default; // Add a virtual destructor!
+        virtual void be_notified(std::shared_ptr<T> input_data) = 0;
+    };
+
+
     /**
      * @brief Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface
      */
-    class IDataObserver : virtual public TypeInterface
-    {
+    class IDataObserver : public virtual TypeInterface, public virtual IObserver<TypeInterface>
+    { 
     public:
-        /**
-         * @brief метод, который будет вызван, когда DataCollectorInterface<DataType> изменит свое состояние
-         */
-        virtual void be_notified(std::shared_ptr<TypeInterface> input_data) = 0;
-        // virtual std::shared_ptr<SubjectType> get_data() = 0;
+        virtual ~IDataObserver() = default; // Add a virtual destructor!
     };
 
-
-    template <typename SubjectType>
-    class RetrievableDataObserver : public IDataObserver, public IRetrievableDataContainer<std::shared_ptr<SubjectType>>
-    {
-        static_assert(std::is_base_of<TypeInterface, SubjectType>(), "RetrievableDataObserver: provided SubjectType is not derived from TypeInterface.");
-    };
-
-
-    class DataObserverWithCallback : public IDataObserver
+    template <typename T>
+    class ICollector 
     {
     public:
-        DataObserverWithCallback(std::function<void(std::shared_ptr<TypeInterface>)> callback)
-        {
-            this->set_callback(callback);
-        }
-
-
-        virtual void be_notified(std::shared_ptr<TypeInterface> input_data) override
-        {
-            this->callback(input_data);
-        }
-
-
-        bool callback_ready()
-        {
-            return this->callback_set;
-        }
-    
-    protected:
-        void callback(std::shared_ptr<TypeInterface> msg) 
-        {
-            if (callback_set)
-                this->callback_obj(msg);
-            else 
-                std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
-        }
-
-    private:
-        std::function<void(std::shared_ptr<TypeInterface>)> callback_obj;
-        bool callback_set{false};
-
-        
-        void set_callback(std::function<void(std::shared_ptr<TypeInterface>)> callback)
-        {
-            this->callback_obj = callback;
-            callback_set = true;
-        }
-    };
-
-
-    /**
-     * 
-     * @tparam SubjectType тип изначального объекта данных
-     */
-    // template <typename SubjectType>
-    class IDataCollector : public virtual TypeInterface
-    {
-    public:
-        // static_assert(std::is_base_of<useful_di::TypeInterface, SubjectType>::value, "DataCollectorInterface: provided SubjectType must be derived from TypeInterface (currently it is not).");
+        virtual ~ICollector() = default; // Add a virtual destructor!
         /**
          * @brief метод для изменения состояния субъекта
          */
-        virtual void update_data(std::shared_ptr<TypeInterface> data) = 0;
+        virtual void update_data(std::shared_ptr<T> data) = 0;
 
         /**
          * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта
          */
-        virtual void attach_observer(std::shared_ptr<IDataObserver> observer) = 0;
+        virtual void attach_observer(std::shared_ptr<IObserver<T>> observer) = 0;
 
     protected:
         /**
@@ -235,15 +186,32 @@ namespace useful_di
     };
 
 
-    template <typename Id>
-    class IDataDependencyManager : public virtual TypeInterface
-    {
+    /**
+     * 
+     * @tparam SubjectType тип изначального объекта данных
+     */
+    // template <typename SubjectType>
+    class IDataCollector : public virtual TypeInterface, public virtual ICollector<TypeInterface>
+    { 
     public:
-        virtual void bind_input_to(Id identifier, std::shared_ptr<DataObserverWithCallback> output) = 0; 
-        virtual void bind_output_to(Id identifier, std::shared_ptr<IDataObserver> input) = 0; 
+        virtual ~IDataCollector() = default; // Add a virtual destructor!
 
-    protected:
-        std::map<Id, std::shared_ptr<DataObserverWithCallback>> data_inputs;
-        std::map<Id, std::shared_ptr<IDataCollector>> data_outputs;
+        /**
+         * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта
+         */
+        virtual void attach_observer(std::shared_ptr<IObserver<TypeInterface>> observer) override = 0;
     };
+
+
+    // template <typename Id>
+    // class IDataDependencyManager : public virtual TypeInterface
+    // {
+    // public:
+    //     virtual void bind_input_to(Id identifier, std::shared_ptr<DataObserverWithCallback> output) = 0; 
+    //     virtual void bind_output_to(Id identifier, std::shared_ptr<IDataObserver> input) = 0; 
+
+    // protected:
+    //     std::map<Id, std::shared_ptr<DataObserverWithCallback>> data_inputs;
+    //     std::map<Id, std::shared_ptr<IDataCollector>> data_outputs;
+    // };
 };

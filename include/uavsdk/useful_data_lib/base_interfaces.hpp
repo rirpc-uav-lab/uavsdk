@@ -23,7 +23,7 @@ namespace useful_di
         {
             // this->___set_type();
         }
-
+        virtual ~TypeInterface() = default; 
 
         /**
          * @brief Возвращает строку, хранящую тип данного объекта, заданный

@@ -266,7 +266,7 @@ namespace uavsdk
             }
 
 
-            void attach_observer(std::shared_ptr<useful_di::IDataObserver> observer) override
+            void attach_observer(std::shared_ptr<useful_di::IObserver<useful_di::TypeInterface>> observer) override
             {
                 if (observer)
                 {
@@ -307,7 +307,7 @@ namespace uavsdk
 
             private:
             std::shared_ptr<useful_di::UniMapStr> data;
-            std::vector<std::shared_ptr<useful_di::IDataObserver>> observers_list = {};
+            std::vector<std::shared_ptr<useful_di::IObserver<useful_di::TypeInterface>>> observers_list = {};
             
             virtual uavsdk::command_manager::ExecutionResult _executor_tick() override
             {
