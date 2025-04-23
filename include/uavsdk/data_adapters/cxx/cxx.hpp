@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <uavsdk/useful_data_lib/useful_data_interfaces.hpp>
+#include <uavsdk/useful_data_lib/useful_data_impl.hpp>
 
 
 namespace uavsdk
