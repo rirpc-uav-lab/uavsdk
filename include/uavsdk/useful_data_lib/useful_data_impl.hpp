@@ -166,45 +166,9 @@ namespace useful_di
                 return this->keys;
             }
 
-
-            // std::string add_data(const std::shared_ptr<TypeInterface>& _data) 
-            // {
-            //     return this->_add_data(_data);
-            // }
-
-
-            // void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data)
-            // {
-            //     this->_add_data(_key, _data);
-            // }
-
-
-            // virtual std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
-            // {
-
-            //     std::mt19937 generator(std::random_device{}()); // Seed with real randomness
-            //     std::uniform_int_distribution<int> distribution(0, RAND_MAX);
-
-            //     std::string _key = std::to_string(distribution(generator));
-            //     if (not this->data_storage.count(_key))
-            //     {
-            //         this->keys.push_back(_key);
-            //         this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
-            //     }
-            //     else 
-            //     {
-            //         this->modify_data(_key, _data);
-            //         std::cout << "ATTENTION!!! Your new randomly generated key already exists! Overwriting data...\n";
-            //         // throw std::runtime_error("UniMapStr::_add_data(id) - _key random generation failed. Randomly generated key is the same as one of existing keys");
-            //     }
-
-            //     return _key;
-            // }
-
-
             virtual void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
             {
-                
+                if (!_data) throw std::runtime_error("UniMapStr::add_data(): Invalid pointer _data passed to add_data()");
                 if (not this->data_storage.count(_key))
                 {
                     std::string tmp_key = _key;

@@ -11,6 +11,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+find_package(ament_cmake_gtest REQUIRED)
+find_package(ament_cmake_gmock REQUIRED)
+
+
 include_directories(include)
 
 set(UTILS_LIB_SOURCES include/uavsdk/utils/conversion_functions.hpp include/uavsdk/utils/cpp_custom_extras.hpp)
@@ -172,6 +176,30 @@ install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
   )
+
+# ament_add_gtest(${PROJECT_NAME}_USEFUL_DI_TEST test/useful_di_test.cpp)
+# target_include_directories(
+#   ${PROJECT_NAME}_USEFUL_DI_TEST
+#   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#   $<INSTALL_INTERFACE:include>)
+# target_link_libraries(${PROJECT_NAME}_USEFUL_DI_TEST useful_data_lib test_utils_lib)
+
+
+if(BUILD_TESTING)
+  ament_add_gmock(${PROJECT_NAME}_unimapstr_test test/unimapstr_test.cpp)
+  target_include_directories(${PROJECT_NAME}_unimapstr_test PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  )
+  target_link_libraries(${PROJECT_NAME}_unimapstr_test useful_data_lib)
+
+  # ament_add_gtest(${PROJECT_NAME}_BH_TREES_TEST test/bh_tree_test.cpp)
+  # target_include_directories(
+  #   ${PROJECT_NAME}_BH_TREES_TEST
+  #   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  #   $<INSTALL_INTERFACE:include>)
+  # target_link_libraries(${PROJECT_NAME}_BH_TREES_TEST useful_data_lib)
+endif()
 
 
 
