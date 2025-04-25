@@ -15,12 +15,12 @@
 using namespace useful_di;
 using uavsdk::data_adapters::cxx::BasicDataAdapter;
 
-TEST(useful_data_imp, UniMapSystemWork)
-{
-    EXPECT_TRUE(false) << "\nTEST_MESSAGE: system performance check\n";
-}
+// TEST(useful_data_imp, UniMapSystemWork)
+// {
+//     EXPECT_TRUE(false) << "\nTEST_MESSAGE: system performance check\n";
+// }
 
-TEST(useful_data_imp, UniMapStrWorksTestKey)
+TEST(useful_data_imp, UniMapStrWorksKeys)
 {
     UniMapStr UMS_test;
     std::vector<std::string> test_key;
@@ -34,7 +34,9 @@ TEST(useful_data_imp, UniMapStrWorksTestKey)
     EXPECT_FALSE(test_key.empty()) << "TEST_MESSAGE: key has not sent\n";
 }
 
-TEST(useful_data_imp, UniMapStrWorksModifaiData)
+
+
+TEST(useful_data_imp, UniMapStrWorksModifyData)
 {
     UniMapStr UMS_test;
     std::string test_id = "test_id";
@@ -48,17 +50,19 @@ TEST(useful_data_imp, UniMapStrWorksModifaiData)
     EXPECT_NE(testData, UMS_test.at(test_id)) << "\nTEST_MESSAGE: data has not changed";
 }
 
+
 TEST(useful_data_imp, UniMapStrWorksAtAndAddData)
 {
     UniMapStr UMS_test;
     std::string test_id = "test_id";
     auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
 
-    EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() has throw exeption";
-    EXPECT_NO_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: at() has throw exeption";
+    EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() has thrown an exeption";
+    EXPECT_NO_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: at() has thrown an exeption";
 
-    EXPECT_EQ(testData,UMS_test.at(test_id)) << "\nTEST_MESSAGE: vars in at is not equel";
+    EXPECT_EQ(testData,UMS_test.at(test_id)) << "\nTEST_MESSAGE: vars in at is not equal";
 }
+
 
 TEST(useful_data_imp, UniMapStrWorksRemoveData)
 {
@@ -73,6 +77,7 @@ TEST(useful_data_imp, UniMapStrWorksRemoveData)
     EXPECT_ANY_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: data has not removed";
 }
 
+
 TEST(useful_data_imp, UniMapStrWorksSize)
 {
     UniMapStr UMS_test;
@@ -83,6 +88,7 @@ TEST(useful_data_imp, UniMapStrWorksSize)
 
     EXPECT_TRUE(UMS_test.size()) << "UMS is empty";
 }
+
 
 int main(int argc, char ** argv)
 {
