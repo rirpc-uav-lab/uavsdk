@@ -13,15 +13,20 @@
 #include "uavsdk/useful_data_lib/useful_data_impl.hpp"
 
 using namespace useful_di;
+using uavsdk::data_adapters::cxx::BasicDataAdapter;
+
+TEST(useful_data_imp, UniMapSystemWork)
+{
+    EXPECT_TRUE(false) << "\nTEST_MESSAGE: system performance check\n";
+}
 
 TEST(useful_data_imp, UniMapStrWorksTestKey)
 {
     UniMapStr UMS_test;
-
     std::vector<std::string> test_key;
     
     std::string test_id = "test_id";
-    auto testData = std::make_shared<TypeInterface>();
+    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
 
     EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data throw exeption\n";
 
@@ -32,11 +37,10 @@ TEST(useful_data_imp, UniMapStrWorksTestKey)
 TEST(useful_data_imp, UniMapStrWorksModifaiData)
 {
     UniMapStr UMS_test;
-
     std::string test_id = "test_id";
-    
-    auto testData = std::make_shared<TypeInterface>();
-    auto testModifyData = std::make_shared<useful_di::TypeInterface>(); // узнать, как присвоить значение. В остальном тест готов
+
+    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
+    auto testModifyData = std::make_shared<BasicDataAdapter<int>>(2);    
 
     EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() throw exeption";
     EXPECT_NO_THROW(UMS_test.modify_data("test_id",testModifyData)) << "\nTEST_MESSAGE: modify_data() throw exeption";
@@ -48,7 +52,7 @@ TEST(useful_data_imp, UniMapStrWorksAtAndAddData)
 {
     UniMapStr UMS_test;
     std::string test_id = "test_id";
-    auto testData = std::make_shared<TypeInterface>();
+    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
 
     EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() has throw exeption";
     EXPECT_NO_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: at() has throw exeption";
@@ -60,28 +64,25 @@ TEST(useful_data_imp, UniMapStrWorksRemoveData)
 {
     UniMapStr UMS_test;
     std::string test_id = "test_id";
-    auto testData = std::make_shared<TypeInterface>();
+    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
 
     EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() has throw exeption";
 
     UMS_test.remove_data(test_id);
 
     EXPECT_ANY_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: data has not removed";
-
-    EXPECT_NO_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: test of work capabillity system";
 }
 
 TEST(useful_data_imp, UniMapStrWorksSize)
 {
     UniMapStr UMS_test;
     std::string test_id = "test_id";
-    auto testData = std::make_shared<TypeInterface>();
+    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
 
     EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() has throw exeption";
 
     EXPECT_TRUE(UMS_test.size()) << "UMS is empty";
 }
-
 
 int main(int argc, char ** argv)
 {
@@ -106,26 +107,6 @@ int main(int argc, char ** argv)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// template <typename Type>
 // std::map<std::string, bool> test_generic_data_storage(std::shared_ptr<useful_di::MapLikeDataStorageInterface<Type>> storage)
 // {   
 //     using uavsdk::data_adapters::cxx::BasicDataAdapter;
