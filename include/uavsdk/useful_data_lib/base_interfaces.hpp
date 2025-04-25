@@ -54,20 +54,20 @@ namespace useful_di
         };
     };
 
-
     template <typename Retrieved>
     class IRetrievableDataContainer
     {
     public:
+        virtual ~IRetrievableDataContainer() = default;
         virtual Retrieved get_data() = 0;
     };
-
 
 
     template <typename Id>
     class IAppendAbleContainer
     {
         public:
+        virtual ~IAppendAbleContainer() = default;
         virtual Id add_data(const std::shared_ptr<TypeInterface>& _data) = 0;
     };
 
@@ -76,6 +76,7 @@ namespace useful_di
     class IInsertAbleContainer
     {
         public:
+        virtual ~IInsertAbleContainer() = default;
         virtual void add_data(const Id _key, const std::shared_ptr<TypeInterface>& _data) = 0;
     };
 
@@ -84,6 +85,7 @@ namespace useful_di
     class IRemoveAbleContainer
     {
         public:
+            virtual ~IRemoveAbleContainer() = default;
             virtual void remove_data(const Id& data_identifier) = 0;
     };
 
@@ -92,6 +94,7 @@ namespace useful_di
     class IAtAbleContainer
     {
         public:
+            virtual ~IAtAbleContainer() = default;
             virtual std::shared_ptr<TypeInterface> at(const Id& data_identifier) = 0;
     };
 
@@ -100,6 +103,7 @@ namespace useful_di
     class IBulkAtAbleContainer
     {
         public:
+            virtual ~IBulkAtAbleContainer() = default;
             virtual ReturnedType at(const Id& data_identifiers) = 0;
             virtual ReturnedType get_all() = 0;
     };
@@ -108,6 +112,7 @@ namespace useful_di
     class ISizeAbleContainer
     {
         public:
+            virtual ~ISizeAbleContainer() = default;
             virtual size_t size() = 0;
     };
 
@@ -116,6 +121,7 @@ namespace useful_di
     class IModifyAbleContainer
     {
     public:
+        virtual ~IModifyAbleContainer() = default;
         virtual void modify_data(const Id& data_identifier, const std::shared_ptr<TypeInterface>& _data) = 0;
     };
 
@@ -124,14 +130,16 @@ namespace useful_di
     class IInitializeAble
     {
     public:
+        virtual ~IInitializeAble() = default;
         virtual void initialize(InitializedType init_data) = 0;
     };
 
 
     template <typename BindT>
-    class IBindable 
+    class IBindable
     {
     public:
+        virtual ~IBindable() = default;
         virtual void bind(BindT obj) = 0;
     };
 
@@ -139,15 +147,29 @@ namespace useful_di
     class IBoundCheckAble
     {
     public:
+        virtual ~IBoundCheckAble() = default;
         virtual bool is_bound() = 0;
     };
 
 
     template <typename Id>
-    class IHasStringConvertibleIdentifier 
+    class IHasIdentifier
     {
     public:
-        virtual std::string to_str(Id id) = 0;
+        Id get_id() { return this->id; }
+        void set_id(Id new_id) { this->id = new_id; }
+    protected:
+        Id id;
+    };
+
+
+    template <typename Id>
+    class IHasStringConvertibleIdentifier : public virtual IHasIdentifier<Id> 
+    {
+    public:
+        virtual ~IHasStringConvertibleIdentifier() = default;
+        // virtual std::string to_str(Id id) = 0;
+        virtual std::string get_str_id() = 0;
     };
 
 
@@ -155,6 +177,7 @@ namespace useful_di
     class IHasExpectations
     {
     public:
+        virtual ~IHasExpectations() = default;
         virtual ExpectationsType get_expectations() = 0;
         virtual const bool match_expectations(const ExpectationsType &other_expectations) = 0;
     protected:

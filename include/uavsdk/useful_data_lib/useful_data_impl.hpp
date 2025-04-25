@@ -13,6 +13,139 @@
 
 namespace useful_di
 {
+    // template <typename T>
+    // class SimpleObserver : public IObserver<T>
+    // {
+
+    // }
+
+
+    template <typename T>
+    class SimpleCollector : public virtual ICollector<T>
+    {
+    public:
+        /**
+         * @brief метод для изменения состояния субъекта
+         */
+        void update_data(std::shared_ptr<T> data) override
+        {
+            if (!data) throw std::runtime_error("SimpleCollector: tried to update data with an invalida pointer.");
+            this->data = data;
+            this->notify_observers();
+        }
+
+        /**
+         * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта
+         */
+        void attach_observer(std::shared_ptr<IObserver<T>> observer) override
+        {
+            if (!observer) throw std::runtime_error("SimpleCollector: tried to attach an observer wich is invalid.");
+            this->observers.push_back(observer);
+        }
+
+    protected:
+        /**
+         * @brief метод, который уведомляет всех наблюдателей о изменении состояния субъекта, и передает им текущее состояние
+         */
+        void notify_observers() override
+        {
+            for (const auto& observer : observers)
+            {
+                observer->be_notified(data);
+            }
+        }
+    
+    private:
+        std::shared_ptr<T> data;
+        std::vector<std::shared_ptr<IObserver<T>>> observers;
+    };
+
+
+    template <typename T>
+    class SimpleObserverWithCallback : public IObserver<T>
+    {
+    public: 
+        // virtual ~SimpleObserverWithCallback() = default;
+        SimpleObserverWithCallback(std::function<void(std::shared_ptr<T>)> callback)
+        {
+            this->set_callback(callback);
+        }
+
+
+        bool callback_ready()
+        {
+            return this->callback_set;
+        }
+
+
+        virtual void be_notified(std::shared_ptr<T> input_data) override
+        {
+            this->callback(input_data);
+        }
+
+    protected:
+        std::function<void(std::shared_ptr<T>)> callback_obj;
+        bool callback_set{false};
+
+
+        void callback(std::shared_ptr<T> msg) 
+        {
+            if (!msg) 
+                throw std::runtime_error("SimpleObserverWithCallback: Invalid pointer passed to callback().");
+
+            if (callback_set)
+                this->callback_obj(msg);
+            else 
+                throw std::runtime_error("SimpleObserverWithCallback: Callback was not set but has already been called.");
+        }
+
+
+        void set_callback(std::function<void(std::shared_ptr<T>)> callback)
+        {
+            this->callback_obj = callback;
+            callback_set = true;
+        }
+    };
+
+
+    template <typename T>
+    class SimpleBindableObserverWithCallback : public SimpleObserverWithCallback<T>, public virtual IBindable<std::shared_ptr<ICollector<T>>>, public virtual IBoundCheckAble
+    {
+    public: 
+        SimpleBindableObserverWithCallback(std::function<void(std::shared_ptr<T>)> callback) : SimpleObserverWithCallback<T>(callback)
+        { }
+
+
+        void bind(std::shared_ptr<ICollector<T>> collector) override 
+        {
+            // std::lock_guard<std::mutex> lock(data_mx);
+            std::shared_ptr<SimpleBindableObserverWithCallback<T>> this_p(this);
+            collector->attach_observer(this_p);
+            this_is_bound = true;
+        }
+
+
+        virtual void be_notified(std::shared_ptr<T> input_data) override
+        {
+            if (this->is_bound())
+                this->callback(input_data);
+            else
+                throw std::runtime_error("SimpleObserverWithCallback: Observer has not been bound.");
+        }
+
+
+        bool is_bound() override
+        {
+            // std::lock_guard<std::mutex> lock(data_mx);
+            return this->this_is_bound;
+        }
+
+    protected:
+        bool this_is_bound{false};
+    };
+
+
+
     /**
      * @tparam SubjectType тип изначального объекта данных
      */
@@ -202,12 +335,17 @@ namespace useful_di
 
             std::shared_ptr<TypeInterface> at(const std::string& data_identifier) override
             {
+                // fprintf(stdout, "at line: %i\n", __LINE__);
                 if (not this->data_storage.count(data_identifier))
                 {
+                    // fprintf(stdout, "at line: %i\n", __LINE__);
                     std::string msg = "UniMapStr: Error! No such key in blackboard. Key = " + data_identifier + ".\n";
                     throw std::runtime_error(msg);
                 }
-                return this->data_storage.at(data_identifier);
+                // fprintf(stdout, "at line: %i\n", __LINE__);
+                auto type_interface = this->data_storage.at(data_identifier);
+                // fprintf(stdout, "at line: %i\n", __LINE__);
+                return type_interface;
             }
 
 
@@ -826,7 +964,7 @@ namespace useful_di
             if (callback_set)
                 this->callback_obj(msg);
             else 
-                std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
+                throw std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
         }
 
     private:

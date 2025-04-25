@@ -149,7 +149,7 @@ namespace useful_di
     class IObserver 
     {
     public: 
-        virtual ~IObserver() = default; // Add a virtual destructor!
+        virtual ~IObserver() = default;
         virtual void be_notified(std::shared_ptr<T> input_data) = 0;
     };
 
@@ -160,14 +160,14 @@ namespace useful_di
     class IDataObserver : public virtual TypeInterface, public virtual IObserver<TypeInterface>
     { 
     public:
-        virtual ~IDataObserver() = default; // Add a virtual destructor!
+        virtual ~IDataObserver() = default;
     };
 
     template <typename T>
     class ICollector 
     {
     public:
-        virtual ~ICollector() = default; // Add a virtual destructor!
+        virtual ~ICollector() = default;
         /**
          * @brief метод для изменения состояния субъекта
          */
@@ -194,7 +194,7 @@ namespace useful_di
     class IDataCollector : public virtual TypeInterface, public virtual ICollector<TypeInterface>
     { 
     public:
-        virtual ~IDataCollector() = default; // Add a virtual destructor!
+        virtual ~IDataCollector() = default;
 
         /**
          * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта
