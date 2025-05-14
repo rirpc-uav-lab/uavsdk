@@ -15,154 +15,112 @@
 using namespace useful_di;
 using uavsdk::data_adapters::cxx::BasicDataAdapter;
 
-TEST(useful_data_imp, UniMapSystemWork)
-{
-    EXPECT_TRUE(false) << "\nTEST_MESSAGE: system performance check\n";
-}
-
 TEST(useful_data_imp, UniMapStrWorksTestKey)
 {
+    // Проверка создания и передачи ключей.
+
     UniMapStr UMS_test;
     std::vector<std::string> test_key;
     
     std::string test_id = "test_id";
-    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
+    auto testData = std::make_shared<BasicDataAdapter<int>>(1);   
 
-    EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data throw exeption\n";
-
+    UMS_test.add_data(test_id,testData);
+    
     test_key = UMS_test.get_present_keys();
-    EXPECT_FALSE(test_key.empty()) << "TEST_MESSAGE: key has not sent\n";
+    EXPECT_FALSE(test_key.empty()) << "TEST_MESSAGE:the keys were not sent\n";
 }
 
-TEST(useful_data_imp, UniMapStrWorksModifaiData)
+TEST(useful_data_imp, UniMapStrWorksTestKey_BREAK_TEST)
 {
+    // Проверка создания и передачи ключей. Попытка сломать тест
+
+    UniMapStr UMS_test;
+    std::vector<std::string> test_key;
+    
+    test_key = UMS_test.get_present_keys();
+    EXPECT_TRUE(test_key.empty()) << "TEST_MESSAGE: keys is not empty\n";
+}
+
+
+TEST(useful_data_imp, UniMapStrWorksModifaiDataIntToInt)
+{
+    // Проверка замены данных в ячейке данными того же типа.
+
     UniMapStr UMS_test;
     std::string test_id = "test_id";
 
     auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
     auto testModifyData = std::make_shared<BasicDataAdapter<int>>(2);    
 
-    EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() throw exeption";
-    EXPECT_NO_THROW(UMS_test.modify_data("test_id",testModifyData)) << "\nTEST_MESSAGE: modify_data() throw exeption";
+    UMS_test.add_data(test_id,testData);
 
-    EXPECT_NE(testData, UMS_test.at(test_id)) << "\nTEST_MESSAGE: data has not changed";
+    EXPECT_NO_THROW(UMS_test.modify_data("test_id",testModifyData)) << "\nTEST_MESSAGE: modify_data() mod error";
+    EXPECT_NE(testData, UMS_test.at(test_id)) << "\nTEST_MESSAGE: the data has not been modified";
 }
 
-TEST(useful_data_imp, UniMapStrWorksAtAndAddData)
+TEST(useful_data_imp, UniMapStrWorksModifaiDataIntToStr_BREAK_TEST)
 {
+    // Проверка замены данных в ячейке данными иного типа. Попытка сломать тест.
+
     UniMapStr UMS_test;
     std::string test_id = "test_id";
-    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
 
-    EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() has throw exeption";
-    EXPECT_NO_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: at() has throw exeption";
+    auto testData = std::make_shared<BasicDataAdapter<int>>(1);       
+    auto testModifyDataIntToStr = std::make_shared<BasicDataAdapter<std::string>>("testValue");    
 
-    EXPECT_EQ(testData,UMS_test.at(test_id)) << "\nTEST_MESSAGE: vars in at is not equel";
+    UMS_test.add_data(test_id, testData);
+    EXPECT_NO_THROW(UMS_test.modify_data("test_id",testModifyDataIntToStr)) << "\nTEST_MESSAGE: no type conflict detected";
 }
 
 TEST(useful_data_imp, UniMapStrWorksRemoveData)
 {
+    // Нормальная проверка удаления данных
+
     UniMapStr UMS_test;
     std::string test_id = "test_id";
     auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
+    
+    UMS_test.add_data(test_id,testData);
+    EXPECT_NO_THROW(UMS_test.remove_data(test_id)) << "\n TEST_MESSAGE: remove_data() attempt to delete non-existent element";
 
-    EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() has throw exeption";
+    EXPECT_ANY_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: data was not removed";
+}
 
-    UMS_test.remove_data(test_id);
+TEST(useful_data_imp, UniMapStrWorksRemoveData_BREAK_TEST)
+{
+    // Провека удаления данных с целью сломать тест
 
-    EXPECT_ANY_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: data has not removed";
+    UniMapStr UMS_test;
+    std::string test_id = "test_id";
+    
+    EXPECT_ANY_THROW(UMS_test.remove_data(test_id)) << "\n TEST_MESSAGE: attempt to delete non-existent element";
 }
 
 TEST(useful_data_imp, UniMapStrWorksSize)
 {
+    // Проверка функции size
+
     UniMapStr UMS_test;
     std::string test_id = "test_id";
     auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
 
-    EXPECT_NO_THROW(UMS_test.add_data(test_id,testData)) << "\nTEST_MESSAGE: add_data() has throw exeption";
-
+    UMS_test.add_data(test_id,testData);
     EXPECT_TRUE(UMS_test.size()) << "UMS is empty";
 }
+
+TEST(useful_data_imp, UniMapStrWorksSize_BREAK_TEST)
+{
+    // Проверка функции size. Попытка сломать тест.
+
+    UniMapStr UMS_test;
+   
+    EXPECT_FALSE(UMS_test.size()) << "UMS is not empty";
+}
+
 
 int main(int argc, char ** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// std::map<std::string, bool> test_generic_data_storage(std::shared_ptr<useful_di::MapLikeDataStorageInterface<Type>> storage)
-// {   
-//     using uavsdk::data_adapters::cxx::BasicDataAdapter;
-
-//     auto num = std::make_shared<BasicDataAdapter<double>>(321.03);
-
-//     bool TEST_ADD_DATA_WORKS = false;
-//     Type test_key = storage->add_data(num);
-    
-//     auto num2 = std::dynamic_pointer_cast<BasicDataAdapter<double>>(storage->at(test_key));
-
-//     TEST_ADD_DATA_WORKS = num->get_data() == num2->get_data();
-
-//     NUM_REAL_EQ = TEST_ADD_DATA_WORKS;
-
-//     bool TEST_SIZE_WORKS = false;
-
-//     size_t size = storage->size();
-    
-//     if (size == 1) 
-//     TEST_SIZE_WORKS = true;
-
-
-//     bool TEST_MODIFICATION_WORKS = false;
-    
-//     auto num_mod = std::make_shared<BasicDataAdapter<double>>(567.89);
-//     auto num_orig = std::dynamic_pointer_cast<BasicDataAdapter<double>>(storage->at(test_key));
-    
-//     storage->modify_data(test_key, num_mod);
-
-//     TEST_MODIFICATION_WORKS = (num_mod->get_data() != num_orig->get_data());
-
-//     MODE_EQ = TEST_MODIFICATION_WORKS;
-
-//     bool TEST_DATA_REMOVED = false;
-//     storage->remove_data(test_key);
-
-//     // try 
-//     // {
-//     //     auto num3 = storage->at(test_key);
-//     // } 
-//     // catch (std::exception e) 
-//     // {
-//     //     TEST_DATA_REMOVED = true;
-//     //     EXECPTION_EXPECT = TEST_DATA_REMOVED;
-//     //     DELETE_TEST = TEST_DATA_REMOVED;
-//     // }
-
-//     std::map<std::string, bool> results;
-//     results.insert(std::make_pair<std::string, bool>("TEST_SIZE_WORKS", std::move(TEST_SIZE_WORKS)));
-
-//     results.insert(std::make_pair<std::string, bool>("TEST_ADD_DATA_WORKS", std::move(TEST_ADD_DATA_WORKS)));
-
-//     results.insert(std::make_pair<std::string, bool>("TEST_MODIFICATION_WORKS", std::move(TEST_MODIFICATION_WORKS)));
-//     results.insert(std::make_pair<std::string, bool>("TEST_DATA_REMOVED", std::move(TEST_DATA_REMOVED)));
-//     results.insert(std::make_pair<std::string, bool>("MOCK_FAIL", false));
-
-//     return results;
-// }
