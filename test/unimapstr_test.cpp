@@ -69,7 +69,7 @@ TEST(useful_data_imp, UniMapStrWorksModifaiDataIntToStr_BREAK_TEST)
     auto testModifyDataIntToStr = std::make_shared<BasicDataAdapter<std::string>>("testValue");    
 
     UMS_test.add_data(test_id, testData);
-    EXPECT_ANY_THROW(UMS_test.modify_data("test_id",testModifyDataIntToStr)) << "\nTEST_MESSAGE: no type conflict detected";
+    EXPECT_ANY_THROW(UMS_test.modify_data(test_id,testModifyDataIntToStr)) << "\nTEST_MESSAGE: no type conflict detected";
 }
 
 TEST(useful_data_imp, UniMapStrWorksRemoveData)
@@ -99,14 +99,42 @@ TEST(useful_data_imp, UniMapStrWorksRemoveData_BREAK_TEST)
 TEST(useful_data_imp, UniMapStrWorksSize)
 {
     // Проверка функции size
+    // TODO: Добавить больше проверок и больше изменений (множкство вставок, удаление, множество удалений)
 
     UniMapStr UMS_test;
-    std::string test_id = "test_id";
-    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
+    EXPECT_EQ(UMS_test.size(),0) << "\nTEST_MESSAGE: UMS is not empty when created";
 
-    UMS_test.add_data(test_id,testData);
-    // TODO: Добавить больше проверок и больше изменений (множкство вставок, удаление, множество удалений)
-    EXPECT_TRUE(UMS_test.size()) << "UMS is empty";
+    std::string test_id_int = "test_id_int";
+    std::string test_id_bool = "test_id_bool";
+    std::string test_id_string = "test_id_string";
+    std::string test_id_double = "test_id_double";
+
+    auto testDataInt = std::make_shared<BasicDataAdapter<int>>(1);   
+    auto testDataBool = std::make_shared<BasicDataAdapter<bool>>(0);   
+    auto testDataString = std::make_shared<BasicDataAdapter<std::string>>("14");   
+    auto testDataDouble = std::make_shared<BasicDataAdapter<double>>(8.8);   
+    auto testDataInt2 = std::make_shared<BasicDataAdapter<int>>(98);
+
+    UMS_test.add_data(test_id_int,testDataInt);
+    UMS_test.add_data(test_id_bool,testDataBool);
+    UMS_test.add_data(test_id_string,testDataString);
+    UMS_test.add_data(test_id_double,testDataDouble);
+
+    EXPECT_EQ(UMS_test.size(),4) << "\nTEST_MESSAGE: data was not added";
+
+    UMS_test.remove_data(test_id_double);
+    
+    EXPECT_EQ(UMS_test.size(),3) << "\nTEST_MESSAGE: failed to delete one item from UMS";
+
+    UMS_test.modify_data(test_id_int,testDataInt2);
+
+    EXPECT_EQ(UMS_test.size(),3) << "\nTEST_MESSAGE: ???";
+
+    UMS_test.remove_data(test_id_int);
+    UMS_test.remove_data(test_id_bool);
+    UMS_test.remove_data(test_id_string);
+
+    EXPECT_EQ(UMS_test.size(),0) << "\nTEST_MESSAGE: failed to delete all item from UMS";
 }
 
 TEST(useful_data_imp, UniMapStrWorksSize_BREAK_TEST)
@@ -114,7 +142,6 @@ TEST(useful_data_imp, UniMapStrWorksSize_BREAK_TEST)
     // Проверка функции size. Попытка сломать тест.
 
     UniMapStr UMS_test;
-   
     EXPECT_FALSE(UMS_test.size()) << "UMS is not empty";
 }
 
