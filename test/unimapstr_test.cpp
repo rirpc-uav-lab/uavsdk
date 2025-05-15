@@ -42,8 +42,7 @@ TEST(useful_data_imp, UniMapStrWorksTestKey_BREAK_TEST)
     EXPECT_TRUE(test_key.empty()) << "TEST_MESSAGE: keys is not empty\n";
 }
 
-
-TEST(useful_data_imp, UniMapStrWorksModifaiDataIntToInt)
+TEST(useful_data_imp, UniMapStrWorksModifyDataIntToInt)
 {
     // Проверка замены данных в ячейке данными того же типа.
 
@@ -70,7 +69,7 @@ TEST(useful_data_imp, UniMapStrWorksModifaiDataIntToStr_BREAK_TEST)
     auto testModifyDataIntToStr = std::make_shared<BasicDataAdapter<std::string>>("testValue");    
 
     UMS_test.add_data(test_id, testData);
-    EXPECT_NO_THROW(UMS_test.modify_data("test_id",testModifyDataIntToStr)) << "\nTEST_MESSAGE: no type conflict detected";
+    EXPECT_ANY_THROW(UMS_test.modify_data("test_id",testModifyDataIntToStr)) << "\nTEST_MESSAGE: no type conflict detected";
 }
 
 TEST(useful_data_imp, UniMapStrWorksRemoveData)
@@ -106,6 +105,7 @@ TEST(useful_data_imp, UniMapStrWorksSize)
     auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
 
     UMS_test.add_data(test_id,testData);
+    // TODO: Добавить больше проверок и больше изменений (множкство вставок, удаление, множество удалений)
     EXPECT_TRUE(UMS_test.size()) << "UMS is empty";
 }
 
