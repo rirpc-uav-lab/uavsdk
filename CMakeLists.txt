@@ -202,6 +202,21 @@ if(BUILD_TESTING)
   # target_link_libraries(${PROJECT_NAME}_BH_TREES_TEST useful_data_lib)
 endif()
 
+if(BUILD_TESTING)
+  ament_add_gmock(${PROJECT_NAME}_blackboard_test test/blackboard_test.cpp)
+  target_include_directories(${PROJECT_NAME}_blackboard_test PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  )
+  target_link_libraries(${PROJECT_NAME}_blackboard_test useful_data_lib)
+
+  # ament_add_gtest(${PROJECT_NAME}_BH_TREES_TEST test/bh_tree_test.cpp)
+  # target_include_directories(
+  #   ${PROJECT_NAME}_BH_TREES_TEST
+  #   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  #   $<INSTALL_INTERFACE:include>)
+  # target_link_libraries(${PROJECT_NAME}_BH_TREES_TEST useful_data_lib)
+endif()
 
 
 if(BUILD_TESTING)

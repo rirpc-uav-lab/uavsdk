@@ -81,7 +81,7 @@ TEST(useful_data_imp, UniMapStrWorksRemoveData)
     auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
     
     UMS_test.add_data(test_id,testData);
-    EXPECT_NO_THROW(UMS_test.remove_data(test_id)) << "\n TEST_MESSAGE: remove_data() attempt to delete non-existent element";
+    EXPECT_NO_THROW(UMS_test.remove_data(test_id)) << "\nTEST_MESSAGE: remove_data() attempt to delete non-existent element";
 
     EXPECT_ANY_THROW(UMS_test.at(test_id)) << "\nTEST_MESSAGE: data was not removed";
 }
