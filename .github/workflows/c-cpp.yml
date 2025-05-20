@@ -58,6 +58,7 @@ jobs:
         # find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
         # mv src_loc src
         # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble/
+        rosdep init
         rosdep update
         rosdep install -i -y --from-path . --rosdistro $ROS_DISTRO
         source /opt/ros/humble/setup.bash
