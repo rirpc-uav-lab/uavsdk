@@ -31,6 +31,7 @@ TEST(useful_data_imp, UniMapStrWorksTestKey)
     EXPECT_FALSE(test_key.empty()) << "TEST_MESSAGE:the keys were not sent\n";
 }
 
+
 TEST(useful_data_imp, UniMapStrWorksTestKey_BREAK_TEST)
 {
     // Проверка создания и передачи ключей. Попытка сломать тест
@@ -58,6 +59,7 @@ TEST(useful_data_imp, UniMapStrWorksModifyDataIntToInt)
     EXPECT_NE(testData, UMS_test.at(test_id)) << "\nTEST_MESSAGE: the data has not been modified";
 }
 
+
 TEST(useful_data_imp, UniMapStrWorksModifaiDataIntToStr_BREAK_TEST)
 {
     // Проверка замены данных в ячейке данными иного типа. Попытка сломать тест.
@@ -65,12 +67,14 @@ TEST(useful_data_imp, UniMapStrWorksModifaiDataIntToStr_BREAK_TEST)
     UniMapStr UMS_test;
     std::string test_id = "test_id";
 
+
     auto testData = std::make_shared<BasicDataAdapter<int>>(1);       
     auto testModifyDataIntToStr = std::make_shared<BasicDataAdapter<std::string>>("testValue");    
 
     UMS_test.add_data(test_id, testData);
     EXPECT_ANY_THROW(UMS_test.modify_data(test_id,testModifyDataIntToStr)) << "\nTEST_MESSAGE: no type conflict detected";
 }
+
 
 TEST(useful_data_imp, UniMapStrWorksRemoveData)
 {
@@ -95,6 +99,7 @@ TEST(useful_data_imp, UniMapStrWorksRemoveData_BREAK_TEST)
     
     EXPECT_ANY_THROW(UMS_test.remove_data(test_id)) << "\n TEST_MESSAGE: attempt to delete non-existent element";
 }
+
 
 TEST(useful_data_imp, UniMapStrWorksSize)
 {
@@ -137,6 +142,7 @@ TEST(useful_data_imp, UniMapStrWorksSize)
     EXPECT_EQ(UMS_test.size(),0) << "\nTEST_MESSAGE: failed to delete all item from UMS";
 }
 
+
 TEST(useful_data_imp, UniMapStrWorksSize_BREAK_TEST)
 {
     // Проверка функции size. Попытка сломать тест.
@@ -144,6 +150,8 @@ TEST(useful_data_imp, UniMapStrWorksSize_BREAK_TEST)
     UniMapStr UMS_test;
     EXPECT_FALSE(UMS_test.size()) << "UMS is not empty";
 }
+
+
 
 
 int main(int argc, char ** argv)
