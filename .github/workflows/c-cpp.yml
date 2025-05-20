@@ -69,7 +69,3 @@ jobs:
       shell: bash
       run: |
         colcon test --return-code-on-test-failure
-
-    - name: View test results
-      shell: bash
-      run: colcon test-result
