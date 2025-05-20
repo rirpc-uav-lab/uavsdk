@@ -68,5 +68,8 @@ jobs:
     - name: Run tests
       shell: bash
       run: |
-        colcon test --return-code-on-test-failure && \
-        colcon test-result
+        colcon test --return-code-on-test-failure
+
+    - name: View test results
+      shell: bash
+      run: colcon test-result
