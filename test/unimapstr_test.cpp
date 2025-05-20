@@ -1,4 +1,5 @@
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <memory>
 
@@ -43,6 +44,7 @@ TEST(useful_data_imp, UniMapStrWorksTestKey_BREAK_TEST)
     EXPECT_TRUE(test_key.empty()) << "TEST_MESSAGE: keys is not empty\n";
 }
 
+
 TEST(useful_data_imp, UniMapStrWorksModifyDataIntToInt)
 {
     // Проверка замены данных в ячейке данными того же типа.
@@ -58,6 +60,42 @@ TEST(useful_data_imp, UniMapStrWorksModifyDataIntToInt)
     EXPECT_NO_THROW(UMS_test.modify_data("test_id",testModifyData)) << "\nTEST_MESSAGE: modify_data() mod error";
     EXPECT_NE(testData, UMS_test.at(test_id)) << "\nTEST_MESSAGE: the data has not been modified";
 }
+
+
+
+TEST(useful_data_imp, UniMapStrAddDataSameKeySameTypeObjectModification)
+{
+    // Проверка замены данных того же типа через функцию add_data
+
+    UniMapStr UMS_test;
+    std::string test_id = "test_id";
+
+    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
+    auto testModifyData = std::make_shared<BasicDataAdapter<int>>(2);    
+
+    UMS_test.add_data(test_id,testData);
+
+    EXPECT_NO_THROW(UMS_test.add_data(test_id, testModifyData)) << "\nTEST_MESSAGE: add_data() mod error";
+    EXPECT_NE(testData, UMS_test.at(test_id)) << "\nTEST_MESSAGE: the data has not been modified";
+}
+
+
+TEST(useful_data_imp, UniMapStrAddDataSameKeyDifferentTypeObjectModification)
+{
+    // Проверка замены данных другого типа через функцию add_data
+
+    UniMapStr UMS_test;
+    std::string test_id = "test_id";
+
+    auto testData = std::make_shared<BasicDataAdapter<int>>(1);    
+    auto testModifyData = std::make_shared<BasicDataAdapter<std::string>>("Data object");    
+    
+    UMS_test.add_data(test_id,testData);
+
+    EXPECT_ANY_THROW(UMS_test.add_data(test_id, testModifyData)) << "\nTEST_MESSAGE: add_data() has replaced old data with a new data that hs different type. That is not how it should work";
+    EXPECT_EQ(testData, UMS_test.at(test_id)) << "\nTEST_MESSAGE: the data has been modified";
+}
+
 
 
 TEST(useful_data_imp, UniMapStrWorksModifaiDataIntToStr_BREAK_TEST)

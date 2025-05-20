@@ -8,6 +8,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include <stdexcept>
 #include <uavsdk/useful_data_lib/useful_data_interfaces.hpp>
 #include <uavsdk/utils/cpp_custom_extras.hpp>
 
@@ -310,7 +311,9 @@ namespace useful_di
 
             virtual void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
             {
-                if (!_data) throw std::runtime_error("UniMapStr::add_data(): Invalid pointer _data passed to add_data()");
+                if (!_data) 
+                    throw std::runtime_error("UniMapStr::add_data(): Invalid pointer _data passed to add_data()");
+
                 if (not this->data_storage.count(_key))
                 {
                     std::string tmp_key = _key;
@@ -320,6 +323,8 @@ namespace useful_di
                 }
                 else 
                 {
+                    if (_data->___get_type() != this->data_storage.at(_key)->___get_type()) 
+                        throw std::runtime_error(std::string("UniMapStr::add_data(): Tried to provide a different type value for key: " + _key + ". Current object type is: " + this->data_storage.at("_key")->___get_type() + ". New type is: " + _data->___get_type()));
                     // std::cout << "UniMapStr: Warning! Called _add_data(id, data), but this id is alredy in map. Calling modify_data(id, data). \n";
                     
                     // std::runtime_error("Called _add_data(id, data), but this id is alredy in map");
@@ -362,11 +367,12 @@ namespace useful_di
             {
                 if (this->data_storage.count(data_identifier))
                 {
+                    if (new_data->___get_type() != this->data_storage.at(data_identifier)->___get_type()) throw std::runtime_error("UniMapStr::modify_data(): Tried to change type of the object at key: " + data_identifier + ". Current object type is " + this->data_storage.at(data_identifier)->___get_type() + ". New object type is " + new_data->___get_type());
                     this->data_storage.at(data_identifier) = new_data;
                 }
                 else
                 {
-                    throw std::runtime_error("UniMapStr: tried to modify data with key " + data_identifier + " but no such key exists");
+                    throw std::runtime_error("UniMapStr::modify_data(): tried to modify data with key " + data_identifier + " but no such key exists");
                 }
             }
 
