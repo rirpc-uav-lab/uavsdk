@@ -10,9 +10,20 @@ jobs:
   build:
 
     runs-on: ubuntu-22.04
-    container: osrf/ros:humble-desktop
+    # container: osrf/ros:humble-desktop
 
     steps:
+    - name: Install ROS2
+      run: |
+        sudo apt update && sudo apt install -y lsb-release wget
+        echo "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu jammy main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list
+        wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+        sudo apt update
+        sudo apt install ros-humble-desktop
+        sudo apt update && sudo apt install -y ros-humble-ament-cmake
+        sudo apt install ros-dev-tools
+
+    
     - uses: actions/checkout@v4
     - name: Set up ROS 2 Humble
       shell: bash
@@ -22,32 +33,21 @@ jobs:
         sudo apt install software-properties-common -y 
         sudo apt install python3-pip -y
         source /opt/ros/humble/setup.bash
-    
-    # - name: Install ROS2
+
+    # - name: Install Dependencies
+    #   shell: bash
     #   run: |
-    #     sudo apt update && sudo apt install -y lsb-release wget
-    #     echo "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu jammy main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list
-    #     wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-    #     sudo apt update
-    #     sudo apt install ros-humble-desktop
-    #     sudo apt update && sudo apt install -y ros-humble-ament-cmake
-    #     sudo apt install ros-dev-tools
-
-
-    - name: Install Dependencies
-      shell: bash
-      run: |
-        sudo apt install -y libzmq3-dev && \
-        mkdir third-party && cd third-party && \
-        touch COLCON_IGNORE && \
-        # cd ~ && \
-        git clone https://github.com/nlohmann/json.git && \
-        cd json && \
-        mkdir build && cd build && \
-        cmake .. && \
-        cmake --build . && \
-        sudo cmake --install .
-        cd ../../..
+    #     sudo apt install -y libzmq3-dev && \
+    #     mkdir third-party && cd third-party && \
+    #     touch COLCON_IGNORE && \
+    #     # cd ~ && \
+    #     git clone https://github.com/nlohmann/json.git && \
+    #     cd json && \
+    #     mkdir build && cd build && \
+    #     cmake .. && \
+    #     cmake --build . && \
+    #     sudo cmake --install .
+    #     cd ../../..
 
 
 
