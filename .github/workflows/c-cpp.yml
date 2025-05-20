@@ -67,4 +67,4 @@ jobs:
 
     - name: Run tests
       shell: bash
-      run: colcon test
+      run: colcon test --return-code-on-test-failure
