@@ -29,7 +29,6 @@ jobs:
       shell: bash
       run: |
         sudo apt update  
-        sudo apt upgrade -y 
         sudo apt install software-properties-common -y 
         sudo apt install python3-pip -y
         source /opt/ros/humble/setup.bash
@@ -60,7 +59,7 @@ jobs:
         # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble/
         sudo rosdep init
         rosdep update
-        rosdep install -i -y --from-path . --rosdistro $ROS_DISTRO
+        rosdep install -i -y --from-path . --rosdistro humble
         source /opt/ros/humble/setup.bash
         colcon build --symlink-install
 
