@@ -862,7 +862,7 @@ namespace useful_di
         }
 
 
-        const bool match_expectations(const ObserverCollectorExpectations &other_expectations) override
+        bool match_expectations(const ObserverCollectorExpectations &other_expectations) override
         {
             return this->expectations == other_expectations;
         }
@@ -899,7 +899,7 @@ namespace useful_di
         }
 
 
-        const bool match_expectations(const ObserverCollectorExpectations &other_expectations) override
+        bool match_expectations(const ObserverCollectorExpectations &other_expectations) override
         {
             return this->expectations == other_expectations;
         }

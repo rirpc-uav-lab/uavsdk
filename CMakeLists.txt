@@ -54,12 +54,12 @@ set_target_properties(cmd_managing_lib PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(cmd_managing_lib data_adpters_lib_ros2)
 
 
-set(KALMAN_FILTERS_LIB_ROS2
-include/uavsdk/kalman_filters/ukf/ukf.hpp
-)
-add_library(kalman_filters_ros2 SHARED ${KALMAN_FILTERS_LIB_ROS2})
-set_target_properties(kalman_filters_ros2 PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(kalman_filters_ros2 Eigen3::Eigen)
+# set(KALMAN_FILTERS_LIB_ROS2
+# include/uavsdk/kalman_filters/ukf/ukf.hpp
+# )
+# add_library(kalman_filters_ros2 SHARED ${KALMAN_FILTERS_LIB_ROS2})
+# set_target_properties(kalman_filters_ros2 PROPERTIES LINKER_LANGUAGE CXX)
+# target_link_libraries(kalman_filters_ros2 Eigen3::Eigen)
 
 
 include_directories(include)
@@ -132,19 +132,19 @@ ament_export_targets(cmd_managing_lib HAS_LIBRARY_TARGET)
 
 
 
-install(
-    TARGETS kalman_filters_ros2
-    EXPORT kalman_filters_ros2
-    LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
-    ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
-    RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
-    INCLUDES DESTINATION include
-)
+# install(
+#     TARGETS kalman_filters_ros2
+#     EXPORT kalman_filters_ros2
+#     LIBRARY DESTINATION ${COLCON_PACKAGE_LIB_DESTINATION}
+#     ARCHIVE DESTINATION ${COLCON_GLOBAL_LIB_DESTINATION}
+#     RUNTIME DESTINATION  ${COLCON_GLOBAL_LIB_DESTINATION}
+#     INCLUDES DESTINATION include
+# )
 
-install(TARGETS kalman_filters_ros2
-DESTINATION lib/${PROJECT_NAME}/)
-
-ament_export_targets(kalman_filters_ros2 HAS_LIBRARY_TARGET)
+# install(TARGETS kalman_filters_ros2
+# DESTINATION lib/${PROJECT_NAME}/)
+#
+# ament_export_targets(kalman_filters_ros2 HAS_LIBRARY_TARGET)
 
 
 
@@ -160,14 +160,14 @@ add_executable(bh_test src/bh_test.cpp)
 target_link_libraries(bh_test cmd_managing_lib)# backward_object)
 
 
-add_executable(ukf_test src/ukf_test.cpp)
-target_link_libraries(ukf_test kalman_filters_ros2)# backward_object)
+# add_executable(ukf_test src/ukf_test.cpp)
+# target_link_libraries(ukf_test kalman_filters_ros2)# backward_object)
 
 
 install(TARGETS
   # tests
   bh_test
-  ukf_test
+  # ukf_test
   # command_tests
   inheritance_tests
   DESTINATION lib/${PROJECT_NAME}

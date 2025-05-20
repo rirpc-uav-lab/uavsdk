@@ -1,6 +1,8 @@
 
 #pragma once
 #include <memory>
+#include <stdexcept>
+#include <string>
 
 #include <uavsdk/utils/cpp_custom_extras.hpp>
 
@@ -156,7 +158,7 @@ namespace useful_di
     {
     public:
         virtual ExpectationsType get_expectations() = 0;
-        virtual const bool match_expectations(const ExpectationsType &other_expectations) = 0;
+        virtual bool match_expectations(const ExpectationsType &other_expectations) = 0;
     protected:
         ExpectationsType expectations;
         virtual void set_expectations(ExpectationsType new_expectations) = 0;
