@@ -200,7 +200,7 @@ namespace useful_di
 
         /**
          * @brief Checks if a value at a given key is present in the container
-         * @param key Id to search for
+         * @param key Id to search value for key
          * @returns bool true if found, false if not
          */
         virtual bool has(const Id& key) = 0;
