@@ -186,4 +186,13 @@ namespace useful_di
         ExpectationsType expectations;
         virtual void set_expectations(ExpectationsType new_expectations) = 0;
     };
+
+
+    template <typename Id>
+    class IHasValueForKey
+    {
+    public:
+        virtual ~IHasValueForKey() = default;
+        virtual bool has(const Id& key) = 0;
+    };
 } // namespace useful_di
