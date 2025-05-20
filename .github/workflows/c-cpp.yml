@@ -33,20 +33,20 @@ jobs:
         sudo apt install python3-pip -y
         source /opt/ros/humble/setup.bash
 
-     - name: Install Dependencies
-       shell: bash
-       run: |
-         sudo apt install -y libzmq3-dev && \
-         mkdir third-party && cd third-party && \
-         touch COLCON_IGNORE && \
-         cd ~ && \
-         git clone https://github.com/nlohmann/json.git && \
-         cd json && \
-         mkdir build && cd build && \
-         cmake .. && \
-         cmake --build . && \
-         sudo cmake --install .
-         cd ../../..
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        sudo apt install -y libzmq3-dev && \
+        mkdir third-party && cd third-party && \
+        touch COLCON_IGNORE && \
+        cd ~ && \
+        git clone https://github.com/nlohmann/json.git && \
+        cd json && \
+        mkdir build && cd build && \
+        cmake .. && \
+        cmake --build . && \
+        sudo cmake --install .
+        cd ../../..
 
 
 
