@@ -39,7 +39,7 @@ jobs:
          sudo apt install -y libzmq3-dev && \
          mkdir third-party && cd third-party && \
          touch COLCON_IGNORE && \
-         # cd ~ && \
+         cd ~ && \
          git clone https://github.com/nlohmann/json.git && \
          cd json && \
          mkdir build && cd build && \
