@@ -186,4 +186,23 @@ namespace useful_di
         ExpectationsType expectations;
         virtual void set_expectations(ExpectationsType new_expectations) = 0;
     };
+
+
+    /**
+     * @brief An interface for containers that implement check on if the value with the given Id is present in the contatiner
+     * @tparam Id data type of id
+     */
+    template <typename Id>
+    class IHasValueForKey
+    {
+    public:
+        virtual ~IHasValueForKey() = default;
+
+        /**
+         * @brief Checks if a value at a given key is present in the container
+         * @param key Id to search for
+         * @returns bool true if found, false if not
+         */
+        virtual bool has(const Id& key) = 0;
+    };
 } // namespace useful_di

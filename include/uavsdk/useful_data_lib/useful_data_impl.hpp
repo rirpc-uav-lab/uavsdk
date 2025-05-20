@@ -286,7 +286,7 @@ namespace useful_di
     };
     
 
-    class UniMapStr : public useful_di::MapLikeDataStorageInterface<std::string>
+    class UniMapStr : public useful_di::MapLikeDataStorageInterface<std::string>, public useful_di::IHasValueForKey<std::string>
     {
         public:
             UniMapStr()
@@ -297,6 +297,15 @@ namespace useful_di
             std::vector<std::string> get_present_keys()
             {
                 return this->keys;
+            }
+
+            virtual bool has(const std::string& _key) override
+            {
+                for (const auto& key : keys)
+                {
+                    if (key == _key) return true;
+                }
+                return false;
             }
 
             virtual void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
