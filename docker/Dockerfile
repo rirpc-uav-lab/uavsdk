@@ -21,7 +21,7 @@ ADD https://github.com/rirpc-uav-lab/uavsdk.git /home/workspace/src/uavsdk/
 SHELL ["/bin/bash", "-c"]
 
 # Install dependencies
-RUN source ./src/uavsdk/scripts/install_dependecies.bash
+RUN source ./src/uavsdk/scripts/install_dependencies.bash
 # RUN sudo apt install python3-pip && \
 #     pip3 install colcon-devtools ament-cmake-test
 # RUN apt-get update && apt-get install -y python3-pip
