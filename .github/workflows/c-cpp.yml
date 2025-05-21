@@ -80,6 +80,7 @@ jobs:
     - name: Prerun tests and view results
       shell: bash
       run: |
+        source /opt/ros/humble/setup.bash && \
         colcon test --ctest-args "--output-on-failure" && colcon test-result
 
     - name: Run tests
