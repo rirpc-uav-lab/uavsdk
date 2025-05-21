@@ -10,7 +10,7 @@ jobs:
   build:
 
     runs-on: ubuntu-22.04
-    # container: osrf/ros:humble-desktop
+    container: osrf/ros:humble-desktop
 
     steps:
     - name: Install ROS2
@@ -19,7 +19,7 @@ jobs:
         echo "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu jammy main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list
         wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
         sudo apt update
-        sudo apt install ros-humble-desktop
+        # sudo apt install ros-humble-desktop
         sudo apt update && sudo apt install -y ros-humble-ament-cmake
         sudo apt install ros-dev-tools
     
