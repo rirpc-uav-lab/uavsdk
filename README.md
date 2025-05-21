@@ -43,7 +43,7 @@ colcon build --packages-select uavsdk
 ### Testing the package
 
 > **Attention**:
-> Currently test coverage is very poor but we are going to improve it over time when the interfaces become more stable.
+> Currently test coverage is very sparse but we are going to improve it over time when the interfaces become more stable.
 
 ```bash
 colcon test --packages-select uavsdk
