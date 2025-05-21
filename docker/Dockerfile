@@ -8,7 +8,15 @@
 FROM osrf/ros:humble-desktop
 WORKDIR /home/workspace/
 
-# Get uavsdk
+
+# Install ROS2 tools
+RUN sudo apt update && sudo apt install -y lsb-release wget && \
+    echo "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu jammy main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list && \
+    wget http://packages.ros.org/ros.key -O - | sudo apt-key add - && \
+    sudo apt update && sudo apt install -y ros-humble-ament-cmake && \
+    sudo apt install -y ros-dev-tools
+
+# (Docker specific) Get uavsdk
 ADD https://github.com/rirpc-uav-lab/uavsdk.git /home/workspace/src/uavsdk/
 SHELL ["/bin/bash", "-c"]
 
@@ -19,10 +27,14 @@ RUN source ./src/uavsdk/scripts/install_dependecies.bash
 # RUN apt-get update && apt-get install -y python3-pip
 # RUN python3 -m pip install ament-package
 
-# Setup ROS2 and build workspace
-RUN source /opt/ros/humble/setup.sh && \
-    colcon build --packages-select uavsdk --symlink-install && \
-    source install/setup.bash
+# Build
+RUN rosdep update && \
+    rosdep install -i -y --from-path src --rosdistro humble && \
+    source /opt/ros/humble/setup.bash && \
+    colcon build --symlink-install
+    # source /opt/ros/humble/setup.sh && \
+    # colcon build --packages-select uavsdk --symlink-install && \
+    # source install/setup.bash
 
 # Test
 RUN source /opt/ros/humble/setup.sh && \
