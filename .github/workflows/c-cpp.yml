@@ -33,20 +33,20 @@ jobs:
         sudo apt install python3-pip -y
         source /opt/ros/humble/setup.bash
 
-    # - name: Install Dependencies
-    #   shell: bash
-    #   run: |
-    #     sudo apt install -y libzmq3-dev && \
-    #     mkdir third-party && cd third-party && \
-    #     touch COLCON_IGNORE && \
-    #     # cd ~ && \
-    #     git clone https://github.com/nlohmann/json.git && \
-    #     cd json && \
-    #     mkdir build && cd build && \
-    #     cmake .. && \
-    #     cmake --build . && \
-    #     sudo cmake --install .
-    #     cd ../../..
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        sudo apt install -y libzmq3-dev && \
+        mkdir third-party && cd third-party && \
+        touch COLCON_IGNORE && \
+        cd ~ && \
+        git clone https://github.com/nlohmann/json.git && \
+        cd json && \
+        mkdir build && cd build && \
+        cmake .. && \
+        cmake --build . && \
+        sudo cmake --install .
+        cd ../../..
 
 
 
@@ -80,7 +80,7 @@ jobs:
     - name: Prerun tests and view results
       shell: bash
       run: |
-        colcon test && colcon test-result
+        colcon test --ctest-args "--output-on-failure" && colcon test-result
 
     - name: Run tests
       shell: bash
