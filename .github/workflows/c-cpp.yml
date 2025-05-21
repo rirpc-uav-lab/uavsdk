@@ -22,7 +22,6 @@ jobs:
         sudo apt install ros-humble-desktop
         sudo apt update && sudo apt install -y ros-humble-ament-cmake
         sudo apt install ros-dev-tools
-
     
     - uses: actions/checkout@v4
     - name: Set up ROS 2 Humble
@@ -52,37 +51,18 @@ jobs:
     - name: Build
       shell: bash
       run: |
-        # mkdir -p src_loc/uavsdk
-        # find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
-        # mv src_loc src
-        # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble/
         sudo rosdep init
         rosdep update
         rosdep install -i -y --from-path . --rosdistro humble
         source /opt/ros/humble/setup.bash
         colcon build --symlink-install
-
-
      
     - name: Source ROS2 Workspace
       shell: bash
       run: source /opt/ros/humble/setup.bash && source ./install/setup.bash
 
-    # - name: Run ROS2 Node
-    #   shell: bash
-    #   run: |
-    #     source /opt/ros/humble/setup.bash && \
-    #     source install/setup.bash && \
-    #     ros2 run uavsdk bh_test
-
-
-    - name: Prerun tests and view results
+    - name: Run tests and view results
       shell: bash
       run: |
         source /opt/ros/humble/setup.bash && \
         colcon test --ctest-args "--output-on-failure" && colcon test-result
-
-    - name: Run tests
-      shell: bash
-      run: |
-        colcon test --return-code-on-test-failure
