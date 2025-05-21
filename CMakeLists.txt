@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(ament_cmake REQUIRED)
-find_package(Eigen3 REQUIRED)
+# find_package(Eigen3 REQUIRED)
 
 find_package(ament_cmake_gtest REQUIRED)
 find_package(ament_cmake_gmock REQUIRED)
@@ -96,9 +96,6 @@ DESTINATION lib/${PROJECT_NAME}/)
 ament_export_targets(useful_data_lib HAS_LIBRARY_TARGET)
 
 
-
-
-
 install(
     TARGETS data_adpters_lib_ros2
     EXPORT data_adpters_lib_ros2
@@ -153,26 +150,26 @@ ament_export_targets(cmd_managing_lib HAS_LIBRARY_TARGET)
 # target_link_libraries(tests MAVSDK::mavsdk utils_lib useful_data_lib mavsdk_fcu_tel_collector_lib data_adpters_lib_ros2)# backward_object)
 
 
-add_executable(inheritance_tests src/inheritance_tests.cpp)
-target_link_libraries(inheritance_tests useful_data_lib)# backward_object)
-
-
-add_executable(bh_test src/bh_test.cpp)
-target_link_libraries(bh_test cmd_managing_lib)# backward_object)
+# add_executable(inheritance_tests src/inheritance_tests.cpp)
+# target_link_libraries(inheritance_tests useful_data_lib)# backward_object)
+#
+#
+# add_executable(bh_test src/bh_test.cpp)
+# target_link_libraries(bh_test cmd_managing_lib)# backward_object)
 
 
 # add_executable(ukf_test src/ukf_test.cpp)
 # target_link_libraries(ukf_test kalman_filters_ros2)# backward_object)
 
 
-install(TARGETS
+# install(TARGETS
   # tests
-  bh_test
+  # bh_test
   # ukf_test
   # command_tests
-  inheritance_tests
-  DESTINATION lib/${PROJECT_NAME}
-)
+  # inheritance_tests
+#   DESTINATION lib/${PROJECT_NAME}
+# )
 
 install(
   DIRECTORY include/${PROJECT_NAME}
@@ -187,12 +184,6 @@ if(BUILD_TESTING)
   )
   target_link_libraries(${PROJECT_NAME}_unimapstr_test useful_data_lib)
 
-  # ament_add_gtest(${PROJECT_NAME}_BH_TREES_TEST test/bh_tree_test.cpp)
-  # target_include_directories(
-  #   ${PROJECT_NAME}_BH_TREES_TEST
-  #   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  #   $<INSTALL_INTERFACE:include>)
-  # target_link_libraries(${PROJECT_NAME}_BH_TREES_TEST useful_data_lib)
   ament_add_gmock(${PROJECT_NAME}_blackboard_test test/blackboard_test.cpp)
   target_include_directories(${PROJECT_NAME}_blackboard_test PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
