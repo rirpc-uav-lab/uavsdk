@@ -1,7 +1,8 @@
 #pragma once
 
 #include <memory>
-#include <uavsdk/useful_data_lib/useful_data_impl.hpp>
+#include <mutex>
+#include <uavsdk/useful_data_lib/base_interfaces.hpp>
 
 
 namespace uavsdk
