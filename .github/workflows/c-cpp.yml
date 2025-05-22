@@ -32,6 +32,7 @@ jobs:
     - name: Build
       shell: bash
       run: |
+        cd ..
         cmake -S . -B build -DBUILD_TESTING=true && \
         cmake --build build
      
