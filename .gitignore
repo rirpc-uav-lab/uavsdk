@@ -1,3 +1,5 @@
 doxygen
 .vscode/
 third-party/
+build/
+COLCON_IGNORE
