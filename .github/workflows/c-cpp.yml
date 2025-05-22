@@ -8,53 +8,33 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-22.04
-    container: osrf/ros:humble-desktop
 
     steps:
-    - name: Install ROS2 tools
+    - name: Install system dependencies
       run: |
-        sudo apt update && sudo apt install -y lsb-release wget
-        echo "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu jammy main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list
-        wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-        sudo apt update && sudo apt install -y ros-humble-ament-cmake
-        sudo apt install -y ros-dev-tools
-    
-    - uses: actions/checkout@v4
-    - name: Set up ROS 2 Humble
-      shell: bash
-      run: |
-        sudo apt update  
-        sudo apt install software-properties-common -y 
-        sudo apt install python3-pip -y
-        source /opt/ros/humble/setup.bash
+        sudo apt-get update && \
+        sudo apt-get -y install googletest cmake libgtest-dev git clang-12 build-essential
 
     - name: Install Dependencies
       shell: bash
       run: |
-        sudo apt install -y libzmq3-dev && \
         mkdir third-party && cd third-party && \
         touch COLCON_IGNORE && \
-        cd ~ && \
-        git clone https://github.com/nlohmann/json.git && \
+        git clone https://github.com/nlohmann/json.git --depth 1 && \
         cd json && \
         mkdir build && cd build && \
         cmake .. && \
         cmake --build . && \
-        sudo cmake --install .
+        sudo cmake --install . && \
         cd ../../..
 
     - name: Build
       shell: bash
       run: |
-        rosdep update && \
-        rosdep install -i -y --from-path . --rosdistro humble && \
-        source /opt/ros/humble/setup.bash && \
-        colcon build --symlink-install
+        cmake -S . -B build -DBUILD_TESTING=true && \
+        cmake --build build
      
     - name: Test 
       shell: bash
-      run: |
-        source /opt/ros/humble/setup.bash && \
-        colcon test --ctest-args "--output-on-failure" && colcon test-result
+      run: ctest -C Debug
