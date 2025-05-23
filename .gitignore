@@ -1,3 +1,7 @@
 doxygen
 .vscode/
 third-party/
+build/
+COLCON_IGNORE
+TODO.md
+.cache
