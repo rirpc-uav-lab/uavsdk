@@ -16,6 +16,11 @@ jobs:
         sudo apt-get update && \
         sudo apt-get -y install googletest cmake libgtest-dev git clang-12 build-essential
 
+    - name: Clone uavsdk
+      run: |
+        git clone https://github.com/rirpc-uav-lab/uavsdk.git
+        cd uavsdk
+
     - name: Install Dependencies
       shell: bash
       run: |
@@ -32,7 +37,6 @@ jobs:
     - name: Build
       shell: bash
       run: |
-        cd ..
         cmake -S . -B build -DBUILD_TESTING=true && \
         cmake --build build
      
