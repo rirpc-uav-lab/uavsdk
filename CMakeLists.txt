@@ -174,4 +174,12 @@ if (BUILD_TESTING)
     )
     target_link_libraries(${PROJECT_NAME}_blackboard_variable_test useful_data_lib GTest::GTest)
     add_test(NAME ${PROJECT_NAME}_blackboard_variable_test COMMAND ${PROJECT_NAME}_blackboard_variable_test)
+
+    add_executable(${PROJECT_NAME}_type_interface_test test/type_interface_test.cpp)
+    target_include_directories(${PROJECT_NAME}_type_interface_test PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    )
+    target_link_libraries(${PROJECT_NAME}_type_interface_test useful_data_lib GTest::GTest)
+    add_test(NAME ${PROJECT_NAME}_type_interface_test COMMAND ${PROJECT_NAME}_type_interface_test)
 endif()

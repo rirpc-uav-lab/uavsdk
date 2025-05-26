@@ -21,7 +21,7 @@ TEST(useful_data_imp, BlackboardVariableCreateWithInitialValue)
     BlackboardVariable<int> var(bb, test_key, test_data);
 
 
-    auto v1 = var();
+    auto v1 = *var;
     auto v2 = bb->at<MutexDefendedDataAdapter<int>>(test_key)->get_data();
 
     // FAIL() << bb->get_keys_from_blackboard().at(0);
@@ -48,7 +48,7 @@ TEST(useful_data_imp, BlackboardVariableCreateWithoutInitialValue)
 
     BlackboardVariable<int> var(bb, test_key, test_data);
 
-    auto v1 = var();
+    auto v1 = *var;
     auto v2 = bb->at<MutexDefendedDataAdapter<int>>(test_key)->get_data();
 
     ASSERT_EQ(test_data, v2) << "TEST_MESSAGE: Blackboard::at<T>() did not return a valid value.";
@@ -66,14 +66,14 @@ TEST(useful_data_imp, BlackboardVariableSet)
     BlackboardVariable<int> var(bb, test_key, test_data);
 
 
-    auto v1 = var();
+    auto v1 = *var;
     auto v2 = bb->at<MutexDefendedDataAdapter<int>>(test_key)->get_data();
 
     ASSERT_EQ(test_data, v2) << "TEST_MESSAGE: Blackboard::at<T>() did not return a valid value.";
     EXPECT_EQ(v1, v2) << "TEST_MESSAGE: BlackboardVariable::() did not return a valid value.";
 
     var = 2;
-    v1 = var();
+    v1 = *var;
 
     EXPECT_EQ(v1, 2) << "TEST_MESSAGE: BlackboardVariable::() did not change the value correctly.";
 }

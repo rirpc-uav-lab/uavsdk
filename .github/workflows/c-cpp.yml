@@ -1,8 +1,8 @@
 name: C/C++ CI
 
 on:
-  push:
-    branches: [ "master" ]
+  # push:
+  #   branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
@@ -11,15 +11,11 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+    - uses: actions/checkout@v4
     - name: Install system dependencies
       run: |
         sudo apt-get update && \
         sudo apt-get -y install googletest cmake libgtest-dev git clang-12 build-essential
-
-    - name: Clone uavsdk
-      run: |
-        git clone https://github.com/rirpc-uav-lab/uavsdk.git
-        cd uavsdk
 
     - name: Install Dependencies
       shell: bash

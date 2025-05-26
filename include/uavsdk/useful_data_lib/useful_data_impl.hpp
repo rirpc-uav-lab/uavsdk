@@ -569,14 +569,14 @@ template <typename T>
 class BlackboardVariable
 {
   public:
-    BlackboardVariable(std::shared_ptr<Blackboard> bb, const std::string key) : key{key}
+    explicit BlackboardVariable(std::shared_ptr<Blackboard> bb, const std::string& key) : key{key}
     { 
         this->bb = bb;
         if (!this->bb->has(key)) throw std::runtime_error("BlackboardVariable[" + key + "]: initial_value was not provided but no such variable exists in blackboard.");
     }
 
 
-    BlackboardVariable(std::shared_ptr<Blackboard> bb, const std::string key, T initial_value) : key{key}
+    explicit BlackboardVariable(std::shared_ptr<Blackboard> bb, const std::string& key, const T& initial_value) : key{key}
     { 
         this->bb = bb;
 
@@ -602,7 +602,7 @@ class BlackboardVariable
     }
 
 
-    T operator()()
+    T operator*()
     {
         this->check_variable_existance(this->key);
         T variable = this->bb->at<uavsdk::data_adapters::cxx::MutexDefendedDataAdapter<T>>(this->key)->get_data();
@@ -626,10 +626,23 @@ class BlackboardVariable
 };
 
 
-class BulkBlackboard : public Blackboard, public IBulkAtAbleContainer<std::vector<std::string>, std::shared_ptr<UniMapStr>>
+class BulkBlackboard : public Blackboard, public IBulkAtAbleContainer<std::string, std::shared_ptr<UniMapStr>>
 {
 public:
     using Blackboard::at;
+
+    virtual std::shared_ptr<useful_di::TypeInterface> at(const std::string& data_identifier) override
+    {
+        if (not this->data_storage.count(data_identifier))
+        {
+            std::string msg = "UniMapStr: Error! No such key in blackboard. Key = " + data_identifier + ".\n";
+            throw std::runtime_error(msg);
+        }
+        auto type_interface = this->data_storage.at(data_identifier);
+        return type_interface;
+    }
+
+
     virtual std::shared_ptr<UniMapStr> at(const std::vector<std::string>& data_identifiers) override
     {
         std::lock_guard<std::mutex> llock(bb_mutex);
