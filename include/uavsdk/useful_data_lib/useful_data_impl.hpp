@@ -13,6 +13,10 @@
 
 namespace useful_di
 {
+/**
+ * @brief Шаблонная реализация класса Collector из паттерна Observer
+ * @tparam T тип передаваемой информации
+ */
 template <typename T>
 class SimpleCollector : public virtual ICollector<T>
 {
@@ -49,37 +53,55 @@ protected:
     }
 
 private:
-    std::shared_ptr<T> data;
-    std::vector<std::shared_ptr<IObserver<T>>> observers;
+    std::shared_ptr<T> data; /// Последнее сохраненное состояние наблюдаемого объекта
+    std::vector<std::shared_ptr<IObserver<T>>> observers; /// Хранилище наблюдателей
 };
 
 
+/**
+ * @brief Шаблонная реализация класса Observer из паттерна Observer с коллбэк функцией, вызывающейся при обновлении данных
+ * @tparam T тип передаваемых данных
+ */
 template <typename T>
 class SimpleObserverWithCallback : public IObserver<T>
 {
 public: 
+    /**
+     * @brief конструктор, принимающий коллбэк функцию
+     * @param callback функция колбэка
+     */ 
     SimpleObserverWithCallback(std::function<void(std::shared_ptr<T>)> callback)
     {
         this->set_callback(callback);
     }
 
 
+    /**
+     * @brief Функция, которая проверяет, был ли добавлен колбэк
+     */
     bool callback_ready()
     {
         return this->callback_set;
     }
 
 
+    /**
+     * @brief Функция, которая обновляет данные наблюдателя
+     * @param input_data Новые данные
+     */
     virtual void be_notified(std::shared_ptr<T> input_data) override
     {
         this->callback(input_data);
     }
 
 protected:
-    std::function<void(std::shared_ptr<T>)> callback_obj;
-    bool callback_set{false};
+    std::function<void(std::shared_ptr<T>)> callback_obj; /// Объект функции колбэка
+    bool callback_set{false}; /// Переменная, отслеживающая, установлена ли функция колбэка
 
 
+    /**
+     * @brief Функция-обертка для пользовательского колбэка, выполняющая необходимые проверки безопасности
+     */
     void callback(std::shared_ptr<T> msg) 
     {
         if (!msg) 
@@ -92,6 +114,10 @@ protected:
     }
 
 
+    /**
+     * @brief Функция, которая устанавливает колбэк
+     * @param callback объект функции колбэка
+     */
     void set_callback(std::function<void(std::shared_ptr<T>)> callback)
     {
         this->callback_obj = callback;
@@ -100,14 +126,26 @@ protected:
 };
 
 
+/**
+ * @brief Класс наблюдателя с колбэком и возможностью привязываться к Collector через функцию bind
+ * @tparam T тип передаваемых данных
+ */
 template <typename T>
 class SimpleBindableObserverWithCallback : public SimpleObserverWithCallback<T>, public virtual IBindable<std::shared_ptr<ICollector<T>>>, public virtual IBoundCheckAble
 {
 public: 
+    /**
+     * @brief конструктор, принимающий коллбэк функцию
+     * @param callback функция колбэка
+     */ 
     SimpleBindableObserverWithCallback(std::function<void(std::shared_ptr<T>)> callback) : SimpleObserverWithCallback<T>(callback)
     { }
 
 
+    /**
+     * @brief Функция, которая позволяет привязываться к Collector
+     * @param collector объект Collector из паттерна Observer
+     */
     void bind(std::shared_ptr<ICollector<T>> collector) override 
     {
         std::shared_ptr<SimpleBindableObserverWithCallback<T>> this_p(this);
@@ -116,6 +154,10 @@ public:
     }
 
 
+    /**
+     * @brief Функция, которая обновляет данные наблюдателя
+     * @param input_data Новые данные
+     */
     virtual void be_notified(std::shared_ptr<T> input_data) override
     {
         if (this->is_bound())
@@ -125,6 +167,10 @@ public:
     }
 
 
+    /**
+     * @brief Функция, позволяющая проверить, привязан ли Collector
+     * @returns bool true, усли привязан, иначе false
+     */
     bool is_bound() override
     {
         // std::lock_guard<std::mutex> lock(data_mx);
@@ -132,7 +178,7 @@ public:
     }
 
 protected:
-    bool this_is_bound{false};
+    bool this_is_bound{false}; /// Переменная, хранящая статус привязки Collector
 };
 
 

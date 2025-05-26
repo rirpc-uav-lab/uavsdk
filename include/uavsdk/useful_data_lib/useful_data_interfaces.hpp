@@ -8,12 +8,6 @@
 
 namespace useful_di
 {
-
-// ##########################################
-// #########    Base Interfaces     #########
-// ##########################################
-
-
     /**
      * @brief Класс, являющийся интерфейсом для адаптации используемых
      * объектов данных к универсальному типу данных, в котором можно
@@ -93,11 +87,20 @@ namespace useful_di
 
 
     #warning IdFactoryInterface will be moved to base_interfaces
+    /**
+     * @brief Интерфейс, который позволяет связывать данные со сгенерированным ключом для этих данных
+     * @tparam Id тип идентификатора данных
+     */
     template <typename Id>
     class IdFactoryInterface 
     {
-        public:
-            virtual Id get_id(std::shared_ptr<TypeInterface> data) = 0;
+    public:
+        /**
+         * @brief Возвращает Id для переданного объекта данных
+         * @param data переданный объект данных
+         * @returns Id идентификатор данных
+         */
+        virtual Id get_id(std::shared_ptr<TypeInterface> data) = 0;
     };
 
 // ##########################################
@@ -106,24 +109,34 @@ namespace useful_di
 
 
 
+    /**
+     * @brief Базовый класс контейнеров, используемых в библиотеке
+     * @tparam Id идентификатор данных
+     */ 
     template <typename Id>
     class IBaseStorage : public virtual TypeInterface, public IRemoveAbleContainer<Id>, public IAtAbleContainer<Id>, public IModifyAbleContainer<Id>, public ISizeAbleContainer
     {};
 
 
 
+    /**
+     * @brief Базовый класс контейнеров, в которые элементы можно добавлять в конец контейнера
+     */
     template <typename Id>
     class DataStorageInterface : public IBaseStorage<Id>, public IAppendAbleContainer<Id>
     {};
 
 
+    /**
+     * @brief Базовый класс контейнеров, позволяющих хранить пары ключ-значение
+     */
     template <typename Id>
     class MapLikeDataStorageInterface : public IBaseStorage<Id>, public IInsertAbleContainer<Id>
     {
         public:
 
         protected:
-        std::map<Id, std::shared_ptr<TypeInterface>> data_storage;
+        std::map<Id, std::shared_ptr<TypeInterface>> data_storage; /// Объект хранилища данных
     };
 
 
@@ -134,6 +147,9 @@ namespace useful_di
 // ##########################################
 
 
+    /**
+     * @brief Базовый интерфейс композитного объекта
+     */
     template<typename Id, typename ThisStorageType>
     class IDataComposite : public ThisStorageType
     {
@@ -145,17 +161,23 @@ namespace useful_di
     // class ListLikeDataComposite : public DataCompositeInterface<UniversalDataFormat, 
 
 
+    /**
+     * @brief Интерфейс объекта Observer из паттерна Observer
+     */
     template <typename T>
     class IObserver 
     {
     public: 
         virtual ~IObserver() = default;
+        /**
+         * @brief Функция, которая позволяет уведомлять наблюдателя об изменении данных
+         */
         virtual void be_notified(std::shared_ptr<T> input_data) = 0;
     };
 
 
     /**
-     * @brief Интерфейс класса для подписки на получение данных из объекта DataCollectorInterface
+     * @brief Интерфейс класса для подписки на получение данных из объекта IDataCollector
      */
     class IDataObserver : public virtual TypeInterface, public virtual IObserver<TypeInterface>
     { 
@@ -164,6 +186,9 @@ namespace useful_di
     };
 
 
+    /**
+     * @brief Базовый интерфейс Collector из паттерна Observer
+     */
     template <typename T>
     class ICollector 
     {
@@ -171,11 +196,13 @@ namespace useful_di
         virtual ~ICollector() = default;
         /**
          * @brief метод для изменения состояния субъекта
+         * @param data Полученные данные
          */
         virtual void update_data(std::shared_ptr<T> data) = 0;
 
         /**
          * @brief метод, который добавляет наблюдателя к набору наблюдателей, которые хотят получать уведомления о изменении состояния субъекта
+         * @param observer Добавляемый наблюдатель
          */
         virtual void attach_observer(std::shared_ptr<IObserver<T>> observer) = 0;
 
@@ -191,7 +218,6 @@ namespace useful_di
      * 
      * @tparam SubjectType тип изначального объекта данных
      */
-    // template <typename SubjectType>
     class IDataCollector : public virtual TypeInterface, public virtual ICollector<TypeInterface>
     { 
     public:
