@@ -92,7 +92,7 @@ namespace useful_di
     };
 
 
-
+    #warning IdFactoryInterface will be moved to base_interfaces
     template <typename Id>
     class IdFactoryInterface 
     {
@@ -162,6 +162,7 @@ namespace useful_di
     public:
         virtual ~IDataObserver() = default;
     };
+
 
     template <typename T>
     class ICollector 
