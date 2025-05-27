@@ -432,6 +432,7 @@ class Blackboard : public MapLikeDataStorageInterface<std::string>, public IHasV
     template <typename T>
     std::shared_ptr<T> at(const std::string& key)
     {
+        std::lock_guard<std::mutex> llock(bb_mutex);
         std::shared_ptr<useful_di::TypeInterface> data = nullptr;
         try
         {
