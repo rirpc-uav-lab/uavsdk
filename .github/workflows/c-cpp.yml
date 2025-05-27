@@ -1,75 +1,41 @@
 name: C/C++ CI
 
 on:
-  push:
-    branches: [ "master" ]
+  # push:
+  #   branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-22.04
-    container: osrf/ros:humble-desktop
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up ROS 2 Humble
-      shell: bash
+    - name: Install system dependencies
       run: |
-        sudo apt update  
-        sudo apt upgrade -y 
-        sudo apt install software-properties-common -y 
-        sudo apt install python3-pip -y
-        source /opt/ros/humble/setup.bash
-    
-    # - name: Install ROS2
-    #   run: |
-    #     sudo apt update && sudo apt install -y lsb-release wget
-    #     echo "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu jammy main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list
-    #     wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-    #     sudo apt update
-    #     sudo apt install ros-humble-desktop
-    #     sudo apt update && sudo apt install -y ros-humble-ament-cmake
-    #     sudo apt install ros-dev-tools
-
+        sudo apt-get update && \
+        sudo apt-get -y install googletest cmake libgtest-dev git clang-12 build-essential
 
     - name: Install Dependencies
       shell: bash
       run: |
-        sudo apt install -y libzmq3-dev nlohmann-json3-dev
-
+        mkdir third-party && cd third-party && \
+        touch COLCON_IGNORE && \
+        git clone https://github.com/nlohmann/json.git --depth 1 && \
+        cd json && \
+        mkdir build && cd build && \
+        cmake .. && \
+        cmake --build . && \
+        sudo cmake --install . && \
+        cd ../../..
 
     - name: Build
       shell: bash
       run: |
-        # mkdir -p src_loc/uavsdk
-        # find . -maxdepth 1 ! -name 'src_loc' -type f -exec mv {} src_loc/uavsdk \;
-        # mv src_loc src
-        # export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble/
-        rosdep update
-        rosdep install -i -y --from-path . --rosdistro $ROS_DISTRO
-        source /opt/ros/humble/setup.bash
-        colcon build --symlink-install
-
-
+        cmake -S . -B build -DBUILD_TESTING=true && \
+        cmake --build build
      
-    - name: Source ROS2 Workspace
+    - name: Test 
       shell: bash
-      run: source /opt/ros/humble/setup.bash && source ./install/setup.bash
-
-    - name: Run ROS2 Node
-      shell: bash
-      run: |
-        source /opt/ros/humble/setup.bash && \
-        source install/setup.bash && \
-        ros2 run uavsdk bh_test
-
-    - name: Run tests
-      shell: bash
-      run: |
-        colcon test --return-code-on-test-failure
-
-    - name: View test results
-      shell: bash
-      run: colcon test-result
+      run: ctest -C Debug

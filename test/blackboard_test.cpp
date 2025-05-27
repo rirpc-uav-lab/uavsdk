@@ -1,4 +1,3 @@
-#include <map>
 #include <string>
 #include <memory>
 
@@ -6,10 +5,8 @@
 
 #include "uavsdk/data_adapters/cxx/cxx.hpp"
 #include "uavsdk/data_adapters/cxx/cxx.hpp"
-#include "uavsdk/utils/cpp_custom_extras.hpp"
 
 #include "uavsdk/data_adapters/cxx/cxx.hpp"
-#include "uavsdk/useful_data_lib/useful_data_interfaces.hpp"
 #include "uavsdk/useful_data_lib/useful_data_impl.hpp"
 
 using namespace useful_di;
