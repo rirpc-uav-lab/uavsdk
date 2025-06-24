@@ -139,7 +139,7 @@ namespace uavsdk
         class BaseCommandInterface : public IExecutable, public IResultProvider, public IStoppable, public IInitializable, public useful_di::TypeInterface, public IStateManager
         {
             protected:
-            std::shared_ptr<useful_di::Blackboard> blackboard;
+            std::shared_ptr<useful_di::UniMapStr> blackboard;
 
 
             /**
