@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rclcpp/rclcpp.hpp"
+
 #include "uavsdk/data_adapters/cxx/cxx.hpp"
 #include "uavsdk/useful_data_lib/base_interfaces.hpp"
 #include <iostream>
@@ -292,15 +294,20 @@ public:
 
     virtual bool has(const std::string& _key) override
     {
-        for (const auto& key : keys)
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "BEGIN FUNCTION HAS ========================== : " << _key);
+        for (const auto& key : this->keys)
         {
+            // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "FUNCTION HAS = : " << key);
             if (key == _key) return true;
         }
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "FINISH FUNCTION HAS ========================== : ");
         return false;
     }
 
     virtual void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
     {
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "UNIMAP ADDDDDDDDDDDD DATAAAAAAAAAAA " << _key);
         if (!_data) 
             throw std::runtime_error("UniMapStr::add_data(): Invalid pointer _data passed to add_data()");
 
@@ -310,6 +317,7 @@ public:
             
             this->keys.push_back(_key);
             this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(tmp_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
+            // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " UNIMAP ADDDDDDDDDDDD IN data_storage " << _key);
         }
         else 
         {
@@ -318,13 +326,23 @@ public:
             // std::cout << "UniMapStr: Warning! Called _add_data(id, data), but this id is alredy in map. Calling modify_data(id, data). \n";
             
             // std::runtime_error("Called _add_data(id, data), but this id is alredy in map");
-            this->modify_data(_key, _data);
+            // this->modify_data(_key, _data);
+            if (this->data_storage.count(_key))
+            {
+                if (_data->___get_type() != this->data_storage.at(_key)->___get_type()) throw std::runtime_error("UniMapStr::modify_data(): Tried to change type of the object at key: " + _key + ". Current object type is " + this->data_storage.at(_key)->___get_type() + ". New object type is " + _data->___get_type());
+                this->data_storage.at(_key) = _data;
+            }
+            else
+            {
+                throw std::runtime_error("UniMapStr::modify_data(): tried to modify data with key " + _key + " but no such key exists");
+            }
         }
     }
 
 
     virtual void remove_data(const std::string& data_identifier) override
     {
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
         if (this->data_storage.count(data_identifier)) 
         {
             this->data_storage.erase(data_identifier);
@@ -337,24 +355,75 @@ public:
     }
 
 
-    std::shared_ptr<TypeInterface> at(const std::string& data_identifier) override
+    #warning No interface for the following function?
+    template <typename T>
+    std::shared_ptr<T> at(const std::string& key)
     {
-        // fprintf(stdout, "at line: %i\n", __LINE__);
-        if (not this->data_storage.count(data_identifier))
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "UniMapStr AT<>!!!!!! DATAAAAAAAAAAA " << key);
+        std::shared_ptr<useful_di::TypeInterface> data = nullptr;
+        try
         {
-            // fprintf(stdout, "at line: %i\n", __LINE__);
+            data = this->at(key);
+        }
+        catch(const std::out_of_range e)
+        {
+            std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + key + std::string("\n"));
+            throw std::runtime_error(msg);
+        }
+        
+        
+        // std::cout << "bb at key = " << key << "\n";
+
+        if (data->___get_type() == utils::cppext::get_type<T>())
+        {
+            return std::dynamic_pointer_cast<T>(data);
+        }
+        else
+        {
+            std::string msg = "CommandInterfaceWithBlackboard::at<T>(std::string key) error: tried conversion of data withe key " + key + " from type " + data->___get_type() + " to " + utils::cppext::get_type<T>() + "\n";
+            throw std::runtime_error(msg);
+        }
+    }
+
+
+    virtual std::shared_ptr<TypeInterface> at(const std::string& data_identifier) override
+    {
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "UniMapStr AT!!!!!! DATAAAAAAAAAAA " << data_identifier);
+
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " 1111111111111111111111 data_identifier = " << data_identifier);
+        if (data_storage.empty())
+        {
+            std::string msg = "data_storage is empty!!!! + \n";
+            throw std::runtime_error(msg);
+        }
+        else
+        {
+            for (const auto& key : data_storage)
+            {
+                // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "key in data_storage: " << key.first);
+            }
+        }
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " 22222222222222222222222222222222222");
+        if (!this->has(data_identifier))
+        {
             std::string msg = "UniMapStr: Error! No such key in blackboard. Key = " + data_identifier + ".\n";
             throw std::runtime_error(msg);
         }
-        // fprintf(stdout, "at line: %i\n", __LINE__);
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " ЧТО-ТО ПОПЫТАЛСЯ ВЕРНУТЬ");
         auto type_interface = this->data_storage.at(data_identifier);
-        // fprintf(stdout, "at line: %i\n", __LINE__);
+        // if (type_interface == nullptr)
+        // {
+        //     RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " NUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUL");
+
+        // }
         return type_interface;
     }
 
 
-    void modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& new_data) override
+    virtual void modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& new_data) override
     {
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
         if (this->data_storage.count(data_identifier))
         {
             if (new_data->___get_type() != this->data_storage.at(data_identifier)->___get_type()) throw std::runtime_error("UniMapStr::modify_data(): Tried to change type of the object at key: " + data_identifier + ". Current object type is " + this->data_storage.at(data_identifier)->___get_type() + ". New object type is " + new_data->___get_type());
@@ -369,6 +438,7 @@ public:
 
     virtual size_t size() override
     {
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
         return this->data_storage.size();
     }
 
@@ -381,6 +451,7 @@ public:
     private:
         int _get_key_id(std::string search_key)
         {
+            // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "GET KEY GET KEY GET KEY GET KEY GEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEET");
             for (size_t i = 0; i < this->keys.size(); i++)
             {
                 if (this->keys.at(i) == search_key) return i;
@@ -390,6 +461,7 @@ public:
     
     protected:
         std::vector<std::string> keys;
+        std::mutex blackboard_mutex;
         // Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
 };
 
