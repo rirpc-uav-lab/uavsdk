@@ -355,5 +355,6 @@ namespace useful_di
          * @returns bool true if found, false if not
          */
         virtual bool has(const Id& key) = 0;
+        virtual std::vector<std::string> get_present_keys() = 0;
     };
 } // namespace useful_di
