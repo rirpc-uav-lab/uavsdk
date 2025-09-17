@@ -226,7 +226,7 @@ namespace uavsdk
                                 result = "UNKNOWN";
                                 break;
                         }
-                        std::string msg = this->get_id() + " returned ExecutionResult::INVALID because the last result was " + result + " which must not be possible. Check your code's logic\n";
+                        std::string msg = this->get_id() + " .returned ExecutionResult::INVALID because the last result was " + result + " which must not be possible. Check your code's logic\n";
                         // std::string msg = std::string(typeid(*this).name()) + " returned ExecutionResult::INVALID because the last result was " + result + " which must not be possible. Check your code's logic\n";
                         throw std::runtime_error(msg);
                         return ExecutionResult::INVALID;
