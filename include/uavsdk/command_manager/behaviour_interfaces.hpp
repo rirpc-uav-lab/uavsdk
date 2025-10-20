@@ -124,15 +124,17 @@ namespace uavsdk
             public:
             ExecutionResult get_last_execution_result()
             {
-                return this->last_result;
+                auto current_result = last_result.load(std::memory_order_acquire);
+                return current_result;
             }
 
 
             virtual std::shared_ptr<useful_di::UniMapStr> get_state() = 0;
 
 
+            // ExecutionResult last_result = ExecutionResult::INVALID;
+            std::atomic<ExecutionResult> last_result{ExecutionResult::RUNNING};
             protected:
-            ExecutionResult last_result = ExecutionResult::INVALID;
         };
 
 
@@ -166,6 +168,7 @@ namespace uavsdk
 
             virtual void handle_stop()
             {
+                // this->last_result = ExecutionResult::RUNNING;
                 this->initialize();
             }
         };
@@ -176,6 +179,7 @@ namespace uavsdk
             public:
             SingleProccessCommandInterface()
             {
+                // this->last_result = ExecutionResult::RUNNING;
                 this->initialize();
             }
 
@@ -204,12 +208,13 @@ namespace uavsdk
 
             ExecutionResult tick()
             {
-                if (not stop_requested)
+                auto current_result = last_result.load(std::memory_order_acquire);
+                if (not stop_requested.load(std::memory_order_acquire))
                 {
-                    if (this->last_result != ExecutionResult::RUNNING)
+                    if (current_result != ExecutionResult::RUNNING)
                     {
                         std::string result = "";
-                        switch (this->last_result) {
+                        switch (current_result) {
                             case ExecutionResult::FAILED:
                                 result = "FAILED";
                                 break;
@@ -231,8 +236,12 @@ namespace uavsdk
                         throw std::runtime_error(msg);
                         return ExecutionResult::INVALID;
                     }
-                    this->last_result = this->_tick();
-                    return this->last_result;
+                    auto new_result = this->_tick();
+                    last_result.store(new_result, std::memory_order_release);
+                    return new_result;
+
+                    // this->last_result = this->_tick();
+                    // return this->last_result;
                 }
                 else
                 {
@@ -243,7 +252,8 @@ namespace uavsdk
 
             virtual void initialize() override 
             {
-                this->last_result = ExecutionResult::RUNNING;
+                last_result.store(ExecutionResult::RUNNING, std::memory_order_release);
+                // this->last_result = ExecutionResult::RUNNING;
                 std::cout << typeid(*this).name() << "with id " 
                 << this->get_id() << " was initialized\n";
             }
@@ -251,7 +261,8 @@ namespace uavsdk
             
             void stop(std::string debug="")
             {
-                stop_requested = true;
+                // stop_requested = true;
+                stop_requested.store(true, std::memory_order_release);
 
                 if (debug != "")
                 {
@@ -261,7 +272,8 @@ namespace uavsdk
 
 
             private:
-            bool stop_requested = false;
+            // bool stop_requested = false;
+            std::atomic<bool> stop_requested{false};
         };
     }
 }

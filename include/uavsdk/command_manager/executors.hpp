@@ -172,6 +172,7 @@ namespace uavsdk
                         if (stage_results.at(i) == ExecutionResult::SUCCESS or stage_results.at(i) == ExecutionResult::FAILED)
                         {
                             stages.at(i)->initialize();
+                            // stages.at(i)->last_result = ExecutionResult::RUNNING;
                         }
 
                         stage_results.at(i) = stages.at(i)->tick();
@@ -245,6 +246,7 @@ namespace uavsdk
                         if (stage_results.at(i) == ExecutionResult::SUCCESS or stage_results.at(i) == ExecutionResult::FAILED)
                         {
                             stages.at(i)->initialize();
+                            // stages.at(i)->last_result = ExecutionResult::RUNNING;
                         }
 
                         stage_results.at(i) = stages.at(i)->tick();

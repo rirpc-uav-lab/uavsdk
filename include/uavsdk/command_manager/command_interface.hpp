@@ -44,10 +44,12 @@ namespace uavsdk
 
             virtual void initialize() override 
             {
-                this->last_result = ExecutionResult::RUNNING;
+                // this->last_result = ExecutionResult::RUNNING;
+                last_result.store(ExecutionResult::RUNNING, std::memory_order_release);
                 for (const auto& stage : this->stages)
                 {
                     stage->initialize();
+                    // stage->last_result = ExecutionResult::RUNNING;
                 }
                 std::cout << typeid(*this).name() << " was initialized\n";
             }
