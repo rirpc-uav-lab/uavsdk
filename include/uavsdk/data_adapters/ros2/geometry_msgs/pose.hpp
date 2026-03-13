@@ -18,7 +18,8 @@ namespace uavsdk
                     public:
                     Point32 position;
                     Quaternion orientation;
-
+                    float loiter_time_s;
+                    
                     protected:
                     virtual void ___set_type()
                     {

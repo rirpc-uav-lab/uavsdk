@@ -19,6 +19,8 @@ namespace uavsdk
         class StagedCommandInterface : public SingleProccessCommandInterface
         {
             public:
+            virtual ~StagedCommandInterface() = default;
+
             void set_tree_postfix(std::string postfix)
             {
                 this->set_postfix(postfix);
@@ -44,8 +46,8 @@ namespace uavsdk
 
             virtual void initialize() override 
             {
-                // this->last_result = ExecutionResult::RUNNING;
-                last_result.store(ExecutionResult::RUNNING, std::memory_order_release);
+                this->last_result = ExecutionResult::RUNNING;
+                // last_result.store(ExecutionResult::RUNNING, std::memory_order_release);
                 for (const auto& stage : this->stages)
                 {
                     stage->initialize();

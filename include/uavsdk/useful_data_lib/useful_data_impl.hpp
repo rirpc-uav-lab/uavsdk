@@ -411,13 +411,13 @@ public:
             std::string msg = "data_storage is empty!!!! + \n";
             throw std::runtime_error(msg);
         }
-        else
-        {
-            for (const auto& key : data_storage)
-            {
-                // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "key in data_storage: " << key.first);
-            }
-        }
+        // else
+        // {
+        //     for (const auto& key : data_storage)
+        //     {
+        //         // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "key in data_storage: " << key.first);
+        //     }
+        // }
         // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " 22222222222222222222222222222222222");
 
         bool flag = false;

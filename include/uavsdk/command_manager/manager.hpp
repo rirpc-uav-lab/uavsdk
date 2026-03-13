@@ -61,7 +61,27 @@ namespace uavsdk
 
             // virtual ~CommandExecutor() = default;
 
-            virtual ~CommandExecutor() = default;
+            virtual ~CommandExecutor() 
+            {
+                // Сначала останавливаем выполнение
+                if (allowed_to_execute.load()) {
+                    this->stop_execution();
+                }
+                
+                // Затем ждем завершения потока
+                if (executor_thread && executor_thread->joinable()) {
+                    executor_thread->join();
+                    executor_thread.reset();  // Явно сбрасываем указатель
+                }
+                
+                {
+                    std::lock_guard<std::mutex> lock(command_mutex);
+                    ex_res_promise.reset();
+                }
+                
+                // Сбрасываем команду
+                this->current_command.reset();
+            }
 
             void set_sleep_period_ms(int ms)
             {
@@ -276,7 +296,12 @@ namespace uavsdk
         class ObservableCommandExecutor : public CommandExecutor<Id>, public useful_di::IDataCollector
         {
             public:
-            virtual ~ObservableCommandExecutor() = default;
+
+            virtual ~ObservableCommandExecutor() 
+            {
+                // Очищаем наблюдателей
+                observers_list.clear();
+            }
 
             void update_data(std::shared_ptr<useful_di::TypeInterface> data) override
             {
@@ -328,25 +353,64 @@ namespace uavsdk
             std::shared_ptr<useful_di::UniMapStr> data;
             std::vector<std::shared_ptr<useful_di::IObserver<useful_di::TypeInterface>>> observers_list = {};
             
+            // virtual uavsdk::command_manager::ExecutionResult _executor_tick() override
+            // {
+            //     std::cout << "fuck you uavsdk 1\n";
+
+            //     auto command = std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command);
+            //     std::cout << "fuck you uavsdk 2\n";
+                
+            //     uavsdk::command_manager::ExecutionResult res = command->tick();
+            //     std::cout << "fuck you uavsdk 3\n";
+
+            //     auto state = command->get_state();
+            //     std::cout << "fuck you uavsdk 4\n";
+
+            //     this->update_data(state);
+            //     std::cout << "fuck you uavsdk 5\n";
+                
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            //     return res;
+            // }
+
             virtual uavsdk::command_manager::ExecutionResult _executor_tick() override
             {
-                std::cout << "fuck you uavsdk 1\n";
-
+                // Проверяем, что команда существует и валидна
+                if (!this->current_command) {
+                    std::cout << "Warning: current_command is null in _executor_tick" << std::endl;
+                    return uavsdk::command_manager::ExecutionResult::FAILED;
+                }
+                
                 auto command = std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command);
-                std::cout << "fuck you uavsdk 2\n";
+                if (!command) {
+                    std::cout << "Warning: Failed to cast command in _executor_tick" << std::endl;
+                    return uavsdk::command_manager::ExecutionResult::FAILED;
+                }
                 
-                uavsdk::command_manager::ExecutionResult res = command->tick();
-                std::cout << "fuck you uavsdk 3\n";
-
-                auto state = command->get_state();
-                std::cout << "fuck you uavsdk 4\n";
-
-                this->update_data(state);
-                std::cout << "fuck you uavsdk 5\n";
                 
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                return res;
+                try {
+                    uavsdk::command_manager::ExecutionResult res = command->tick();
+                    
+                    // Проверяем, что команда все еще существует после tick()
+                    if (!this->current_command) {
+                        return uavsdk::command_manager::ExecutionResult::FAILED;
+                    }
+                    
+                    auto state = command->get_state();
+                    if (state) {
+                        this->update_data(state);
+                    }
+                    
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    return res;
+                }
+                catch (const std::exception& e) {
+                    std::cout << "Exception in _executor_tick: " << e.what() << std::endl;
+                    return uavsdk::command_manager::ExecutionResult::FAILED;
+                }
             }
+
+
         };
     }
 }
