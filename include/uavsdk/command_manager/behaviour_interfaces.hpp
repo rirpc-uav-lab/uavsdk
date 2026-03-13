@@ -32,6 +32,7 @@ namespace uavsdk
         class IExecutable
         {
             public:
+            virtual ~IExecutable() = default;
             virtual ExecutionResult logic_tick() = 0;
         };
 
@@ -40,6 +41,7 @@ namespace uavsdk
         class IIdentification
         {
             public:
+            // virtual ~IIdentification() = default;
             /**
              * @brief Sets the command's ID.
              *
@@ -69,6 +71,8 @@ namespace uavsdk
         class IdString : public IIdentification<std::string>
         {
             public:
+            // virtual ~IdString() = default;
+
             void set_postfix(std::string postfix)
             {
                 this->id += postfix;
@@ -79,6 +83,8 @@ namespace uavsdk
         class IResultProvider
         {
             public:
+            virtual ~IResultProvider() = default;
+
             /**
              * @brief Gets a future representing the command's execution result.
              *
@@ -108,6 +114,8 @@ namespace uavsdk
         class IStoppable 
         {
             public:
+            virtual ~IStoppable() = default;
+
             virtual void handle_stop() = 0; 
         };
 
@@ -115,6 +123,8 @@ namespace uavsdk
         class IInitializable
         {
             public:
+            virtual ~IInitializable() = default;
+
             virtual void initialize() = 0;
         };
 
@@ -122,8 +132,11 @@ namespace uavsdk
         class IStateManager
         {
             public:
+            virtual ~IStateManager() = default;
+
             ExecutionResult get_last_execution_result()
             {
+                // auto current_result = last_result.load(std::memory_order_acquire);
                 return this->last_result;
             }
 
@@ -131,15 +144,19 @@ namespace uavsdk
             virtual std::shared_ptr<useful_di::UniMapStr> get_state() = 0;
 
 
-            protected:
             ExecutionResult last_result = ExecutionResult::INVALID;
+            // std::atomic<ExecutionResult> last_result{ExecutionResult::INVALID};
+            protected:
         };
 
 
         class BaseCommandInterface : public IExecutable, public IResultProvider, public IStoppable, public IInitializable, public useful_di::TypeInterface, public IStateManager
         {
+            public:
+            virtual ~BaseCommandInterface() = default;
+
             protected:
-            std::shared_ptr<useful_di::Blackboard> blackboard;
+            std::shared_ptr<useful_di::UniMapStr> blackboard;
 
 
             /**
@@ -166,6 +183,7 @@ namespace uavsdk
 
             virtual void handle_stop()
             {
+                // this->last_result = ExecutionResult::RUNNING;
                 this->initialize();
             }
         };
@@ -176,8 +194,18 @@ namespace uavsdk
             public:
             SingleProccessCommandInterface()
             {
-                this->initialize();
+
+                this->last_result = ExecutionResult::RUNNING;
+                // this->last_result.store(ExecutionResult::RUNNING, std::memory_order_release);
+                // this->initialize();
             }
+
+            // ~SingleProccessCommandInterface()
+            // {
+            //     this->last_result = ExecutionResult::RUNNING;
+            //     std::cout << "ДЕСТРУКТОР ДЕСТРУКТОР ДЕСТРУКТОР БРАТАН = " << "\n";
+            // }
+            virtual ~SingleProccessCommandInterface() = default;
 
 
             virtual std::shared_ptr<useful_di::UniMapStr> get_state() override
@@ -204,10 +232,17 @@ namespace uavsdk
 
             ExecutionResult tick()
             {
+                // auto current_result = last_result.load(std::memory_order_acquire);
+                std::cout << typeid(*this).name() << "with id " << this->get_id() << " was initialized\n";
+                // if (not stop_requested.load(std::memory_order_acquire))
                 if (not stop_requested)
                 {
+
                     if (this->last_result != ExecutionResult::RUNNING)
                     {
+
+                        std::cout << "ПЕНИСОМ ПО ГУБАМ = " << stop_requested << "\n";
+
                         std::string result = "";
                         switch (this->last_result) {
                             case ExecutionResult::FAILED:
@@ -226,13 +261,18 @@ namespace uavsdk
                                 result = "UNKNOWN";
                                 break;
                         }
-                        std::string msg = this->get_id() + " returned ExecutionResult::INVALID because the last result was " + result + " which must not be possible. Check your code's logic\n";
+                        std::string msg = this->get_id() + " .returned ExecutionResult::INVALID because the last result was " + result + " which must not be possible. Check your code's logic\n";
                         // std::string msg = std::string(typeid(*this).name()) + " returned ExecutionResult::INVALID because the last result was " + result + " which must not be possible. Check your code's logic\n";
                         throw std::runtime_error(msg);
                         return ExecutionResult::INVALID;
                     }
+                    // auto new_result = this->_tick();
+                    // last_result.store(new_result, std::memory_order_release);
                     this->last_result = this->_tick();
                     return this->last_result;
+
+                    // this->last_result = this->_tick();
+                    // return this->last_result;
                 }
                 else
                 {
@@ -243,6 +283,7 @@ namespace uavsdk
 
             virtual void initialize() override 
             {
+                // last_result.store(ExecutionResult::RUNNING, std::memory_order_release);
                 this->last_result = ExecutionResult::RUNNING;
                 std::cout << typeid(*this).name() << "with id " 
                 << this->get_id() << " was initialized\n";
@@ -251,7 +292,12 @@ namespace uavsdk
             
             void stop(std::string debug="")
             {
+                std::cout << "ЗАШЁЛ И ОСТАНОВИЛ!!! " << debug << "\n";
+
                 stop_requested = true;
+                std::cout << "ЗАШЁЛ И УУУУСТАНОВИЛ!!! = " << stop_requested << "\n";
+
+                // stop_requested.store(true, std::memory_order_release);
 
                 if (debug != "")
                 {
@@ -262,6 +308,7 @@ namespace uavsdk
 
             private:
             bool stop_requested = false;
+            // std::atomic<bool> stop_requested{false};
         };
     }
 }

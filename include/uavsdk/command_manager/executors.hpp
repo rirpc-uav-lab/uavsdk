@@ -20,6 +20,8 @@ namespace uavsdk
             class IExecutionStrategy : public useful_di::TypeInterface
             {
                 public:
+                virtual ~IExecutionStrategy() = default;
+
                 virtual uavsdk::command_manager::ExecutionResult execute_stages(std::vector<std::shared_ptr<SingleProccessCommandInterface>>& stages) = 0;
                 virtual std::vector<bool> get_last_was_executed_stage_status() { return this->last_was_executed_stage_status; }
                 
@@ -172,6 +174,7 @@ namespace uavsdk
                         if (stage_results.at(i) == ExecutionResult::SUCCESS or stage_results.at(i) == ExecutionResult::FAILED)
                         {
                             stages.at(i)->initialize();
+                            // stages.at(i)->last_result = ExecutionResult::RUNNING;
                         }
 
                         stage_results.at(i) = stages.at(i)->tick();
@@ -245,6 +248,7 @@ namespace uavsdk
                         if (stage_results.at(i) == ExecutionResult::SUCCESS or stage_results.at(i) == ExecutionResult::FAILED)
                         {
                             stages.at(i)->initialize();
+                            // stages.at(i)->last_result = ExecutionResult::RUNNING;
                         }
 
                         stage_results.at(i) = stages.at(i)->tick();

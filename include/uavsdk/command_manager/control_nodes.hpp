@@ -19,7 +19,7 @@ namespace uavsdk
             class Sequence : public uavsdk::command_manager::StagedCommandInterface
             {
                 public:
-                Sequence(std::shared_ptr<useful_di::Blackboard> _blackboard, int id=-1)
+                Sequence(std::shared_ptr<useful_di::UniMapStr> _blackboard, int id=-1)
                 {
                     this->blackboard = _blackboard;
                     auto seq = std::make_shared<uavsdk::command_manager::executors::SequentialExecutionStrategy>();
@@ -45,7 +45,7 @@ namespace uavsdk
             class Fallback : public uavsdk::command_manager::StagedCommandInterface
             {
                 public:
-                Fallback(std::shared_ptr<useful_di::Blackboard> _blackboard, int id=-1)
+                Fallback(std::shared_ptr<useful_di::UniMapStr> _blackboard, int id=-1)
                 {
                     this->blackboard = _blackboard;
                     auto fallb = std::make_shared<uavsdk::command_manager::executors::FallbackExecutionStrategy>();
@@ -71,7 +71,7 @@ namespace uavsdk
             class ParallelStrict : public uavsdk::command_manager::StagedCommandInterface
             {
                 public:
-                ParallelStrict(std::shared_ptr<useful_di::Blackboard> _blackboard, int id=-1)
+                ParallelStrict(std::shared_ptr<useful_di::UniMapStr> _blackboard, int id=-1)
                 {
                     this->blackboard = _blackboard;
                     auto par_strict = std::make_shared<uavsdk::command_manager::executors::ParallelStrictExecutionStrategy>();
@@ -97,7 +97,7 @@ namespace uavsdk
             class ParallelHopeful : public uavsdk::command_manager::StagedCommandInterface
             {
                 public:
-                ParallelHopeful(std::shared_ptr<useful_di::Blackboard> _blackboard, int id=-1)
+                ParallelHopeful(std::shared_ptr<useful_di::UniMapStr> _blackboard, int id=-1)
                 {
                     this->blackboard = _blackboard;
                     auto par_hopeful = std::make_shared<uavsdk::command_manager::executors::ParallelHopefulExecutionStrategy>();

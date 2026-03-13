@@ -14,6 +14,9 @@ namespace uavsdk
         class CommandExecutorInterface
         {
             public: 
+
+            virtual ~CommandExecutorInterface() = default;
+
             void set_command(std::shared_ptr<uavsdk::command_manager::BaseCommandInterface> _command)
             {
                 this->current_command = _command;
@@ -34,6 +37,8 @@ namespace uavsdk
         class CommandWithIdExecutorInterface : public CommandExecutorInterface
         {
             public:
+            virtual ~CommandWithIdExecutorInterface() = default;
+
             Id get_current_command_id()
             {
                 return current_command_id;
@@ -54,6 +59,29 @@ namespace uavsdk
                 this->ex_res_promise = std::make_unique<std::promise<uavsdk::command_manager::ExecutionResult>>();
             }
 
+            // virtual ~CommandExecutor() = default;
+
+            virtual ~CommandExecutor() 
+            {
+                // Сначала останавливаем выполнение
+                if (allowed_to_execute.load()) {
+                    this->stop_execution();
+                }
+                
+                // Затем ждем завершения потока
+                if (executor_thread && executor_thread->joinable()) {
+                    executor_thread->join();
+                    executor_thread.reset();  // Явно сбрасываем указатель
+                }
+                
+                {
+                    std::lock_guard<std::mutex> lock(command_mutex);
+                    ex_res_promise.reset();
+                }
+                
+                // Сбрасываем команду
+                this->current_command.reset();
+            }
 
             void set_sleep_period_ms(int ms)
             {
@@ -70,6 +98,7 @@ namespace uavsdk
                 //     std::lock_guard<std::mutex> lock(command_mutex);
                 //     _command_executing = this->allowed_to_execute;
                 // }
+                // return allowed_to_execute.load();
                 return allowed_to_execute.load();
             }
 
@@ -91,10 +120,14 @@ namespace uavsdk
                     {
                         std::lock_guard<std::mutex> lock(command_mutex);
                         this->ex_res_promise = std::make_unique<std::promise<uavsdk::command_manager::ExecutionResult>>();
-                        this->executor_thread = std::make_unique<std::thread>(std::bind(&CommandExecutor::_loop, this));
-                        this->executor_thread->detach();
                     }
-                    this->thread_finished.store(false);
+                        this->executor_thread = std::make_unique<std::jthread>(
+                            [this](std::stop_token stoken) {
+                                this->_loop(stoken);
+                            }
+                        );
+
+                    // this->thread_finished.store(false);
                     this->_set_current_command_id(std::dynamic_pointer_cast<uavsdk::command_manager::IIdentification<Id>>(this->current_command)->get_id());
         
                     return uavsdk::command_manager::StartExecutionResult::STARTED;
@@ -140,6 +173,7 @@ namespace uavsdk
                     // std::cout << "!&!&!&!&!CommandExecutor::stop_execution::if-2-!&!&!&!&!\n";
                     this->allowed_to_execute.store(false);
                     this->stop_requested_inside.store(false);
+                    std::cout << "ХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯХУЙНЯ\n";
 
                     {
                         std::lock_guard<std::mutex> lock(command_mutex);
@@ -154,17 +188,17 @@ namespace uavsdk
                 }
 
                 // std::cout << "! ! ! ! ! EXECUTOR NULLIFIED ! ! ! ! !\n";
-                {
-                    std::lock_guard<std::mutex> lock(command_mutex);
-                    // this->executor_thread->~thread();
-                    while (!thread_finished.load())
-                    {
-                        // std::cout << "! ! ! ! ! Waiting for thread to fi ! ! ! ! !\n";
-                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                    }
-                    this->executor_thread = nullptr;
-                    // this->executor_thread->join();
-                }
+                // {
+                //     std::lock_guard<std::mutex> lock(command_mutex);
+                //     // this->executor_thread->~thread();
+                //     while (!thread_finished.load())
+                //     {
+                //         // std::cout << "! ! ! ! ! Waiting for thread to fi ! ! ! ! !\n";
+                //         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                //     }
+                //     this->executor_thread = nullptr;
+                //     // this->executor_thread->join();
+                // }
                 // std::cout << "! ! ! ! ! EXECUTOR NULLIFIED ! ! ! ! !\n is it really? It is " << !this->executor_thread << "\n";
                 this->_set_current_command_id_to_idle();
                 // std::cout << "OKKAK\n";
@@ -188,20 +222,27 @@ namespace uavsdk
             std::mutex command_mutex;
             std::atomic<bool> allowed_to_execute{false};
             std::atomic<bool> stop_requested_inside{false};
-            std::atomic<bool> thread_finished{true};
-            std::unique_ptr<std::thread> executor_thread; 
+            // std::atomic<bool> thread_finished{true};
+            // std::unique_ptr<std::thread> executor_thread; 
+            std::unique_ptr<std::jthread> executor_thread;
 
             
-            void _loop()
+            void _loop(std::stop_token stoken)
             {
-                while (allowed_to_execute.load())
+                std::cout << "gogogogogogogogogogogogogogogogogogo\n";
+
+                while (allowed_to_execute.load() && !stoken.stop_requested())
                 {
+                    std::cout << "i fuck your mmother and father veryvery like\n";
+
                     // std::cout << "!&!&!&!&!while step\n";
                     uavsdk::command_manager::ExecutionResult res;
 
                     // std::cout << "!&!&!&!&! !allowed_to_execute.load()" << !allowed_to_execute.load() << "\n";
                     // std::cout << "!&!&!&!&! !stop_requested_inside.load()" << !stop_requested_inside.load() << "\n";
                     // std::cout << "!&!&!&!&! this->get_current_command_id()" << this->get_current_command_id() << "\n";
+                    std::cout << "i fuck your mmother and father veryvery like Ч2\n";
+
                     if (allowed_to_execute.load() and !stop_requested_inside.load()) 
                     {
                         // std::cout << "!&!&!&!&! tick\n";
@@ -210,6 +251,7 @@ namespace uavsdk
                         res = this->_executor_tick();
                     }
 
+                    std::cout << "i fuck your mmother and father veryvery like Ч3\n";
                     
                     // std::cout << "!&!&!&!&! res == uavsdk::command_manager::ExecutionResult::SUCCESS" << bool(res == uavsdk::command_manager::ExecutionResult::SUCCESS) << "\n";
                     // std::cout << "!&!&!&!&! res == uavsdk::command_manager::ExecutionResult::FAILED" << bool(res == uavsdk::command_manager::ExecutionResult::FAILED) << "\n";
@@ -221,6 +263,7 @@ namespace uavsdk
 
                         this->stop_requested_inside.store(true);
                         this->allowed_to_execute.store(false);
+                        std::cout << "i fuck your mmother and father veryvery like Ч4\n";
 
                         // _command_executing = false;
                         {
@@ -230,28 +273,22 @@ namespace uavsdk
                         
                         // this->stop_execution();
                         break;
+                        std::cout << "i fuck your mmother and father veryvery like Ч5\n";
+
                     }
+                    std::cout << "i fuck your mmother and father veryvery like Ч6\n";
+
                     // std::cout << "WHILEENDDD\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
                 }
-                this->thread_finished.store(true);
+                // this->thread_finished.store(true);
 
                 // std::cout << "current_command " << this->get_current_command_id() << "\n";
                 // std::cout << "allowed_to_execute " << allowed_to_execute.load() << "\n";
                 // std::cout << "stop_requested_inside " << stop_requested_inside.load() << "\n";
             }
         
-            virtual uavsdk::command_manager::ExecutionResult _executor_tick()
-            {
-                uavsdk::command_manager::ExecutionResult res = std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command)->tick();
-                
-                // if (res == uavsdk::command_manager::ExecutionResult::SUCCESS or res == uavsdk::command_manager::ExecutionResult::FAILED)
-                // {
-                //     this->stop_execution(res);
-                // }
-                
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleep_period_ms));
-                return res;
-            }
+            virtual uavsdk::command_manager::ExecutionResult _executor_tick() = 0;
+
         };
 
 
@@ -259,6 +296,13 @@ namespace uavsdk
         class ObservableCommandExecutor : public CommandExecutor<Id>, public useful_di::IDataCollector
         {
             public:
+
+            virtual ~ObservableCommandExecutor() 
+            {
+                // Очищаем наблюдателей
+                observers_list.clear();
+            }
+
             void update_data(std::shared_ptr<useful_di::TypeInterface> data) override
             {
                 this->data = std::dynamic_pointer_cast<useful_di::UniMapStr>(data);
@@ -309,106 +353,65 @@ namespace uavsdk
             std::shared_ptr<useful_di::UniMapStr> data;
             std::vector<std::shared_ptr<useful_di::IObserver<useful_di::TypeInterface>>> observers_list = {};
             
+            // virtual uavsdk::command_manager::ExecutionResult _executor_tick() override
+            // {
+            //     std::cout << "fuck you uavsdk 1\n";
+
+            //     auto command = std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command);
+            //     std::cout << "fuck you uavsdk 2\n";
+                
+            //     uavsdk::command_manager::ExecutionResult res = command->tick();
+            //     std::cout << "fuck you uavsdk 3\n";
+
+            //     auto state = command->get_state();
+            //     std::cout << "fuck you uavsdk 4\n";
+
+            //     this->update_data(state);
+            //     std::cout << "fuck you uavsdk 5\n";
+                
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            //     return res;
+            // }
+
             virtual uavsdk::command_manager::ExecutionResult _executor_tick() override
             {
+                // Проверяем, что команда существует и валидна
+                if (!this->current_command) {
+                    std::cout << "Warning: current_command is null in _executor_tick" << std::endl;
+                    return uavsdk::command_manager::ExecutionResult::FAILED;
+                }
+                
                 auto command = std::dynamic_pointer_cast<uavsdk::command_manager::SingleProccessCommandInterface>(this->current_command);
+                if (!command) {
+                    std::cout << "Warning: Failed to cast command in _executor_tick" << std::endl;
+                    return uavsdk::command_manager::ExecutionResult::FAILED;
+                }
                 
-                uavsdk::command_manager::ExecutionResult res = command->tick();
-
-                auto state = command->get_state();
-                this->update_data(state);
                 
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                return res;
+                try {
+                    uavsdk::command_manager::ExecutionResult res = command->tick();
+                    
+                    // Проверяем, что команда все еще существует после tick()
+                    if (!this->current_command) {
+                        return uavsdk::command_manager::ExecutionResult::FAILED;
+                    }
+                    
+                    auto state = command->get_state();
+                    if (state) {
+                        this->update_data(state);
+                    }
+                    
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    return res;
+                }
+                catch (const std::exception& e) {
+                    std::cout << "Exception in _executor_tick: " << e.what() << std::endl;
+                    return uavsdk::command_manager::ExecutionResult::FAILED;
+                }
             }
+
+
         };
     }
 }
 
-
-
-
-
-
-// #pragma once
-// #include <any>
-// #include <map>
-// #include <string>
-// #include <iostream>
-// #include <memory>
-
-
-// using namespace std;
-
-// template <typename T>
-// std::string get_type()
-// {
-//     return typeid(T).name();
-// }
-
-// class Element
-// {
-//     public:
-//     void doSomething()
-//     {
-        // std::cout << "default action"<< std::endl;
-//     }
-// };
-
-// class Robot:Element
-// {
-
-// };
-
-// class BlackBoard
-// {
-// private:
-//     map<string, std::any> bb_;
-// public:
-
-//     template<typename Elem>
-//     void addElement()
-//     {
-//         string name = get_type<Elem>();
-//         auto it = bb_.find(name);
-//         if (it == bb_.end())
-//         bb_[name] = std::shared_ptr<Elem>();
-//     }
-
-//     BlackBoard(
-        
-//         /* args */);
-//     ~BlackBoard();
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    // switch (res) {
-                    //     case ExecutionResult::FAILED:
-                    //         std::cout << "FAILED_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_FAILED\n";
-                    //         break;
-                    //     case ExecutionResult::RUNNING:
-                    //         std::cout << "RUNNING_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_RUNNING\n";
-                    //         break;
-                    //     case ExecutionResult::SUCCESS:
-                    //         std::cout << "SUCCESS_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_SUCCESS\n";
-                    //         break;
-                    //     case ExecutionResult::INVALID:
-                    //         std::cout << "INVALID_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_INVALID\n";
-                    //         break;
-                    //     default:
-                    //         std::cout << "UNKNOWN_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_PIDORSTEAM_UNKNOWN\n";
-                    //         break;
-                    // }

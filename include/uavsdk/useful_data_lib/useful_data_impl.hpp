@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rclcpp/rclcpp.hpp"
+
 #include "uavsdk/data_adapters/cxx/cxx.hpp"
 #include "uavsdk/useful_data_lib/base_interfaces.hpp"
 #include <iostream>
@@ -54,86 +56,86 @@ private:
 };
 
 
-template <typename T>
-class SimpleObserverWithCallback : public IObserver<T>
-{
-public: 
-    SimpleObserverWithCallback(std::function<void(std::shared_ptr<T>)> callback)
-    {
-        this->set_callback(callback);
-    }
+// template <typename T>
+// class SimpleObserverWithCallback : public IObserver<T>
+// {
+// public: 
+//     SimpleObserverWithCallback(std::function<void(std::shared_ptr<T>)> callback)
+//     {
+//         this->set_callback(callback);
+//     }
 
 
-    bool callback_ready()
-    {
-        return this->callback_set;
-    }
+//     bool callback_ready()
+//     {
+//         return this->callback_set;
+//     }
 
 
-    virtual void be_notified(std::shared_ptr<T> input_data) override
-    {
-        this->callback(input_data);
-    }
+//     virtual void be_notified(std::shared_ptr<T> input_data) override
+//     {
+//         this->callback(input_data);
+//     }
 
-protected:
-    std::function<void(std::shared_ptr<T>)> callback_obj;
-    bool callback_set{false};
-
-
-    void callback(std::shared_ptr<T> msg) 
-    {
-        if (!msg) 
-            throw std::runtime_error("SimpleObserverWithCallback: Invalid pointer passed to callback().");
-
-        if (callback_set)
-            this->callback_obj(msg);
-        else 
-            throw std::runtime_error("SimpleObserverWithCallback: Callback was not set but has already been called.");
-    }
+// protected:
+//     std::function<void(std::shared_ptr<T>)> callback_obj;
+//     bool callback_set{false};
 
 
-    void set_callback(std::function<void(std::shared_ptr<T>)> callback)
-    {
-        this->callback_obj = callback;
-        callback_set = true;
-    }
-};
+//     void callback(std::shared_ptr<T> msg) 
+//     {
+//         if (!msg) 
+//             throw std::runtime_error("SimpleObserverWithCallback: Invalid pointer passed to callback().");
+
+//         if (callback_set)
+//             this->callback_obj(msg);
+//         else 
+//             throw std::runtime_error("SimpleObserverWithCallback: Callback was not set but has already been called.");
+//     }
 
 
-template <typename T>
-class SimpleBindableObserverWithCallback : public SimpleObserverWithCallback<T>, public virtual IBindable<std::shared_ptr<ICollector<T>>>, public virtual IBoundCheckAble
-{
-public: 
-    SimpleBindableObserverWithCallback(std::function<void(std::shared_ptr<T>)> callback) : SimpleObserverWithCallback<T>(callback)
-    { }
+//     void set_callback(std::function<void(std::shared_ptr<T>)> callback)
+//     {
+//         this->callback_obj = callback;
+//         callback_set = true;
+//     }
+// };
 
 
-    void bind(std::shared_ptr<ICollector<T>> collector) override 
-    {
-        std::shared_ptr<SimpleBindableObserverWithCallback<T>> this_p(this);
-        collector->attach_observer(this_p);
-        this_is_bound = true;
-    }
+// template <typename T>
+// class SimpleBindableObserverWithCallback : public SimpleObserverWithCallback<T>, public virtual IBindable<std::shared_ptr<ICollector<T>>>, public virtual IBoundCheckAble
+// {
+// public: 
+//     SimpleBindableObserverWithCallback(std::function<void(std::shared_ptr<T>)> callback) : SimpleObserverWithCallback<T>(callback)
+//     { }
 
 
-    virtual void be_notified(std::shared_ptr<T> input_data) override
-    {
-        if (this->is_bound())
-            this->callback(input_data);
-        else
-            throw std::runtime_error("SimpleObserverWithCallback: Observer has not been bound.");
-    }
+//     void bind(std::shared_ptr<ICollector<T>> collector) override 
+//     {
+//         std::shared_ptr<SimpleBindableObserverWithCallback<T>> this_p(this);
+//         collector->attach_observer(this_p);
+//         this_is_bound = true;
+//     }
 
 
-    bool is_bound() override
-    {
-        // std::lock_guard<std::mutex> lock(data_mx);
-        return this->this_is_bound;
-    }
+//     virtual void be_notified(std::shared_ptr<T> input_data) override
+//     {
+//         if (this->is_bound())
+//             this->callback(input_data);
+//         else
+//             throw std::runtime_error("SimpleObserverWithCallback: Observer has not been bound.");
+//     }
 
-protected:
-    bool this_is_bound{false};
-};
+
+//     bool is_bound() override
+//     {
+//         // std::lock_guard<std::mutex> lock(data_mx);
+//         return this->this_is_bound;
+//     }
+
+// protected:
+//     bool this_is_bound{false};
+// };
 
 
 
@@ -285,22 +287,37 @@ public:
         this->___set_type();
     }
 
-    std::vector<std::string> get_present_keys()
+    virtual std::vector<std::string> get_present_keys() override
     {
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
         return this->keys;
     }
 
     virtual bool has(const std::string& _key) override
     {
-        for (const auto& key : keys)
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "BEGIN FUNCTION HAS ========================== : " << _key);
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
+        for (const auto& key : this->keys)
         {
+            // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "FUNCTION HAS = : " << key);
             if (key == _key) return true;
         }
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "FINISH FUNCTION HAS ========================== : ");
         return false;
     }
 
     virtual void add_data(const std::string _key, const std::shared_ptr<TypeInterface>& _data) override
     {
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
+
+        if (_key.empty()) {
+            throw std::runtime_error("UniMapStr: empty key provided");
+        }
+        if (!_data) {
+            throw std::runtime_error("UniMapStr: null data provided");
+        }
+
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "UNIMAP ADDDDDDDDDDDD DATAAAAAAAAAAA " << _key);
         if (!_data) 
             throw std::runtime_error("UniMapStr::add_data(): Invalid pointer _data passed to add_data()");
 
@@ -310,6 +327,7 @@ public:
             
             this->keys.push_back(_key);
             this->data_storage.insert(std::make_pair<std::string, std::shared_ptr<TypeInterface>>(std::move(tmp_key), std::dynamic_pointer_cast<TypeInterface>(_data)));
+            // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " UNIMAP ADDDDDDDDDDDD IN data_storage " << _key);
         }
         else 
         {
@@ -318,17 +336,31 @@ public:
             // std::cout << "UniMapStr: Warning! Called _add_data(id, data), but this id is alredy in map. Calling modify_data(id, data). \n";
             
             // std::runtime_error("Called _add_data(id, data), but this id is alredy in map");
-            this->modify_data(_key, _data);
+            // this->modify_data(_key, _data);
+            if (this->data_storage.count(_key))
+            {
+                if (_data->___get_type() != this->data_storage.at(_key)->___get_type()) throw std::runtime_error("UniMapStr::modify_data(): Tried to change type of the object at key: " + _key + ". Current object type is " + this->data_storage.at(_key)->___get_type() + ". New object type is " + _data->___get_type());
+                this->data_storage.at(_key) = _data;
+            }
+            else
+            {
+                throw std::runtime_error("UniMapStr::modify_data(): tried to modify data with key " + _key + " but no such key exists");
+            }
         }
     }
 
 
     virtual void remove_data(const std::string& data_identifier) override
     {
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
         if (this->data_storage.count(data_identifier)) 
         {
             this->data_storage.erase(data_identifier);
-            this->keys.erase(this->keys.begin() + this->_get_key_id(data_identifier));
+            auto it = std::find(keys.begin(), keys.end(), data_identifier);
+            if (it != keys.end()) 
+            {
+                keys.erase(it);
+            }
         }
         else
         {
@@ -337,105 +369,15 @@ public:
     }
 
 
-    std::shared_ptr<TypeInterface> at(const std::string& data_identifier) override
-    {
-        // fprintf(stdout, "at line: %i\n", __LINE__);
-        if (not this->data_storage.count(data_identifier))
-        {
-            // fprintf(stdout, "at line: %i\n", __LINE__);
-            std::string msg = "UniMapStr: Error! No such key in blackboard. Key = " + data_identifier + ".\n";
-            throw std::runtime_error(msg);
-        }
-        // fprintf(stdout, "at line: %i\n", __LINE__);
-        auto type_interface = this->data_storage.at(data_identifier);
-        // fprintf(stdout, "at line: %i\n", __LINE__);
-        return type_interface;
-    }
-
-
-    void modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& new_data) override
-    {
-        if (this->data_storage.count(data_identifier))
-        {
-            if (new_data->___get_type() != this->data_storage.at(data_identifier)->___get_type()) throw std::runtime_error("UniMapStr::modify_data(): Tried to change type of the object at key: " + data_identifier + ". Current object type is " + this->data_storage.at(data_identifier)->___get_type() + ". New object type is " + new_data->___get_type());
-            this->data_storage.at(data_identifier) = new_data;
-        }
-        else
-        {
-            throw std::runtime_error("UniMapStr::modify_data(): tried to modify data with key " + data_identifier + " but no such key exists");
-        }
-    }
-
-
-    virtual size_t size() override
-    {
-        return this->data_storage.size();
-    }
-
-
-    #warning Developer warning. Next two methods should be in the interface:
-    std::map<std::string, std::shared_ptr<TypeInterface>>::iterator begin() { return this->data_storage.begin(); }
-    std::map<std::string, std::shared_ptr<TypeInterface>>::iterator end() { return this->data_storage.end(); }
-
-
-    private:
-        int _get_key_id(std::string search_key)
-        {
-            for (size_t i = 0; i < this->keys.size(); i++)
-            {
-                if (this->keys.at(i) == search_key) return i;
-            }
-            return -1;
-        }
-    
-    protected:
-        std::vector<std::string> keys;
-        // Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
-};
-
-
-class Blackboard : public MapLikeDataStorageInterface<std::string>, public IHasValueForKey<std::string>
-{
-    public:
-    Blackboard(std::shared_ptr<useful_di::UniMapStr> _blackboard)
-    {
-        this->___set_type();
-        init_blackboard(_blackboard);
-    }
-
-
-    Blackboard()
-    {
-        this->___set_type();
-        auto _blackboard = std::make_shared<useful_di::UniMapStr>();
-        init_blackboard(_blackboard);
-    }
-
-
-    bool has(const std::string& key) override
-    {
-        for (const auto& _key : this->get_keys_from_blackboard())
-        {
-            if (key == _key) return true;
-        }
-        return false;
-    }
-
-
-    std::vector<std::string> get_keys_from_blackboard()
-    {
-        std::lock_guard<std::mutex> llock(bb_mutex);
-        return blackboard->get_present_keys();
-    }
-
     #warning No interface for the following function?
     template <typename T>
     std::shared_ptr<T> at(const std::string& key)
     {
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "UniMapStr AT<>!!!!!! DATAAAAAAAAAAA " << key);
         std::shared_ptr<useful_di::TypeInterface> data = nullptr;
         try
         {
-            data = this->blackboard->at(key);
+            data = this->at(key);
         }
         catch(const std::out_of_range e)
         {
@@ -458,248 +400,91 @@ class Blackboard : public MapLikeDataStorageInterface<std::string>, public IHasV
     }
 
 
-    // std::string add_data(const std::shared_ptr<TypeInterface>& _data) override
-    // {
-    //     throw std::runtime_error("Sorry, but calling useful_di::Blackboard::add_data(data) is not possible. We are working to remove this option completely so please do not use it. Instead you should explicitly specify the key.\n");
-    //     return "error";
-    // }
-
-
-    void add_data(const std::string key, const std::shared_ptr<useful_di::TypeInterface>& data) override
+    virtual std::shared_ptr<TypeInterface> at(const std::string& data_identifier) override
     {
-        std::lock_guard<std::mutex> llock(bb_mutex);
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "UniMapStr AT!!!!!! DATAAAAAAAAAAA " << data_identifier);
 
-        auto keys = this->blackboard->get_present_keys();
-        
-        bool key_not_in_bb = true;
-        
-        for (const auto& bb_key : keys)
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " 1111111111111111111111 data_identifier = " << data_identifier);
+        if (data_storage.empty())
         {
-            if (bb_key == key)
-            {
-                key_not_in_bb = false;
-                break;
-            }
-        }
-        
-        if (key_not_in_bb)
-        {
-            blackboard->add_data(key, data);
-        }
-        else
-        {
-            auto bb_type = blackboard->at(key)->___get_type();
-            auto data_type = data->___get_type();
-            if (bb_type != data_type) 
-                throw std::runtime_error("Blackboard: OVERWITE ERROR! Called Blackboard::add_data(key, data) on key " + key + ", but this key is alredy in blackboard with a different type. bb_type = " + bb_type + " data_type = " + data_type);
-            else
-            {
-                blackboard->add_data(key, data);
-            }
-        }
-    }
-
-
-    void remove_data(const std::string& data_identifier) override
-    {
-        std::lock_guard<std::mutex> llock(bb_mutex);
-        blackboard->remove_data(data_identifier);
-    }
-
-
-    void modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& _data) override
-    {
-        std::lock_guard<std::mutex> llock(bb_mutex);
-        blackboard->modify_data(data_identifier, _data);
-    }
-
-
-    std::shared_ptr<TypeInterface> at(const std::string& data_identifier) override
-    {
-        std::lock_guard<std::mutex> llock(bb_mutex);
-        std::shared_ptr<useful_di::TypeInterface> data = nullptr;
-        try
-        {
-            data = this->blackboard->at(data_identifier);
-        }
-        catch(const std::out_of_range e)
-        {
-            std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + data_identifier + std::string("\n"));
+            std::string msg = "data_storage is empty!!!! + \n";
             throw std::runtime_error(msg);
         }
-        return data;
-    }
+        // else
+        // {
+        //     for (const auto& key : data_storage)
+        //     {
+        //         // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "key in data_storage: " << key.first);
+        //     }
+        // }
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " 22222222222222222222222222222222222");
 
-
-    size_t size() override
-    {
-        std::lock_guard<std::mutex> llock(bb_mutex);
-        return blackboard->size();
-    }
-
-
-    protected:
-    std::shared_ptr<useful_di::UniMapStr> blackboard; // shared_resource
-    std::mutex bb_mutex; // blackboard mutex
-
-
-    void init_blackboard(std::shared_ptr<useful_di::UniMapStr> init_bb)
-    {
-        this->blackboard = init_bb;
-    }
-};
-
-
-// class MyClass {
-// public:
-//   MyClass();
-//   MyClass(MyClass &&) = default;
-//   MyClass(const MyClass &) = default;
-//   MyClass &operator=(MyClass &&) = default;
-//   MyClass &operator=(const MyClass &) = default;
-//   ~MyClass();
-//
-// private:
-//   
-// };
-
-
-
-template <typename T>
-class BlackboardVariable
-{
-  public:
-    explicit BlackboardVariable(std::shared_ptr<Blackboard> bb, const std::string& key) : key{key}
-    { 
-        this->bb = bb;
-        if (!this->bb->has(key)) throw std::runtime_error("BlackboardVariable[" + key + "]: initial_value was not provided but no such variable exists in blackboard.");
-    }
-
-
-    explicit BlackboardVariable(std::shared_ptr<Blackboard> bb, const std::string& key, const T& initial_value) : key{key}
-    { 
-        this->bb = bb;
-
-        if (!this->bb->has(key))
+        bool flag = false;
+        for (const auto& key : this->keys)
         {
-            auto data_adap = std::make_shared<uavsdk::data_adapters::cxx::MutexDefendedDataAdapter<T>>(initial_value);
-            this->bb->add_data(key, data_adap);
+            // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "FUNCTION HAS = : " << key);
+            if (key == data_identifier) flag = true;
         }
-    }
 
-    BlackboardVariable() = delete;
-    BlackboardVariable(const BlackboardVariable&) = default;
-    BlackboardVariable(BlackboardVariable&&) = default;
-    BlackboardVariable& operator=(const BlackboardVariable&) = default;
-    BlackboardVariable& operator=(BlackboardVariable&&) = default;
-    ~BlackboardVariable() noexcept = default;
-
- 
-    void operator=(const T& data)
-    {
-        auto data_adap = std::make_shared<uavsdk::data_adapters::cxx::MutexDefendedDataAdapter<T>>(data);
-        this->bb->add_data(key, data_adap);
-    }
-
-
-    T operator*()
-    {
-        this->check_variable_existance(this->key);
-        T variable = this->bb->at<uavsdk::data_adapters::cxx::MutexDefendedDataAdapter<T>>(this->key)->get_data();
-        return variable;
-    }
-
-
-  protected:
-    std::shared_ptr<Blackboard> bb;
-    const std::string key;
-
-
-  private:
-    bool check_variable_existance(const std::string& key)
-    {
-        // if (!this->bb->has(key)) throw std::runtime_error("BlackboardVariable[" + key + "]: doesn't exist");
-        if (!this->bb->has(key)) throw std::runtime_error("BlackboardVariable[" + key + "]: variable is invalid in blackboard.");
-        if (!this->bb->at(key)) throw std::runtime_error("BlackboardVariable[" + key + "]: variable is invalid in blackboard.");
-        return true;
-    }
-};
-
-
-class BulkBlackboard : public Blackboard, public IBulkAtAbleContainer<std::string, std::shared_ptr<UniMapStr>>
-{
-public:
-    using Blackboard::at;
-
-    virtual std::shared_ptr<useful_di::TypeInterface> at(const std::string& data_identifier) override
-    {
-        if (not this->data_storage.count(data_identifier))
+        if (!flag)
         {
             std::string msg = "UniMapStr: Error! No such key in blackboard. Key = " + data_identifier + ".\n";
             throw std::runtime_error(msg);
         }
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " ЧТО-ТО ПОПЫТАЛСЯ ВЕРНУТЬ");
         auto type_interface = this->data_storage.at(data_identifier);
+        // if (type_interface == nullptr)
+        // {
+        //     RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), " NUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUL");
+
+        // }
         return type_interface;
     }
 
 
-    virtual std::shared_ptr<UniMapStr> at(const std::vector<std::string>& data_identifiers) override
+    virtual void modify_data(const std::string& data_identifier, const std::shared_ptr<TypeInterface>& new_data) override
     {
-        std::lock_guard<std::mutex> llock(bb_mutex);
-
-        std::shared_ptr<UniMapStr> ret;
-
-        for (const auto& data_identifier : data_identifiers)
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
+        if (this->data_storage.count(data_identifier))
         {
-            std::shared_ptr<useful_di::TypeInterface> data = nullptr;
-            try
-            {
-                data = this->blackboard->at(data_identifier);
-                ret->add_data(data_identifier, data);
-            }
-            catch(const std::out_of_range e)
-            {
-                std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + data_identifier + std::string("\n"));
-                throw std::runtime_error(msg);
-            }
+            if (new_data->___get_type() != this->data_storage.at(data_identifier)->___get_type()) throw std::runtime_error("UniMapStr::modify_data(): Tried to change type of the object at key: " + data_identifier + ". Current object type is " + this->data_storage.at(data_identifier)->___get_type() + ". New object type is " + new_data->___get_type());
+            this->data_storage.at(data_identifier) = new_data;
         }
-
-        this->last_returned = ret;
-        return ret;
+        else
+        {
+            throw std::runtime_error("UniMapStr::modify_data(): tried to modify data with key " + data_identifier + " but no such key exists");
+        }
     }
 
 
-    virtual std::shared_ptr<UniMapStr> get_all() override
+    virtual size_t size() override
     {
-        auto data_identifiers = this->get_keys_from_blackboard();
-        
-        std::lock_guard<std::mutex> llock(bb_mutex);
-        // fprintf(stdout, "BulkBlackboard %i\n", ++i);
-        std::shared_ptr<UniMapStr> ret = std::make_shared<UniMapStr>();
-        // fprintf(stdout, "BulkBlackboard %i\n", ++i);
-
-        for (const auto& data_identifier : data_identifiers)
-        {
-            // fprintf(stdout, "BulkBlackboard %i, %i", ++i, i);
-            std::shared_ptr<useful_di::TypeInterface> data = nullptr;
-            try
-            {
-                data = this->blackboard->at(data_identifier);
-                ret->add_data(data_identifier, data);
-            }
-            catch(const std::out_of_range e)
-            {
-                std::string msg(std::string(e.what()) + std::string("\n\tKey was ") + data_identifier + std::string("\n"));
-                throw std::runtime_error(msg);
-            }
-        }
-
-        this->last_returned = ret;
-        return ret;
+        std::lock_guard<std::mutex> llock(blackboard_mutex);
+        return this->data_storage.size();
     }
 
-private:
-    std::shared_ptr<UniMapStr> last_returned;
+
+    #warning Developer warning. Next two methods should be in the interface:
+    std::map<std::string, std::shared_ptr<TypeInterface>>::iterator begin() { return this->data_storage.begin(); }
+    std::map<std::string, std::shared_ptr<TypeInterface>>::iterator end() { return this->data_storage.end(); }
+
+
+    private:
+        int _get_key_id(std::string search_key)
+        {
+            // RCLCPP_INFO_STREAM(rclcpp::get_logger("uni_map_str"), "GET KEY GET KEY GET KEY GET KEY GEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEET");
+            for (size_t i = 0; i < this->keys.size(); i++)
+            {
+                if (this->keys.at(i) == search_key) return i;
+            }
+            return -1;
+        }
+    
+    protected:
+        std::vector<std::string> keys;
+        std::mutex blackboard_mutex;
+        // Id _add_data(const std::shared_ptr<UniversalDataInterface<UniversalDataFormat>>& _data)
 };
 
 
@@ -1037,221 +822,4 @@ private:
     bool data_type_set{false};
 };
 
-
-
-class DataObserverWithCallback : public IDataObserver
-{
-public:
-    DataObserverWithCallback(std::function<void(std::shared_ptr<TypeInterface>)> callback)
-    {
-        this->set_callback(callback);
-    }
-
-
-    virtual void be_notified(std::shared_ptr<TypeInterface> input_data) override
-    {
-        this->callback(input_data);
-    }
-
-
-    bool callback_ready()
-    {
-        return this->callback_set;
-    }
-
-protected:
-    void callback(std::shared_ptr<TypeInterface> msg) 
-    {
-        if (callback_set)
-            this->callback_obj(msg);
-        else 
-            throw std::runtime_error("DataObserverWithCallback: Callback was not set but has already been called.");
-    }
-
-private:
-    std::function<void(std::shared_ptr<TypeInterface>)> callback_obj;
-    bool callback_set{false};
-
-    
-    void set_callback(std::function<void(std::shared_ptr<TypeInterface>)> callback)
-    {
-        this->callback_obj = callback;
-        callback_set = true;
-    }
-};
-
-
-
-class StrictDataObserver : public DataObserverWithCallback, public IHasExpectations<ObserverCollectorExpectations>
-{
-public:
-    StrictDataObserver(std::function<void(std::shared_ptr<TypeInterface>)> callback_) : DataObserverWithCallback(callback_)
-    {}
-
-    virtual void be_notified(std::shared_ptr<TypeInterface> input_data) override
-    {
-        // std::lock_guard<std::mutex> lock(data_mx);
-        if (input_data->___get_type() != this->get_expectations().get_data_type()) throw std::runtime_error("StrictDataObserver::be_notified(): Expected " + this->get_expectations().get_data_type() + " but got " + input_data->___get_type());
-        this->callback(input_data);
-    }
-
-    ObserverCollectorExpectations get_expectations() override
-    {
-        return this->expectations;
-    }
-
-
-    bool match_expectations(const ObserverCollectorExpectations &other_expectations) override
-    {
-        return this->expectations == other_expectations;
-    }
-
-
-protected:
-    // std::mutex data_mx;
-    void set_expectations(ObserverCollectorExpectations new_expectations) override
-    {
-        this->expectations = new_expectations;
-    }
-};
-
-
-class StrictDataCollector : public IDataCollector, public IHasExpectations<ObserverCollectorExpectations>
-// class StrictDataCollector : public IDataCollector, public IHasExpectations<ObserverCollectorExpectations>
-{
-public:
-    StrictDataCollector(const ObserverCollectorExpectations new_expectations)
-    {
-        this->set_expectations(new_expectations);
-    }
-
-
-    StrictDataCollector(const std::shared_ptr<const ObserverCollectorExpectations> new_expectations)
-    {
-        this->set_expectations(*new_expectations);
-    }
-
-
-    ObserverCollectorExpectations get_expectations() override
-    {
-        return this->expectations;
-    }
-
-
-    bool match_expectations(const ObserverCollectorExpectations &other_expectations) override
-    {
-        return this->expectations == other_expectations;
-    }
-
-
-    void update_data(std::shared_ptr<TypeInterface> data) override
-    {
-        std::lock_guard<std::mutex> lock(data_mx);
-        if (data->___get_type() != this->get_expectations().get_data_type()) throw std::runtime_error("StrictDataCollector::update_data(): Expected " + this->get_expectations().get_data_type() + " but got " + data->___get_type());
-        this->current_data = data;
-        this->notify_observers();
-    }
-
-    void attach_observer(std::shared_ptr<IObserver<TypeInterface>> observer) override
-    {
-        std::lock_guard<std::mutex> lock(data_mx);
-        
-        if (!observer) {
-            throw std::runtime_error("StrictDataCollector: Tried to attach a null observer.");
-        }
-
-        auto observer_p = std::dynamic_pointer_cast<StrictDataObserver>(observer);
-
-        if (!observer_p) throw std::runtime_error("StrictDataCollector: Tried to attach an incompatible observer. Should derive from StrictDataObserver");
-        if (!this->match_expectations(observer_p->get_expectations())) throw std::runtime_error("StrictDataCollector: Tried to bind incompatible expectations. This expectations: " + this->expectations.to_str() + "Other expectations: " + observer_p->get_expectations().to_str());
-
-        this->observers.push_back(observer);
-    }
-
-protected:
-    std::mutex data_mx;
-    std::shared_ptr<TypeInterface> current_data;
-    std::vector<std::shared_ptr<IObserver<TypeInterface>>> observers;
-    
-    void notify_observers() override
-    {
-        // std::lock_guard<std::mutex> lock(data_mx);
-        for (const auto &observer : observers)
-        {
-            observer->be_notified(current_data);
-        }
-    }
-
-
-    void set_expectations(ObserverCollectorExpectations new_expectations) override
-    {
-        this->expectations = new_expectations;
-    }
-};
-
-
-
-
-class StrictBindableDataObserver : public StrictDataObserver, public IBindable<std::shared_ptr<StrictDataCollector>>, public IBoundCheckAble
-{
-public:
-    StrictBindableDataObserver(ObserverCollectorExpectations initial_expectations, std::function<void(std::shared_ptr<TypeInterface>)> callback_) : StrictDataObserver(callback_)
-    {
-        this->set_expectations(initial_expectations);
-    }
-
-
-    StrictBindableDataObserver(const std::shared_ptr<const ObserverCollectorExpectations> initial_expectations, std::function<void(std::shared_ptr<TypeInterface>)> callback_) : StrictDataObserver(callback_)
-    {
-        this->set_expectations(*initial_expectations);
-    }
-
-    void bind(std::shared_ptr<StrictDataCollector> collector) override 
-    {
-        // std::lock_guard<std::mutex> lock(data_mx);
-        if (!this->match_expectations(collector->get_expectations())) throw std::runtime_error("StrictBindableDataObserver: Tried to bind incompatible expectations. This expectations: " + this->expectations.to_str() + "Other expectations: " + collector->get_expectations().to_str());
-        std::shared_ptr<StrictBindableDataObserver> this_p(this);
-        collector->attach_observer(this_p);
-        this_is_bound = true;
-    }
-
-
-    bool is_bound() override
-    {
-        // std::lock_guard<std::mutex> lock(data_mx);
-        return this->this_is_bound;
-    }
-
-protected:
-    bool this_is_bound{false};
-};
-
-
-
-// template <typename Id>
-// class StrictlyInitializableDataDependencyManager 
-// :   public IDataDependencyManager<Id>, 
-//     public IInitializeAble<std::pair<
-//     std::map<Id, std::shared_ptr<StrictBindableDataObserver>>, 
-//     std::map<Id, std::shared_ptr<StrictDataCollector>>
-//     >>,
-//     public IHasStringConvertibleIdentifier<Id>
-// {
-// public:
-//     StrictlyInitializableDataDependencyManager(std::pair<std::map<Id, std::shared_ptr<StrictBindableDataObserver>>, std::map<Id, std::shared_ptr<StrictDataCollector>>> init_data_dependencies)
-//     {
-//         for (auto it = init_data_dependencies.first.begin(); it != init_data_dependencies.first.end(); it++)
-//         {
-//             if (!it.second->callback_ready()) throw std::runtime_error("StrictlyInitializableDataDependencyManager: provided initialization has an observer with unprepared callback at key " + it.first);
-//             if (!it.second->is_bound()) throw std::runtime_error("StrictlyInitializableDataDependencyManager: provided initialization has an unbound observer at key " + it.first);
-//         }
-//         this->initialize(init_data_dependencies);
-//     }
-// };
-
-
-// class DataDependencyManagerStr : public useful_di::StrictlyInitializableDataDependencyManager<std::string>
-// {
-
-// };
 };
